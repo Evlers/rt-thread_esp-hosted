@@ -1,0 +1,7 @@
+[submodule "common/protobuf-c"]
+	path = common/protobuf-c
+	url = https://github.com/protobuf-c/protobuf-c.git
+[submodule "esp/esp_driver/esp-idf"]
+	path = esp/esp_driver/esp-idf
+	url = https://github.com/espressif/esp-idf
+	branch = release/v5.1

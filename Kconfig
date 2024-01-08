@@ -1,0 +1,59 @@
+menuconfig RT_USING_ESP_HOSTED
+    bool "Using esp-hosted form espressif"
+    select RT_USING_WIFI
+    select RT_USING_SAL
+    select RT_USING_SPI
+    default n
+
+    if RT_USING_ESP_HOSTED
+
+        config ESP_HOSTED_THREAD_PRIORITY
+            int "The priority level value of esp-hosted thread"
+            range 0 32
+            default 8
+
+        config ESP_HOSTED_THREAD_STACK_SIZE
+            int "The stack size for esp-hosted thread"
+            range 0 8192
+            default 4096
+
+        config ESP_HOSTED_SPI_THREAD_PRIORITY
+            int "The priority level value of esp-hosted SPI thread"
+            range 0 32
+            default 20
+
+        config ESP_HOSTED_SPI_THREAD_STACK_SIZE
+            int "The stack size for esp-hosted SPI thread"
+            range 0 4096
+            default 512
+
+        config ESP_HOSTED_SPI_QUEUE_SIZE
+            int "The size for esp-hosted SPI queue"
+            range 0 32
+            default 10
+
+        config ESP_HOSTED_SPI_BUS_NAME
+            string "Set the spi bus name"
+            default "spi2"
+
+        config ESP_HOSTED_SPI_MAX_HZ
+            int "Set the maximum spi frequency(Hz)"
+            default 2000000
+
+        config ESP_HOSTED_SPI_CS_PIN
+            int "Set the SPI CS pin"
+            default 15
+
+        config ESP_HOSTED_DATA_READY_PIN
+            int "Set the data ready pin"
+            default 39
+
+        config ESP_HOSTED_HANDSHAKE_PIN
+            int "Set the handshake pin"
+            default 40
+
+        config ESP_HOSTED_RESET_PIN
+            int "Set the reset pin"
+            default 22
+
+    endif
