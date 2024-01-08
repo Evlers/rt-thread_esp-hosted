@@ -27,6 +27,29 @@ menu "External Libraries"
 endmenu
 ```
 
+#### Configure ESP-Hosted
+- Use the `menuconfig` command in the env window
+- Select Open `Using esp-hosted form espressif` 
+```
+→ External Libraries
+     [*] Using esp-hosted form espressif  --->
+```
+- Enter `Using esp-hosted form espressif` menu to configure the pin and SPI bus:
+```
+--- Using esp-hosted form espressif
+(8)   The priority level value of esp-hosted thread
+(4096) The stack size for esp-hosted thread
+(20)  The priority level value of esp-hosted SPI thread
+(512) The stack size for esp-hosted SPI thread
+(10)  The size for esp-hosted SPI queue
+(spi2) Set the spi bus name
+(2000000) Set the maximum spi frequency(Hz)
+(15)  Set the SPI CS pin
+(39)  Set the data ready pin
+(40)  Set the handshake pin
+(22)  Set the reset pin
+```
+
 #### Hardware connections for ESP32
 | Function  | ESP32 Pin | ESP32-S2/S3 | ESP32-C2/C3/C6 |
 |-----------|-----------|-------------|----------------|
@@ -43,7 +66,7 @@ endmenu
 ##### Set-up ESP-IDF
 - Install the ESP-IDF using script
 ```sh
-$ cd esp_hosted_fg/esp/esp_driver
+$ cd esp/esp_driver
 $ cmake .
 ```
 - Set-Up the build environment using
