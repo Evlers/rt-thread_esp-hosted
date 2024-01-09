@@ -30,7 +30,7 @@ menuconfig RT_USING_ESP_HOSTED
         config ESP_HOSTED_SPI_QUEUE_SIZE
             int "The size for esp-hosted SPI queue"
             range 0 32
-            default 10
+            default 2
 
         config ESP_HOSTED_SPI_BUS_NAME
             string "Set the spi bus name"
@@ -38,7 +38,7 @@ menuconfig RT_USING_ESP_HOSTED
 
         config ESP_HOSTED_SPI_MAX_HZ
             int "Set the maximum spi frequency(Hz)"
-            default 2000000
+            default 25000000
 
         config ESP_HOSTED_SPI_CS_PIN
             int "Set the SPI CS pin"

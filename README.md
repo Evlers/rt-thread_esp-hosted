@@ -43,7 +43,7 @@ endmenu
 (512) The stack size for esp-hosted SPI thread
 (10)  The size for esp-hosted SPI queue
 (spi2) Set the spi bus name
-(2000000) Set the maximum spi frequency(Hz)
+(25000000) Set the maximum spi frequency(Hz)
 (15)  Set the SPI CS pin
 (39)  Set the data ready pin
 (40)  Set the handshake pin
