@@ -52,7 +52,6 @@ int esp_netdev_close(netdev_handle_t netdev)
 int esp_netdev_xmit(netdev_handle_t netdev, struct pbuf *net_buf)
 {
 	struct esp_private *priv = NULL;
-	int ret = 0;
 
 	if (!netdev || !net_buf)
 		return STM_FAIL;
@@ -61,12 +60,12 @@ int esp_netdev_xmit(netdev_handle_t netdev, struct pbuf *net_buf)
 	if (!priv)
 		return STM_FAIL;
 
-	ret = send_to_slave(priv->if_type, priv->if_num,
-			net_buf->payload, net_buf->len);
+	if (send_to_slave(priv->if_type, priv->if_num, net_buf->payload, net_buf->len) != STM_OK)
+		return STM_FAIL;
 
 	free(net_buf);
 
-	return ret;
+	return STM_OK;
 }
 
 void process_capabilities(uint8_t cap)
