@@ -285,8 +285,8 @@ stm_ret_t serial_ll_rx_handler(interface_buffer_handle_t * buf_handle)
 	r.data = NULL;
 
 	/* send to serial queue */
-	if (RT_EOK != rt_mq_send(serial_ll_hdl->queue,
-		    &new_buf_handle, sizeof(new_buf_handle))) {
+	if (RT_EOK != rt_mq_send_wait(serial_ll_hdl->queue,
+		    &new_buf_handle, sizeof(new_buf_handle), RT_WAITING_FOREVER)) {
 		printf("Failed send serialif queue[%u]\n\r", new_buf_handle.if_num);
 		goto serial_buff_cleanup;
 	}

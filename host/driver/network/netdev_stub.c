@@ -246,7 +246,7 @@ int netdev_stub_rx(netdev_handle_t dev, struct pbuf *net_buf)
 	}
 
 	if (ndev->state == NETDEV_STATE_UP) {
-		if (RT_EOK != rt_mq_send(ndev->rx_q, net_buf, sizeof(struct pbuf))) {
+		if (RT_EOK != rt_mq_send_wait(ndev->rx_q, net_buf, sizeof(struct pbuf), RT_WAITING_FOREVER)) {
 			printf ("Failed to enqueue received packet\n");
 			goto done;
 		}

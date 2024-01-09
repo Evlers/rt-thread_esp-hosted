@@ -305,7 +305,7 @@ stm_ret_t send_to_slave(uint8_t iface_type, uint8_t iface_num,
 	buf_handle.priv_buffer_handle = wbuffer;
 	buf_handle.free_buf_handle = free;
 
-	if (RT_EOK != rt_mq_send(to_slave_queue, &buf_handle, sizeof(buf_handle))) {
+	if (RT_EOK != rt_mq_send_wait(to_slave_queue, &buf_handle, sizeof(buf_handle), RT_WAITING_FOREVER)) {
 		LOG_E("Failed to send buffer to_slave_queue");
 		if(wbuffer) {
 			free(wbuffer);
@@ -406,7 +406,7 @@ static stm_ret_t spi_transaction(uint8_t * txbuff)
 				buf_handle.seq_num     = le16toh(payload_header->seq_num);
 				buf_handle.flag        = payload_header->flags;
 
-				if (RT_EOK != rt_mq_send(from_slave_queue, &buf_handle, sizeof(buf_handle))) {
+				if (RT_EOK != rt_mq_send_wait(from_slave_queue, &buf_handle, sizeof(buf_handle), RT_WAITING_FOREVER)) {
 					LOG_E("Failed to send buffer");
 					goto done;
 				}

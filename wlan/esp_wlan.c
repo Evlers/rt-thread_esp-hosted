@@ -313,7 +313,7 @@ static int esp_scan_callback(ctrl_cmd_t * resp)
 				wlan_info.channel = (rt_int16_t)list[i].channel;
 				wlan_info.rssi = list[i].rssi;
 
-				wlan_info.datarate = 72 * 1000;
+				wlan_info.datarate = 0;
 				wlan_info.band = RT_802_11_BAND_2_4GHZ;
 
 				wlan_info.security = security_esp_to_wlan(list[i].encryption_mode);
