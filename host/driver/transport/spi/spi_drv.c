@@ -249,6 +249,7 @@ static void check_and_execute_spi_transaction(void)
 	rt_bool_t gpio_handshake = RT_FALSE;
 	rt_bool_t gpio_rx_data_ready = RT_FALSE;
 
+	rt_mutex_take(mutex_spi_trans, RT_WAITING_FOREVER);
 
 	/* handshake line SET -> slave ready for next transaction */
 	gpio_handshake = rt_pin_read(ESP_HOSTED_HANDSHAKE_PIN);
@@ -267,11 +268,11 @@ static void check_and_execute_spi_transaction(void)
 			 * a. A valid tx buffer to be transmitted towards slave
 			 * b. Slave wants to send something (Rx for host)
 			 */
-			rt_mutex_take(mutex_spi_trans, RT_WAITING_FOREVER);
 			spi_transaction(txbuff);
-			rt_mutex_release(mutex_spi_trans);
 		}
 	}
+
+	rt_mutex_release(mutex_spi_trans);
 }
 
 /**
