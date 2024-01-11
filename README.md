@@ -55,7 +55,7 @@ endmenu
 (20)    The priority of the init thread
 ```
 - If you do not use `sample` to initialize WiFi, copy `esp-hosted_port.c` in the `smaple` folder to the `board` folder for modification and add it to the project
-- Here is an example of ART-PI(STM32H750):
+- Example of ART-PI(STM32H750):
 ```
 /*
  * Copyright (c) 2006-2024, Evlers Developers
@@ -92,7 +92,9 @@ static void esp_hosted_init (void *parameter)
 	rt_thread_mdelay(50);
 
     /* attach spi device */
-    rt_hw_spi_device_attach(ESP_HOSTED_SPI_BUS_NAME, ESP_HOSTED_SPI_DEVICE_NAME, ESP_HOSTED_SPI_CS_PORT, ESP_HOSTED_SPI_CS_PIN);
+    rt_hw_spi_device_attach(ESP_HOSTED_SPI_BUS_NAME, ESP_HOSTED_SPI_DEVICE_NAME,
+							ESP_HOSTED_SPI_CS_PORT,
+							ESP_HOSTED_SPI_CS_PIN);
 
     /* Initialize the esp-hosted */
     rt_hw_esp_wlan_init();
@@ -103,7 +105,8 @@ int esp_spi_device_init (void)
 #ifdef ESP_HOSTED_THREAD_INIT
     /* Use thread initialization */
     rt_thread_t init_thread = rt_thread_create("esp_init", esp_hosted_init, NULL, 
-                                                ESP_HOSTED_INIT_THREAD_STACK_SIZE, ESP_HOSTED_INIT_THREAD_PRIORITY, 20);
+                                                ESP_HOSTED_INIT_THREAD_STACK_SIZE,
+						ESP_HOSTED_INIT_THREAD_PRIORITY, 20);
     RT_ASSERT(init_thread != NULL);
     rt_thread_startup(init_thread);
 #else
