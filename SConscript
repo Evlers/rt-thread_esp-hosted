@@ -48,6 +48,9 @@ path += [cwd + '/host/port/include']
 src += Glob('wlan/*.c')
 path += [cwd + '/wlan']
 
+# add sample source files
+if GetDepend(['ESP_HOSTED_USING_SAMPLE']):
+    src += Glob('sample/*.c')
 
 CPPDEFINES = ['']
 

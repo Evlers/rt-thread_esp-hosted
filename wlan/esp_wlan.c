@@ -6,8 +6,11 @@
  * Change Logs:
  * Date         Author      Notes
  * 2024-01-04   Evlers      first implementation
+ * 2024-01-11	Evlers		removed the hardware initialization code
  */
 
+#include <stdint.h>
+#include <string.h>
 #include "rtthread.h"
 #include "rtdevice.h"
 #include "ctrl_api.h"
@@ -58,19 +61,6 @@ static rt_sem_t sem_esp_init;
 static struct drv_wifi wifi_sta, wifi_ap;
 
 static void network_data_rx_callback(struct network_handle *net_handle);
-
-
-static int esp_init (void)
-{
-    /* Reset esp wifi */
-    rt_pin_mode(ESP_HOSTED_RESET_PIN, PIN_MODE_OUTPUT);
-    rt_pin_write(ESP_HOSTED_RESET_PIN, PIN_LOW);
-    rt_thread_mdelay(50);
-    rt_pin_write(ESP_HOSTED_RESET_PIN, PIN_HIGH);
-
-    return RT_EOK;
-}
-INIT_PREV_EXPORT(esp_init);
 
 static int get_response_result(ctrl_cmd_t * resp)
 {
@@ -125,8 +115,8 @@ static int esp_ctrl_event_callback (ctrl_cmd_t * event)
 		goto fail_parsing;
 	}
 
-	switch(event->msg_id) {
-
+	switch(event->msg_id)
+	{
 		case CTRL_EVENT_ESP_INIT:
 			LOG_D("App EVENT: ESP INIT");
 			rt_sem_release(sem_esp_init);
@@ -503,10 +493,10 @@ static int drv_wlan_send(struct rt_wlan_device *wlan, void *buff, int len)
 	}
 
 	tx_buffer = malloc(sizeof(struct pbuf));
-	assert(tx_buffer);
+	RT_ASSERT(tx_buffer);
 
 	tx_buffer->payload = malloc(len);
-	assert(tx_buffer->payload);
+	RT_ASSERT(tx_buffer->payload);
 
 	memcpy(tx_buffer->payload, buff, len);
 	tx_buffer->len = len;
@@ -570,15 +560,12 @@ static void network_data_rx_callback(struct network_handle *net_handle)
 	}
 }
 
-int rt_hw_wlan_init (void)
+int rt_hw_esp_wlan_init (void)
 {
 	static struct rt_wlan_device wlan_ap, wlan_sta;
 
 	sem_esp_init = rt_sem_create("esp_init", 0, RT_IPC_FLAG_PRIO);
-	assert(sem_esp_init != NULL);
-
-	/* stop spi transactions short time to avoid slave sync issues */
-	rt_thread_mdelay(50);
+	RT_ASSERT(sem_esp_init != NULL);
 
     /* Init network interface */
 	network_init();
@@ -633,4 +620,3 @@ int rt_hw_wlan_init (void)
 
     return RT_EOK;
 }
-INIT_APP_EXPORT(rt_hw_wlan_init);

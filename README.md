@@ -37,17 +37,86 @@ endmenu
 - Enter `Using esp-hosted form espressif` menu to configure the pin and SPI bus:
 ```
 --- Using esp-hosted form espressif
-(8)   The priority level value of esp-hosted thread
-(4096) The stack size for esp-hosted thread
-(20)  The priority level value of esp-hosted SPI thread
-(512) The stack size for esp-hosted SPI thread
-(10)  The size for esp-hosted SPI queue
-(spi2) Set the spi bus name
+(8)   The priority of the esp-hosted thread
+(4096) The stack size of the esp-hosted thread
+(20)  The priority of the esp-hosted SPI thread
+(512) The stack size of the esp-hosted SPI thread
+(2)   The size for esp-hosted SPI queue
+[*]   Initialize WiFi using the sample
+(spi1)  Set the spi bus name (NEW)
+(28)    Set the SPI CS pin
+(esp-hosted) Set the spi device name
 (25000000) Set the maximum spi frequency(Hz)
-(15)  Set the SPI CS pin
 (39)  Set the data ready pin
 (40)  Set the handshake pin
-(22)  Set the reset pin
+(38)  Set the reset pin
+[*]   Use thread initialization
+(2048)  The stack size of the init thread
+(20)    The priority of the init thread
+```
+- If you do not use `sample` to initialize WiFi, copy `esp-hosted_port.c` in the `smaple` folder to the `board` folder for modification and add it to the project
+- Here is an example of ART-PI(STM32H750):
+```
+/*
+ * Copyright (c) 2006-2024, Evlers Developers
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Change Logs:
+ * Date         Author      Notes
+ * 2024-01-11   Evlers      first implementation
+ */
+
+#include <rtthread.h>
+
+#if defined(RT_USING_ESP_HOSTED) && !defined(ESP_HOSTED_USING_SAMPLE)
+#include <rtdevice.h>
+#include <drv_spi.h>
+#include <board.h>
+
+#define ESP_HOSTED_SPI_BUS_NAME             "spi2"
+#define ESP_HOSTED_SPI_CS_PORT              GPIOI
+#define ESP_HOSTED_SPI_CS_PIN               GPIO_PIN_0
+
+extern int rt_hw_esp_wlan_init (void);
+
+static void esp_hosted_init (void *parameter)
+{
+    /* reset esp32 chip */
+    rt_pin_mode(ESP_HOSTED_RESET_PIN, PIN_MODE_OUTPUT);
+    rt_pin_write(ESP_HOSTED_RESET_PIN, PIN_LOW);
+    rt_thread_mdelay(50);
+    rt_pin_write(ESP_HOSTED_RESET_PIN, PIN_HIGH);
+    
+    /* stop spi transactions short time to avoid slave sync issues */
+	rt_thread_mdelay(50);
+
+    /* attach spi device */
+    rt_hw_spi_device_attach(ESP_HOSTED_SPI_BUS_NAME, ESP_HOSTED_SPI_DEVICE_NAME, ESP_HOSTED_SPI_CS_PORT, ESP_HOSTED_SPI_CS_PIN);
+
+    /* Initialize the esp-hosted */
+    rt_hw_esp_wlan_init();
+}
+
+int esp_spi_device_init (void)
+{
+#ifdef ESP_HOSTED_THREAD_INIT
+    /* Use thread initialization */
+    rt_thread_t init_thread = rt_thread_create("esp_init", esp_hosted_init, NULL, 
+                                                ESP_HOSTED_INIT_THREAD_STACK_SIZE, ESP_HOSTED_INIT_THREAD_PRIORITY, 20);
+    RT_ASSERT(init_thread != NULL);
+    rt_thread_startup(init_thread);
+#else
+    /* Thread initialization is not used */
+    esp_hosted_init(NULL);
+#endif
+
+    return RT_EOK;
+}
+INIT_APP_EXPORT(esp_spi_device_init);
+
+
+#endif /* defined(RT_USING_ESP_HOSTED) && !defined(ESP_HOSTED_USING_SAMPLE) */
 ```
 
 #### Hardware connections for ESP32

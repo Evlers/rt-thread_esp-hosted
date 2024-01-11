@@ -14,9 +14,10 @@
 // limitations under the License.
 
 /** Includes **/
+#include <stdint.h>
+#include <string.h>
 #include "rtthread.h"
 #include "rtdevice.h"
-#include "drv_spi.h"
 #include "string.h"
 #include "common/trace.h"
 #include "spi_drv.h"
@@ -205,6 +206,22 @@ void transport_init(void(*transport_evt_handler_fp)(uint8_t))
 	assert(process_rx_task_id);
 	rt_thread_startup(process_rx_task_id);
 
+	/* Initializes the spi bus */
+	if ((spi_dev = (struct rt_spi_device *)rt_device_find(ESP_HOSTED_SPI_DEVICE_NAME)) != NULL)
+	{
+		/* Configure SPI bus */
+		struct rt_spi_configuration cfg;
+        cfg.data_width = 8;
+        cfg.mode = RT_SPI_MODE_2 | RT_SPI_MSB;
+        cfg.max_hz = ESP_HOSTED_SPI_MAX_HZ;
+        rt_spi_configure(spi_dev, &cfg);
+	}
+	else
+	{
+		LOG_E("No spi device (%s) is found. Please attach the spi bus!", ESP_HOSTED_SPI_DEVICE_NAME);
+		return ;
+	}
+
 	/* Initializes an external interrupt */
 	rt_pin_mode(ESP_HOSTED_HANDSHAKE_PIN, PIN_MODE_INPUT_PULLUP);
 	rt_pin_mode(ESP_HOSTED_DATA_READY_PIN, PIN_MODE_INPUT_PULLUP);
@@ -212,26 +229,6 @@ void transport_init(void(*transport_evt_handler_fp)(uint8_t))
 	rt_pin_attach_irq(ESP_HOSTED_DATA_READY_PIN, PIN_IRQ_MODE_RISING, gpio_interrupt, NULL);
 	rt_pin_irq_enable(ESP_HOSTED_HANDSHAKE_PIN, RT_TRUE);
 	rt_pin_irq_enable(ESP_HOSTED_DATA_READY_PIN, RT_TRUE);
-
-	/* Initializes the spi bus */
-	const char *dev_name = "esp-hosted";
-	rt_hw_spi_device_attach(ESP_HOSTED_SPI_BUS_NAME, dev_name, ESP_HOSTED_SPI_CS_PIN);
-	spi_dev = (struct rt_spi_device *)rt_device_find(dev_name);
-
-	if (spi_dev == RT_NULL)
-    {
-        LOG_E("spi device %s not found!\r", dev_name);
-        return ;
-    }
-
-    /* Configure SPI bus */
-    {
-        struct rt_spi_configuration cfg;
-        cfg.data_width = 8;
-        cfg.mode = RT_SPI_MODE_2 | RT_SPI_MSB; /* SPI Compatible: Mode 0. */
-        cfg.max_hz = ESP_HOSTED_SPI_MAX_HZ;
-        rt_spi_configure(spi_dev, &cfg);
-    }
 }
 
 /**

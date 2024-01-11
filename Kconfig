@@ -8,22 +8,22 @@ menuconfig RT_USING_ESP_HOSTED
     if RT_USING_ESP_HOSTED
 
         config ESP_HOSTED_THREAD_PRIORITY
-            int "The priority level value of esp-hosted thread"
+            int "The priority of the esp-hosted thread"
             range 0 32
             default 8
 
         config ESP_HOSTED_THREAD_STACK_SIZE
-            int "The stack size for esp-hosted thread"
+            int "The stack size of the esp-hosted thread"
             range 0 8192
             default 4096
 
         config ESP_HOSTED_SPI_THREAD_PRIORITY
-            int "The priority level value of esp-hosted SPI thread"
+            int "The priority of the esp-hosted SPI thread"
             range 0 32
             default 20
 
         config ESP_HOSTED_SPI_THREAD_STACK_SIZE
-            int "The stack size for esp-hosted SPI thread"
+            int "The stack size of the esp-hosted SPI thread"
             range 0 4096
             default 512
 
@@ -32,17 +32,27 @@ menuconfig RT_USING_ESP_HOSTED
             range 0 32
             default 2
 
-        config ESP_HOSTED_SPI_BUS_NAME
-            string "Set the spi bus name"
-            default "spi2"
+        config ESP_HOSTED_USING_SAMPLE
+            bool "Initialize WiFi using the sample"
+            default y
+
+        if ESP_HOSTED_USING_SAMPLE
+            config ESP_HOSTED_SPI_BUS_NAME
+                string "Set the spi bus name"
+                default "spi1"
+
+            config ESP_HOSTED_SPI_CS_PIN
+                int "Set the SPI CS pin"
+                default 15
+        endif
+
+        config ESP_HOSTED_SPI_DEVICE_NAME
+            string "Set the spi device name"
+            default "esp-hosted"
 
         config ESP_HOSTED_SPI_MAX_HZ
             int "Set the maximum spi frequency(Hz)"
             default 25000000
-
-        config ESP_HOSTED_SPI_CS_PIN
-            int "Set the SPI CS pin"
-            default 15
 
         config ESP_HOSTED_DATA_READY_PIN
             int "Set the data ready pin"
@@ -53,7 +63,23 @@ menuconfig RT_USING_ESP_HOSTED
             default 40
 
         config ESP_HOSTED_RESET_PIN
-            int "Set the reset pin"
-            default 22
+                int "Set the reset pin"
+                default 22
+
+        config ESP_HOSTED_THREAD_INIT
+            bool "Use thread initialization"
+            default n
+
+        if ESP_HOSTED_THREAD_INIT
+            config ESP_HOSTED_INIT_THREAD_STACK_SIZE
+                int "The stack size of the init thread"
+                range 0 4096
+                default 2048
+
+            config ESP_HOSTED_INIT_THREAD_PRIORITY
+                int "The priority of the init thread"
+                range 0 32
+                default 20
+        endif
 
     endif
