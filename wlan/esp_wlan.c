@@ -23,33 +23,11 @@
 #include "rtdbg.h"
 
 
-/* espressif esp-hosted interface */
-
-#define CTRL_CMD_DEFAULT_REQ() {                          \
-  .msg_type = CTRL_REQ,                                   \
-  .ctrl_resp_cb = NULL,                                   \
-  .cmd_timeout_sec = DEFAULT_CTRL_RESP_TIMEOUT /*30 sec*/ \
-}
-
-#define CLEANUP_CTRL_MSG(msg) do {                        \
-  if (msg) {                                              \
-    if (msg->free_buffer_handle) {                        \
-      if (msg->free_buffer_func) {                        \
-        msg->free_buffer_func(msg->free_buffer_handle);   \
-        msg->free_buffer_handle = NULL;                   \
-      }                                                   \
-    }                                                     \
-    free(msg);                                            \
-    msg = NULL;                                           \
-  }                                                       \
-} while(0);
-
-
-typedef struct
+struct event_callback_table
 {
 	int event;
 	ctrl_resp_cb_t fun;
-} event_callback_table_t;
+};
 
 struct drv_wifi
 {
@@ -60,7 +38,30 @@ struct drv_wifi
 static rt_sem_t sem_esp_init;
 static struct drv_wifi wifi_sta, wifi_ap;
 
-static void network_data_rx_callback(struct network_handle *net_handle);
+
+/* espressif esp-hosted interface */
+
+static void ctrl_cmd_default_req (ctrl_cmd_t *req)
+{
+	memset(req, 0, sizeof(ctrl_cmd_t));
+	req->msg_type = CTRL_REQ;
+	req->ctrl_resp_cb = NULL;
+	req->cmd_timeout_sec = DEFAULT_CTRL_RESP_TIMEOUT;
+}
+
+static void free_ctrl_resp_msg (ctrl_cmd_t *resp)
+{
+	if (resp == NULL) return ;
+
+	if (resp->free_buffer_handle != NULL && resp->free_buffer_func != NULL)
+	{
+		resp->free_buffer_func(resp->free_buffer_handle);
+		resp->free_buffer_handle = NULL;
+    }
+
+	free(resp);
+	resp = NULL;
+}
 
 static int get_response_result(ctrl_cmd_t * resp)
 {
@@ -96,7 +97,7 @@ static int get_response_result(ctrl_cmd_t * resp)
 static int sync_response_result(ctrl_cmd_t *resp)
 {
 	int ret = get_response_result(resp);
-	CLEANUP_CTRL_MSG(resp);
+	free_ctrl_resp_msg(resp);
 	return ret;
 }
 
@@ -144,11 +145,11 @@ static int esp_ctrl_event_callback (ctrl_cmd_t * event)
 			LOG_D("Invalid event[%u] to parse", event->msg_id);
 			break;
 	}
-	CLEANUP_CTRL_MSG(event);
+	free_ctrl_resp_msg(event);
 	return SUCCESS;
 
 fail_parsing:
-	CLEANUP_CTRL_MSG(event);
+	free_ctrl_resp_msg(event);
 	return FAILURE;
 }
 
@@ -156,16 +157,18 @@ static int register_esp_event_callbacks(void)
 {
 	int ret = SUCCESS;
 
-	event_callback_table_t events[] = {
+	struct event_callback_table events[] =
+	{
 		{ CTRL_EVENT_ESP_INIT,                           esp_ctrl_event_callback },
 		{ CTRL_EVENT_HEARTBEAT,                          esp_ctrl_event_callback },
 		{ CTRL_EVENT_STATION_DISCONNECT_FROM_AP,         esp_ctrl_event_callback },
 		{ CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP, esp_ctrl_event_callback },
 	};
 
-	for (uint8_t i = 0; i < sizeof(events) / sizeof(event_callback_table_t); i ++)
+	for (uint8_t i = 0; i < sizeof(events) / sizeof(struct event_callback_table); i ++)
 	{
-		if (CALLBACK_SET_SUCCESS != set_event_callback(events[i].event, events[i].fun) ) {
+		if (CALLBACK_SET_SUCCESS != set_event_callback(events[i].event, events[i].fun) )
+		{
 			LOG_E("event callback register failed for event[%u]", events[i].event);
 			ret = FAILURE;
 			break;
@@ -184,7 +187,6 @@ static void transport_driver_event_handler(uint8_t event)
 	switch (event)
 	{
 		case TRANSPORT_ACTIVE:
-		{
 			/* Initiate control path now */
             if (init_hosted_control_lib())
             {
@@ -197,11 +199,12 @@ static void transport_driver_event_handler(uint8_t event)
             register_esp_event_callbacks();
 
 			break;
-		}
+		
 		default:
-		break;
+			break;
 	}
 }
+
 
 /* RT-Thread wlan framework interface */
 
@@ -328,18 +331,20 @@ static int esp_scan_callback(ctrl_cmd_t * resp)
 
 	__finish_resp:
 	rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_SCAN_DONE, RT_NULL);
-	CLEANUP_CTRL_MSG(resp);
+	free_ctrl_resp_msg(resp);
 	return SUCCESS;
 
 	__fail_resp:
 	rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_SCAN_DONE, RT_NULL);
-	CLEANUP_CTRL_MSG(resp);
+	free_ctrl_resp_msg(resp);
 	return FAILURE;
 }
 
 static rt_err_t drv_wlan_scan(struct rt_wlan_device *wlan, struct rt_scan_info *scan_info)
 {
-	ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
+	ctrl_cmd_t req;
+
+	ctrl_cmd_default_req(&req);
 	req.cmd_timeout_sec = 300;
 	req.ctrl_resp_cb = esp_scan_callback;
 
@@ -369,14 +374,15 @@ static int esp_join_callback(ctrl_cmd_t * resp)
 	{
 		rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_CONNECT_FAIL, RT_NULL);
 	}
-	CLEANUP_CTRL_MSG(resp);
+	free_ctrl_resp_msg(resp);
 	return ret;
 }
 
 static rt_err_t drv_wlan_join(struct rt_wlan_device *wlan, struct rt_sta_info *sta_info)
 {
-	ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
+	ctrl_cmd_t req;
 
+	ctrl_cmd_default_req(&req);
 	memcpy(req.u.wifi_ap_config.ssid, sta_info->ssid.val, min(sta_info->ssid.len, sizeof(req.u.wifi_ap_config.ssid)));
 	memcpy(req.u.wifi_ap_config.pwd, sta_info->key.val, min(sta_info->key.len, sizeof(req.u.wifi_ap_config.pwd)));
 	req.u.wifi_ap_config.is_wpa3_supported = false;
@@ -392,9 +398,10 @@ static rt_err_t drv_wlan_join(struct rt_wlan_device *wlan, struct rt_sta_info *s
 
 static rt_err_t drv_wlan_softap(struct rt_wlan_device *wlan, struct rt_ap_info *ap_info)
 {
-	ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
+	ctrl_cmd_t req;
 	ctrl_cmd_t *resp = NULL;
 
+	ctrl_cmd_default_req(&req);
 	strncpy((char *)req.u.wifi_softap_config.ssid, (char *)ap_info->ssid.val, min(ap_info->ssid.len, SSID_LENGTH-1));
 	strncpy((char *)req.u.wifi_softap_config.pwd, (char *)ap_info->key.val, min(ap_info->key.len, MAX_MAC_STR_LEN-1));
 	req.u.wifi_softap_config.channel = ap_info->channel;
@@ -419,9 +426,10 @@ static rt_err_t drv_wlan_softap(struct rt_wlan_device *wlan, struct rt_ap_info *
 
 static rt_err_t drv_wlan_disconnect(struct rt_wlan_device *wlan)
 {
-	ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
+	ctrl_cmd_t req;
 	ctrl_cmd_t *resp = NULL;
 
+	ctrl_cmd_default_req(&req);
 	resp = wifi_disconnect_ap(req);
 
 	if (sync_response_result(resp) == SUCCESS)
@@ -433,9 +441,10 @@ static rt_err_t drv_wlan_disconnect(struct rt_wlan_device *wlan)
 
 static rt_err_t drv_wlan_ap_stop(struct rt_wlan_device *wlan)
 {
-    ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
+    ctrl_cmd_t req;
 	ctrl_cmd_t *resp = NULL;
 
+	ctrl_cmd_default_req(&req);
 	resp = wifi_stop_softap(req);
 
 	if (sync_response_result(resp) == SUCCESS)
@@ -448,9 +457,10 @@ static rt_err_t drv_wlan_ap_stop(struct rt_wlan_device *wlan)
 
 static rt_err_t drv_wlan_set_mac(struct rt_wlan_device *wlan, rt_uint8_t mac[])
 {
-    ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
+    ctrl_cmd_t req;
 	ctrl_cmd_t *resp = NULL;
 
+	ctrl_cmd_default_req(&req);
 	req.u.wifi_mac.mode = (wlan == wifi_sta.wlan) ? WIFI_MODE_STA : WIFI_MODE_AP;
 	snprintf(req.u.wifi_mac.mac, sizeof(req.u.wifi_mac.mac), "%02x:%02x:%02x:%02x:%02x:%02x", 
 				mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
@@ -461,9 +471,10 @@ static rt_err_t drv_wlan_set_mac(struct rt_wlan_device *wlan, rt_uint8_t mac[])
 
 static rt_err_t drv_wlan_get_mac(struct rt_wlan_device *wlan, rt_uint8_t mac[])
 {
-	ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
+	ctrl_cmd_t req;
 	ctrl_cmd_t *resp = NULL;
 
+	ctrl_cmd_default_req(&req);
 	req.u.wifi_mac.mode = (wlan == wifi_sta.wlan) ? WIFI_MODE_STA : WIFI_MODE_AP;
 	resp = wifi_get_mac(req);
 
