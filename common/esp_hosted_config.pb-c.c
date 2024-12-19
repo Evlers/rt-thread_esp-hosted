@@ -1762,6 +1762,186 @@ void   ctrl_msg__resp__config_heartbeat__free_unpacked
   assert(message->base.descriptor == &ctrl_msg__resp__config_heartbeat__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   ctrl_msg__req__enable_disable__init
+                     (CtrlMsgReqEnableDisable         *message)
+{
+  static const CtrlMsgReqEnableDisable init_value = CTRL_MSG__REQ__ENABLE_DISABLE__INIT;
+  *message = init_value;
+}
+size_t ctrl_msg__req__enable_disable__get_packed_size
+                     (const CtrlMsgReqEnableDisable *message)
+{
+  assert(message->base.descriptor == &ctrl_msg__req__enable_disable__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t ctrl_msg__req__enable_disable__pack
+                     (const CtrlMsgReqEnableDisable *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &ctrl_msg__req__enable_disable__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t ctrl_msg__req__enable_disable__pack_to_buffer
+                     (const CtrlMsgReqEnableDisable *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &ctrl_msg__req__enable_disable__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+CtrlMsgReqEnableDisable *
+       ctrl_msg__req__enable_disable__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (CtrlMsgReqEnableDisable *)
+     protobuf_c_message_unpack (&ctrl_msg__req__enable_disable__descriptor,
+                                allocator, len, data);
+}
+void   ctrl_msg__req__enable_disable__free_unpacked
+                     (CtrlMsgReqEnableDisable *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &ctrl_msg__req__enable_disable__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   ctrl_msg__resp__enable_disable__init
+                     (CtrlMsgRespEnableDisable         *message)
+{
+  static const CtrlMsgRespEnableDisable init_value = CTRL_MSG__RESP__ENABLE_DISABLE__INIT;
+  *message = init_value;
+}
+size_t ctrl_msg__resp__enable_disable__get_packed_size
+                     (const CtrlMsgRespEnableDisable *message)
+{
+  assert(message->base.descriptor == &ctrl_msg__resp__enable_disable__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t ctrl_msg__resp__enable_disable__pack
+                     (const CtrlMsgRespEnableDisable *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &ctrl_msg__resp__enable_disable__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t ctrl_msg__resp__enable_disable__pack_to_buffer
+                     (const CtrlMsgRespEnableDisable *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &ctrl_msg__resp__enable_disable__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+CtrlMsgRespEnableDisable *
+       ctrl_msg__resp__enable_disable__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (CtrlMsgRespEnableDisable *)
+     protobuf_c_message_unpack (&ctrl_msg__resp__enable_disable__descriptor,
+                                allocator, len, data);
+}
+void   ctrl_msg__resp__enable_disable__free_unpacked
+                     (CtrlMsgRespEnableDisable *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &ctrl_msg__resp__enable_disable__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   ctrl_msg__req__get_fw_version__init
+                     (CtrlMsgReqGetFwVersion         *message)
+{
+  static const CtrlMsgReqGetFwVersion init_value = CTRL_MSG__REQ__GET_FW_VERSION__INIT;
+  *message = init_value;
+}
+size_t ctrl_msg__req__get_fw_version__get_packed_size
+                     (const CtrlMsgReqGetFwVersion *message)
+{
+  assert(message->base.descriptor == &ctrl_msg__req__get_fw_version__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t ctrl_msg__req__get_fw_version__pack
+                     (const CtrlMsgReqGetFwVersion *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &ctrl_msg__req__get_fw_version__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t ctrl_msg__req__get_fw_version__pack_to_buffer
+                     (const CtrlMsgReqGetFwVersion *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &ctrl_msg__req__get_fw_version__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+CtrlMsgReqGetFwVersion *
+       ctrl_msg__req__get_fw_version__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (CtrlMsgReqGetFwVersion *)
+     protobuf_c_message_unpack (&ctrl_msg__req__get_fw_version__descriptor,
+                                allocator, len, data);
+}
+void   ctrl_msg__req__get_fw_version__free_unpacked
+                     (CtrlMsgReqGetFwVersion *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &ctrl_msg__req__get_fw_version__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   ctrl_msg__resp__get_fw_version__init
+                     (CtrlMsgRespGetFwVersion         *message)
+{
+  static const CtrlMsgRespGetFwVersion init_value = CTRL_MSG__RESP__GET_FW_VERSION__INIT;
+  *message = init_value;
+}
+size_t ctrl_msg__resp__get_fw_version__get_packed_size
+                     (const CtrlMsgRespGetFwVersion *message)
+{
+  assert(message->base.descriptor == &ctrl_msg__resp__get_fw_version__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t ctrl_msg__resp__get_fw_version__pack
+                     (const CtrlMsgRespGetFwVersion *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &ctrl_msg__resp__get_fw_version__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t ctrl_msg__resp__get_fw_version__pack_to_buffer
+                     (const CtrlMsgRespGetFwVersion *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &ctrl_msg__resp__get_fw_version__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+CtrlMsgRespGetFwVersion *
+       ctrl_msg__resp__get_fw_version__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (CtrlMsgRespGetFwVersion *)
+     protobuf_c_message_unpack (&ctrl_msg__resp__get_fw_version__descriptor,
+                                allocator, len, data);
+}
+void   ctrl_msg__resp__get_fw_version__free_unpacked
+                     (CtrlMsgRespGetFwVersion *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &ctrl_msg__resp__get_fw_version__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   ctrl_msg__event__espinit__init
                      (CtrlMsgEventESPInit         *message)
 {
@@ -1897,6 +2077,51 @@ void   ctrl_msg__event__station_disconnect_from_ap__free_unpacked
   assert(message->base.descriptor == &ctrl_msg__event__station_disconnect_from_ap__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   ctrl_msg__event__station_connected_to_ap__init
+                     (CtrlMsgEventStationConnectedToAP         *message)
+{
+  static const CtrlMsgEventStationConnectedToAP init_value = CTRL_MSG__EVENT__STATION_CONNECTED_TO_AP__INIT;
+  *message = init_value;
+}
+size_t ctrl_msg__event__station_connected_to_ap__get_packed_size
+                     (const CtrlMsgEventStationConnectedToAP *message)
+{
+  assert(message->base.descriptor == &ctrl_msg__event__station_connected_to_ap__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t ctrl_msg__event__station_connected_to_ap__pack
+                     (const CtrlMsgEventStationConnectedToAP *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &ctrl_msg__event__station_connected_to_ap__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t ctrl_msg__event__station_connected_to_ap__pack_to_buffer
+                     (const CtrlMsgEventStationConnectedToAP *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &ctrl_msg__event__station_connected_to_ap__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+CtrlMsgEventStationConnectedToAP *
+       ctrl_msg__event__station_connected_to_ap__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (CtrlMsgEventStationConnectedToAP *)
+     protobuf_c_message_unpack (&ctrl_msg__event__station_connected_to_ap__descriptor,
+                                allocator, len, data);
+}
+void   ctrl_msg__event__station_connected_to_ap__free_unpacked
+                     (CtrlMsgEventStationConnectedToAP *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &ctrl_msg__event__station_connected_to_ap__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   ctrl_msg__event__station_disconnect_from_espsoft_ap__init
                      (CtrlMsgEventStationDisconnectFromESPSoftAP         *message)
 {
@@ -1940,6 +2165,51 @@ void   ctrl_msg__event__station_disconnect_from_espsoft_ap__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &ctrl_msg__event__station_disconnect_from_espsoft_ap__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   ctrl_msg__event__station_connected_to_espsoft_ap__init
+                     (CtrlMsgEventStationConnectedToESPSoftAP         *message)
+{
+  static const CtrlMsgEventStationConnectedToESPSoftAP init_value = CTRL_MSG__EVENT__STATION_CONNECTED_TO_ESPSOFT_AP__INIT;
+  *message = init_value;
+}
+size_t ctrl_msg__event__station_connected_to_espsoft_ap__get_packed_size
+                     (const CtrlMsgEventStationConnectedToESPSoftAP *message)
+{
+  assert(message->base.descriptor == &ctrl_msg__event__station_connected_to_espsoft_ap__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t ctrl_msg__event__station_connected_to_espsoft_ap__pack
+                     (const CtrlMsgEventStationConnectedToESPSoftAP *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &ctrl_msg__event__station_connected_to_espsoft_ap__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t ctrl_msg__event__station_connected_to_espsoft_ap__pack_to_buffer
+                     (const CtrlMsgEventStationConnectedToESPSoftAP *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &ctrl_msg__event__station_connected_to_espsoft_ap__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+CtrlMsgEventStationConnectedToESPSoftAP *
+       ctrl_msg__event__station_connected_to_espsoft_ap__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (CtrlMsgEventStationConnectedToESPSoftAP *)
+     protobuf_c_message_unpack (&ctrl_msg__event__station_connected_to_espsoft_ap__descriptor,
+                                allocator, len, data);
+}
+void   ctrl_msg__event__station_connected_to_espsoft_ap__free_unpacked
+                     (CtrlMsgEventStationConnectedToESPSoftAP *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &ctrl_msg__event__station_connected_to_espsoft_ap__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   ctrl_msg__init
@@ -2525,7 +2795,7 @@ const ProtobufCMessageDescriptor ctrl_msg__req__get_apconfig__descriptor =
   (ProtobufCMessageInit) ctrl_msg__req__get_apconfig__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__resp__get_apconfig__field_descriptors[6] =
+static const ProtobufCFieldDescriptor ctrl_msg__resp__get_apconfig__field_descriptors[7] =
 {
   {
     "ssid",
@@ -2599,8 +2869,21 @@ static const ProtobufCFieldDescriptor ctrl_msg__resp__get_apconfig__field_descri
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "band_mode",
+    7,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetAPConfig, band_mode),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__resp__get_apconfig__field_indices_by_name[] = {
+  6,   /* field[6] = band_mode */
   1,   /* field[1] = bssid */
   3,   /* field[3] = chnl */
   5,   /* field[5] = resp */
@@ -2611,7 +2894,7 @@ static const unsigned ctrl_msg__resp__get_apconfig__field_indices_by_name[] = {
 static const ProtobufCIntRange ctrl_msg__resp__get_apconfig__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 6 }
+  { 0, 7 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__resp__get_apconfig__descriptor =
 {
@@ -2621,14 +2904,14 @@ const ProtobufCMessageDescriptor ctrl_msg__resp__get_apconfig__descriptor =
   "CtrlMsgRespGetAPConfig",
   "",
   sizeof(CtrlMsgRespGetAPConfig),
-  6,
+  7,
   ctrl_msg__resp__get_apconfig__field_descriptors,
   ctrl_msg__resp__get_apconfig__field_indices_by_name,
   1,  ctrl_msg__resp__get_apconfig__number_ranges,
   (ProtobufCMessageInit) ctrl_msg__resp__get_apconfig__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__req__connect_ap__field_descriptors[5] =
+static const ProtobufCFieldDescriptor ctrl_msg__req__connect_ap__field_descriptors[6] =
 {
   {
     "ssid",
@@ -2690,8 +2973,21 @@ static const ProtobufCFieldDescriptor ctrl_msg__req__connect_ap__field_descripto
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "band_mode",
+    6,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgReqConnectAP, band_mode),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__req__connect_ap__field_indices_by_name[] = {
+  5,   /* field[5] = band_mode */
   2,   /* field[2] = bssid */
   3,   /* field[3] = is_wpa3_supported */
   4,   /* field[4] = listen_interval */
@@ -2701,7 +2997,7 @@ static const unsigned ctrl_msg__req__connect_ap__field_indices_by_name[] = {
 static const ProtobufCIntRange ctrl_msg__req__connect_ap__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 5 }
+  { 0, 6 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__req__connect_ap__descriptor =
 {
@@ -2711,14 +3007,14 @@ const ProtobufCMessageDescriptor ctrl_msg__req__connect_ap__descriptor =
   "CtrlMsgReqConnectAP",
   "",
   sizeof(CtrlMsgReqConnectAP),
-  5,
+  6,
   ctrl_msg__req__connect_ap__field_descriptors,
   ctrl_msg__req__connect_ap__field_indices_by_name,
   1,  ctrl_msg__req__connect_ap__number_ranges,
   (ProtobufCMessageInit) ctrl_msg__req__connect_ap__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__resp__connect_ap__field_descriptors[2] =
+static const ProtobufCFieldDescriptor ctrl_msg__resp__connect_ap__field_descriptors[3] =
 {
   {
     "resp",
@@ -2744,15 +3040,28 @@ static const ProtobufCFieldDescriptor ctrl_msg__resp__connect_ap__field_descript
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "band_mode",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespConnectAP, band_mode),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__resp__connect_ap__field_indices_by_name[] = {
+  2,   /* field[2] = band_mode */
   1,   /* field[1] = mac */
   0,   /* field[0] = resp */
 };
 static const ProtobufCIntRange ctrl_msg__resp__connect_ap__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 3 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__resp__connect_ap__descriptor =
 {
@@ -2762,7 +3071,7 @@ const ProtobufCMessageDescriptor ctrl_msg__resp__connect_ap__descriptor =
   "CtrlMsgRespConnectAP",
   "",
   sizeof(CtrlMsgRespConnectAP),
-  2,
+  3,
   ctrl_msg__resp__connect_ap__field_descriptors,
   ctrl_msg__resp__connect_ap__field_indices_by_name,
   1,  ctrl_msg__resp__connect_ap__number_ranges,
@@ -2787,7 +3096,7 @@ const ProtobufCMessageDescriptor ctrl_msg__req__get_soft_apconfig__descriptor =
   (ProtobufCMessageInit) ctrl_msg__req__get_soft_apconfig__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__resp__get_soft_apconfig__field_descriptors[8] =
+static const ProtobufCFieldDescriptor ctrl_msg__resp__get_soft_apconfig__field_descriptors[9] =
 {
   {
     "ssid",
@@ -2885,8 +3194,21 @@ static const ProtobufCFieldDescriptor ctrl_msg__resp__get_soft_apconfig__field_d
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "band_mode",
+    9,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetSoftAPConfig, band_mode),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__resp__get_soft_apconfig__field_indices_by_name[] = {
+  8,   /* field[8] = band_mode */
   6,   /* field[6] = bw */
   2,   /* field[2] = chnl */
   4,   /* field[4] = max_conn */
@@ -2899,7 +3221,7 @@ static const unsigned ctrl_msg__resp__get_soft_apconfig__field_indices_by_name[]
 static const ProtobufCIntRange ctrl_msg__resp__get_soft_apconfig__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 8 }
+  { 0, 9 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__resp__get_soft_apconfig__descriptor =
 {
@@ -2909,14 +3231,14 @@ const ProtobufCMessageDescriptor ctrl_msg__resp__get_soft_apconfig__descriptor =
   "CtrlMsgRespGetSoftAPConfig",
   "",
   sizeof(CtrlMsgRespGetSoftAPConfig),
-  8,
+  9,
   ctrl_msg__resp__get_soft_apconfig__field_descriptors,
   ctrl_msg__resp__get_soft_apconfig__field_indices_by_name,
   1,  ctrl_msg__resp__get_soft_apconfig__number_ranges,
   (ProtobufCMessageInit) ctrl_msg__resp__get_soft_apconfig__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__req__start_soft_ap__field_descriptors[7] =
+static const ProtobufCFieldDescriptor ctrl_msg__req__start_soft_ap__field_descriptors[8] =
 {
   {
     "ssid",
@@ -3002,8 +3324,21 @@ static const ProtobufCFieldDescriptor ctrl_msg__req__start_soft_ap__field_descri
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "band_mode",
+    8,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgReqStartSoftAP, band_mode),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__req__start_soft_ap__field_indices_by_name[] = {
+  7,   /* field[7] = band_mode */
   6,   /* field[6] = bw */
   2,   /* field[2] = chnl */
   4,   /* field[4] = max_conn */
@@ -3015,7 +3350,7 @@ static const unsigned ctrl_msg__req__start_soft_ap__field_indices_by_name[] = {
 static const ProtobufCIntRange ctrl_msg__req__start_soft_ap__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 7 }
+  { 0, 8 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__req__start_soft_ap__descriptor =
 {
@@ -3025,14 +3360,14 @@ const ProtobufCMessageDescriptor ctrl_msg__req__start_soft_ap__descriptor =
   "CtrlMsgReqStartSoftAP",
   "",
   sizeof(CtrlMsgReqStartSoftAP),
-  7,
+  8,
   ctrl_msg__req__start_soft_ap__field_descriptors,
   ctrl_msg__req__start_soft_ap__field_indices_by_name,
   1,  ctrl_msg__req__start_soft_ap__number_ranges,
   (ProtobufCMessageInit) ctrl_msg__req__start_soft_ap__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__resp__start_soft_ap__field_descriptors[2] =
+static const ProtobufCFieldDescriptor ctrl_msg__resp__start_soft_ap__field_descriptors[3] =
 {
   {
     "resp",
@@ -3058,15 +3393,28 @@ static const ProtobufCFieldDescriptor ctrl_msg__resp__start_soft_ap__field_descr
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "band_mode",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespStartSoftAP, band_mode),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__resp__start_soft_ap__field_indices_by_name[] = {
+  2,   /* field[2] = band_mode */
   1,   /* field[1] = mac */
   0,   /* field[0] = resp */
 };
 static const ProtobufCIntRange ctrl_msg__resp__start_soft_ap__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 3 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__resp__start_soft_ap__descriptor =
 {
@@ -3076,7 +3424,7 @@ const ProtobufCMessageDescriptor ctrl_msg__resp__start_soft_ap__descriptor =
   "CtrlMsgRespStartSoftAP",
   "",
   sizeof(CtrlMsgRespStartSoftAP),
-  2,
+  3,
   ctrl_msg__resp__start_soft_ap__field_descriptors,
   ctrl_msg__resp__start_soft_ap__field_indices_by_name,
   1,  ctrl_msg__resp__start_soft_ap__number_ranges,
@@ -3874,6 +4222,229 @@ const ProtobufCMessageDescriptor ctrl_msg__resp__config_heartbeat__descriptor =
   (ProtobufCMessageInit) ctrl_msg__resp__config_heartbeat__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
+static const ProtobufCFieldDescriptor ctrl_msg__req__enable_disable__field_descriptors[2] =
+{
+  {
+    "feature",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgReqEnableDisable, feature),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "enable",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BOOL,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgReqEnableDisable, enable),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned ctrl_msg__req__enable_disable__field_indices_by_name[] = {
+  1,   /* field[1] = enable */
+  0,   /* field[0] = feature */
+};
+static const ProtobufCIntRange ctrl_msg__req__enable_disable__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor ctrl_msg__req__enable_disable__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "CtrlMsg_Req_EnableDisable",
+  "CtrlMsgReqEnableDisable",
+  "CtrlMsgReqEnableDisable",
+  "",
+  sizeof(CtrlMsgReqEnableDisable),
+  2,
+  ctrl_msg__req__enable_disable__field_descriptors,
+  ctrl_msg__req__enable_disable__field_indices_by_name,
+  1,  ctrl_msg__req__enable_disable__number_ranges,
+  (ProtobufCMessageInit) ctrl_msg__req__enable_disable__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor ctrl_msg__resp__enable_disable__field_descriptors[1] =
+{
+  {
+    "resp",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespEnableDisable, resp),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned ctrl_msg__resp__enable_disable__field_indices_by_name[] = {
+  0,   /* field[0] = resp */
+};
+static const ProtobufCIntRange ctrl_msg__resp__enable_disable__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor ctrl_msg__resp__enable_disable__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "CtrlMsg_Resp_EnableDisable",
+  "CtrlMsgRespEnableDisable",
+  "CtrlMsgRespEnableDisable",
+  "",
+  sizeof(CtrlMsgRespEnableDisable),
+  1,
+  ctrl_msg__resp__enable_disable__field_descriptors,
+  ctrl_msg__resp__enable_disable__field_indices_by_name,
+  1,  ctrl_msg__resp__enable_disable__number_ranges,
+  (ProtobufCMessageInit) ctrl_msg__resp__enable_disable__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+#define ctrl_msg__req__get_fw_version__field_descriptors NULL
+#define ctrl_msg__req__get_fw_version__field_indices_by_name NULL
+#define ctrl_msg__req__get_fw_version__number_ranges NULL
+const ProtobufCMessageDescriptor ctrl_msg__req__get_fw_version__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "CtrlMsg_Req_GetFwVersion",
+  "CtrlMsgReqGetFwVersion",
+  "CtrlMsgReqGetFwVersion",
+  "",
+  sizeof(CtrlMsgReqGetFwVersion),
+  0,
+  ctrl_msg__req__get_fw_version__field_descriptors,
+  ctrl_msg__req__get_fw_version__field_indices_by_name,
+  0,  ctrl_msg__req__get_fw_version__number_ranges,
+  (ProtobufCMessageInit) ctrl_msg__req__get_fw_version__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor ctrl_msg__resp__get_fw_version__field_descriptors[7] =
+{
+  {
+    "resp",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetFwVersion, resp),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "name",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetFwVersion, name),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "major1",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetFwVersion, major1),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "major2",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetFwVersion, major2),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "minor",
+    5,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetFwVersion, minor),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rev_patch1",
+    6,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetFwVersion, rev_patch1),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rev_patch2",
+    7,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgRespGetFwVersion, rev_patch2),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned ctrl_msg__resp__get_fw_version__field_indices_by_name[] = {
+  2,   /* field[2] = major1 */
+  3,   /* field[3] = major2 */
+  4,   /* field[4] = minor */
+  1,   /* field[1] = name */
+  0,   /* field[0] = resp */
+  5,   /* field[5] = rev_patch1 */
+  6,   /* field[6] = rev_patch2 */
+};
+static const ProtobufCIntRange ctrl_msg__resp__get_fw_version__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 7 }
+};
+const ProtobufCMessageDescriptor ctrl_msg__resp__get_fw_version__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "CtrlMsg_Resp_GetFwVersion",
+  "CtrlMsgRespGetFwVersion",
+  "CtrlMsgRespGetFwVersion",
+  "",
+  sizeof(CtrlMsgRespGetFwVersion),
+  7,
+  ctrl_msg__resp__get_fw_version__field_descriptors,
+  ctrl_msg__resp__get_fw_version__field_indices_by_name,
+  1,  ctrl_msg__resp__get_fw_version__number_ranges,
+  (ProtobufCMessageInit) ctrl_msg__resp__get_fw_version__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
 static const ProtobufCFieldDescriptor ctrl_msg__event__espinit__field_descriptors[1] =
 {
   {
@@ -3950,7 +4521,7 @@ const ProtobufCMessageDescriptor ctrl_msg__event__heartbeat__descriptor =
   (ProtobufCMessageInit) ctrl_msg__event__heartbeat__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__event__station_disconnect_from_ap__field_descriptors[1] =
+static const ProtobufCFieldDescriptor ctrl_msg__event__station_disconnect_from_ap__field_descriptors[6] =
 {
   {
     "resp",
@@ -3964,14 +4535,79 @@ static const ProtobufCFieldDescriptor ctrl_msg__event__station_disconnect_from_a
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "ssid",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationDisconnectFromAP, ssid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "ssid_len",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationDisconnectFromAP, ssid_len),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "bssid",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationDisconnectFromAP, bssid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reason",
+    5,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationDisconnectFromAP, reason),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rssi",
+    6,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationDisconnectFromAP, rssi),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__event__station_disconnect_from_ap__field_indices_by_name[] = {
+  3,   /* field[3] = bssid */
+  4,   /* field[4] = reason */
   0,   /* field[0] = resp */
+  5,   /* field[5] = rssi */
+  1,   /* field[1] = ssid */
+  2,   /* field[2] = ssid_len */
 };
 static const ProtobufCIntRange ctrl_msg__event__station_disconnect_from_ap__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 6 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__event__station_disconnect_from_ap__descriptor =
 {
@@ -3981,14 +4617,130 @@ const ProtobufCMessageDescriptor ctrl_msg__event__station_disconnect_from_ap__de
   "CtrlMsgEventStationDisconnectFromAP",
   "",
   sizeof(CtrlMsgEventStationDisconnectFromAP),
-  1,
+  6,
   ctrl_msg__event__station_disconnect_from_ap__field_descriptors,
   ctrl_msg__event__station_disconnect_from_ap__field_indices_by_name,
   1,  ctrl_msg__event__station_disconnect_from_ap__number_ranges,
   (ProtobufCMessageInit) ctrl_msg__event__station_disconnect_from_ap__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__event__station_disconnect_from_espsoft_ap__field_descriptors[2] =
+static const ProtobufCFieldDescriptor ctrl_msg__event__station_connected_to_ap__field_descriptors[7] =
+{
+  {
+    "resp",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToAP, resp),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "ssid",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToAP, ssid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "ssid_len",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToAP, ssid_len),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "bssid",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToAP, bssid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "channel",
+    5,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToAP, channel),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "authmode",
+    6,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToAP, authmode),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "aid",
+    7,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToAP, aid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned ctrl_msg__event__station_connected_to_ap__field_indices_by_name[] = {
+  6,   /* field[6] = aid */
+  5,   /* field[5] = authmode */
+  3,   /* field[3] = bssid */
+  4,   /* field[4] = channel */
+  0,   /* field[0] = resp */
+  1,   /* field[1] = ssid */
+  2,   /* field[2] = ssid_len */
+};
+static const ProtobufCIntRange ctrl_msg__event__station_connected_to_ap__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 7 }
+};
+const ProtobufCMessageDescriptor ctrl_msg__event__station_connected_to_ap__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "CtrlMsg_Event_StationConnectedToAP",
+  "CtrlMsgEventStationConnectedToAP",
+  "CtrlMsgEventStationConnectedToAP",
+  "",
+  sizeof(CtrlMsgEventStationConnectedToAP),
+  7,
+  ctrl_msg__event__station_connected_to_ap__field_descriptors,
+  ctrl_msg__event__station_connected_to_ap__field_indices_by_name,
+  1,  ctrl_msg__event__station_connected_to_ap__number_ranges,
+  (ProtobufCMessageInit) ctrl_msg__event__station_connected_to_ap__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor ctrl_msg__event__station_disconnect_from_espsoft_ap__field_descriptors[5] =
 {
   {
     "resp",
@@ -4014,15 +4766,54 @@ static const ProtobufCFieldDescriptor ctrl_msg__event__station_disconnect_from_e
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "aid",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationDisconnectFromESPSoftAP, aid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "is_mesh_child",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BOOL,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationDisconnectFromESPSoftAP, is_mesh_child),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reason",
+    5,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationDisconnectFromESPSoftAP, reason),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__event__station_disconnect_from_espsoft_ap__field_indices_by_name[] = {
+  2,   /* field[2] = aid */
+  3,   /* field[3] = is_mesh_child */
   1,   /* field[1] = mac */
+  4,   /* field[4] = reason */
   0,   /* field[0] = resp */
 };
 static const ProtobufCIntRange ctrl_msg__event__station_disconnect_from_espsoft_ap__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 5 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__event__station_disconnect_from_espsoft_ap__descriptor =
 {
@@ -4032,14 +4823,91 @@ const ProtobufCMessageDescriptor ctrl_msg__event__station_disconnect_from_espsof
   "CtrlMsgEventStationDisconnectFromESPSoftAP",
   "",
   sizeof(CtrlMsgEventStationDisconnectFromESPSoftAP),
-  2,
+  5,
   ctrl_msg__event__station_disconnect_from_espsoft_ap__field_descriptors,
   ctrl_msg__event__station_disconnect_from_espsoft_ap__field_indices_by_name,
   1,  ctrl_msg__event__station_disconnect_from_espsoft_ap__number_ranges,
   (ProtobufCMessageInit) ctrl_msg__event__station_disconnect_from_espsoft_ap__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ctrl_msg__field_descriptors[48] =
+static const ProtobufCFieldDescriptor ctrl_msg__event__station_connected_to_espsoft_ap__field_descriptors[4] =
+{
+  {
+    "resp",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToESPSoftAP, resp),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "mac",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToESPSoftAP, mac),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "aid",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToESPSoftAP, aid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "is_mesh_child",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BOOL,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsgEventStationConnectedToESPSoftAP, is_mesh_child),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned ctrl_msg__event__station_connected_to_espsoft_ap__field_indices_by_name[] = {
+  2,   /* field[2] = aid */
+  3,   /* field[3] = is_mesh_child */
+  1,   /* field[1] = mac */
+  0,   /* field[0] = resp */
+};
+static const ProtobufCIntRange ctrl_msg__event__station_connected_to_espsoft_ap__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 4 }
+};
+const ProtobufCMessageDescriptor ctrl_msg__event__station_connected_to_espsoft_ap__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "CtrlMsg_Event_StationConnectedToESPSoftAP",
+  "CtrlMsgEventStationConnectedToESPSoftAP",
+  "CtrlMsgEventStationConnectedToESPSoftAP",
+  "",
+  sizeof(CtrlMsgEventStationConnectedToESPSoftAP),
+  4,
+  ctrl_msg__event__station_connected_to_espsoft_ap__field_descriptors,
+  ctrl_msg__event__station_connected_to_espsoft_ap__field_indices_by_name,
+  1,  ctrl_msg__event__station_connected_to_espsoft_ap__number_ranges,
+  (ProtobufCMessageInit) ctrl_msg__event__station_connected_to_espsoft_ap__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor ctrl_msg__field_descriptors[56] =
 {
   {
     "msg_type",
@@ -4061,6 +4929,30 @@ static const ProtobufCFieldDescriptor ctrl_msg__field_descriptors[48] =
     0,   /* quantifier_offset */
     offsetof(CtrlMsg, msg_id),
     &ctrl_msg_id__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "uid",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsg, uid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "req_resp_type",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(CtrlMsg, req_resp_type),
+    NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
@@ -4318,6 +5210,30 @@ static const ProtobufCFieldDescriptor ctrl_msg__field_descriptors[48] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
+    "req_enable_disable_feat",
+    122,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(CtrlMsg, payload_case),
+    offsetof(CtrlMsg, req_enable_disable_feat),
+    &ctrl_msg__req__enable_disable__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "req_get_fw_version",
+    123,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(CtrlMsg, payload_case),
+    offsetof(CtrlMsg, req_get_fw_version),
+    &ctrl_msg__req__get_fw_version__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
     "resp_get_mac_address",
     201,
     PROTOBUF_C_LABEL_NONE,
@@ -4570,6 +5486,30 @@ static const ProtobufCFieldDescriptor ctrl_msg__field_descriptors[48] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
+    "resp_enable_disable_feat",
+    222,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(CtrlMsg, payload_case),
+    offsetof(CtrlMsg, resp_enable_disable_feat),
+    &ctrl_msg__resp__enable_disable__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "resp_get_fw_version",
+    223,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(CtrlMsg, payload_case),
+    offsetof(CtrlMsg, resp_get_fw_version),
+    &ctrl_msg__resp__get_fw_version__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
     "event_esp_init",
     301,
     PROTOBUF_C_LABEL_NONE,
@@ -4617,64 +5557,96 @@ static const ProtobufCFieldDescriptor ctrl_msg__field_descriptors[48] =
     0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "event_station_connected_to_AP",
+    305,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(CtrlMsg, payload_case),
+    offsetof(CtrlMsg, event_station_connected_to_ap),
+    &ctrl_msg__event__station_connected_to_ap__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "event_station_connected_to_ESP_SoftAP",
+    306,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(CtrlMsg, payload_case),
+    offsetof(CtrlMsg, event_station_connected_to_esp_softap),
+    &ctrl_msg__event__station_connected_to_espsoft_ap__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ctrl_msg__field_indices_by_name[] = {
-  44,   /* field[44] = event_esp_init */
-  45,   /* field[45] = event_heartbeat */
-  46,   /* field[46] = event_station_disconnect_from_AP */
-  47,   /* field[47] = event_station_disconnect_from_ESP_SoftAP */
+  50,   /* field[50] = event_esp_init */
+  51,   /* field[51] = event_heartbeat */
+  54,   /* field[54] = event_station_connected_to_AP */
+  55,   /* field[55] = event_station_connected_to_ESP_SoftAP */
+  52,   /* field[52] = event_station_disconnect_from_AP */
+  53,   /* field[53] = event_station_disconnect_from_ESP_SoftAP */
   1,   /* field[1] = msg_id */
   0,   /* field[0] = msg_type */
-  22,   /* field[22] = req_config_heartbeat */
-  8,   /* field[8] = req_connect_ap */
-  9,   /* field[9] = req_disconnect_ap */
-  7,   /* field[7] = req_get_ap_config */
-  2,   /* field[2] = req_get_mac_address */
-  16,   /* field[16] = req_get_power_save_mode */
-  10,   /* field[10] = req_get_softap_config */
-  21,   /* field[21] = req_get_wifi_curr_tx_power */
-  4,   /* field[4] = req_get_wifi_mode */
-  17,   /* field[17] = req_ota_begin */
-  19,   /* field[19] = req_ota_end */
-  18,   /* field[18] = req_ota_write */
-  6,   /* field[6] = req_scan_ap_list */
-  3,   /* field[3] = req_set_mac_address */
-  15,   /* field[15] = req_set_power_save_mode */
-  11,   /* field[11] = req_set_softap_vendor_specific_ie */
-  20,   /* field[20] = req_set_wifi_max_tx_power */
-  5,   /* field[5] = req_set_wifi_mode */
-  13,   /* field[13] = req_softap_connected_stas_list */
-  12,   /* field[12] = req_start_softap */
-  14,   /* field[14] = req_stop_softap */
-  43,   /* field[43] = resp_config_heartbeat */
-  29,   /* field[29] = resp_connect_ap */
-  30,   /* field[30] = resp_disconnect_ap */
-  28,   /* field[28] = resp_get_ap_config */
-  23,   /* field[23] = resp_get_mac_address */
-  37,   /* field[37] = resp_get_power_save_mode */
-  31,   /* field[31] = resp_get_softap_config */
-  42,   /* field[42] = resp_get_wifi_curr_tx_power */
-  25,   /* field[25] = resp_get_wifi_mode */
-  38,   /* field[38] = resp_ota_begin */
-  40,   /* field[40] = resp_ota_end */
-  39,   /* field[39] = resp_ota_write */
-  27,   /* field[27] = resp_scan_ap_list */
-  24,   /* field[24] = resp_set_mac_address */
-  36,   /* field[36] = resp_set_power_save_mode */
-  32,   /* field[32] = resp_set_softap_vendor_specific_ie */
-  41,   /* field[41] = resp_set_wifi_max_tx_power */
-  26,   /* field[26] = resp_set_wifi_mode */
-  34,   /* field[34] = resp_softap_connected_stas_list */
-  33,   /* field[33] = resp_start_softap */
-  35,   /* field[35] = resp_stop_softap */
+  24,   /* field[24] = req_config_heartbeat */
+  10,   /* field[10] = req_connect_ap */
+  11,   /* field[11] = req_disconnect_ap */
+  25,   /* field[25] = req_enable_disable_feat */
+  9,   /* field[9] = req_get_ap_config */
+  26,   /* field[26] = req_get_fw_version */
+  4,   /* field[4] = req_get_mac_address */
+  18,   /* field[18] = req_get_power_save_mode */
+  12,   /* field[12] = req_get_softap_config */
+  23,   /* field[23] = req_get_wifi_curr_tx_power */
+  6,   /* field[6] = req_get_wifi_mode */
+  19,   /* field[19] = req_ota_begin */
+  21,   /* field[21] = req_ota_end */
+  20,   /* field[20] = req_ota_write */
+  3,   /* field[3] = req_resp_type */
+  8,   /* field[8] = req_scan_ap_list */
+  5,   /* field[5] = req_set_mac_address */
+  17,   /* field[17] = req_set_power_save_mode */
+  13,   /* field[13] = req_set_softap_vendor_specific_ie */
+  22,   /* field[22] = req_set_wifi_max_tx_power */
+  7,   /* field[7] = req_set_wifi_mode */
+  15,   /* field[15] = req_softap_connected_stas_list */
+  14,   /* field[14] = req_start_softap */
+  16,   /* field[16] = req_stop_softap */
+  47,   /* field[47] = resp_config_heartbeat */
+  33,   /* field[33] = resp_connect_ap */
+  34,   /* field[34] = resp_disconnect_ap */
+  48,   /* field[48] = resp_enable_disable_feat */
+  32,   /* field[32] = resp_get_ap_config */
+  49,   /* field[49] = resp_get_fw_version */
+  27,   /* field[27] = resp_get_mac_address */
+  41,   /* field[41] = resp_get_power_save_mode */
+  35,   /* field[35] = resp_get_softap_config */
+  46,   /* field[46] = resp_get_wifi_curr_tx_power */
+  29,   /* field[29] = resp_get_wifi_mode */
+  42,   /* field[42] = resp_ota_begin */
+  44,   /* field[44] = resp_ota_end */
+  43,   /* field[43] = resp_ota_write */
+  31,   /* field[31] = resp_scan_ap_list */
+  28,   /* field[28] = resp_set_mac_address */
+  40,   /* field[40] = resp_set_power_save_mode */
+  36,   /* field[36] = resp_set_softap_vendor_specific_ie */
+  45,   /* field[45] = resp_set_wifi_max_tx_power */
+  30,   /* field[30] = resp_set_wifi_mode */
+  38,   /* field[38] = resp_softap_connected_stas_list */
+  37,   /* field[37] = resp_start_softap */
+  39,   /* field[39] = resp_stop_softap */
+  2,   /* field[2] = uid */
 };
 static const ProtobufCIntRange ctrl_msg__number_ranges[4 + 1] =
 {
   { 1, 0 },
-  { 101, 2 },
-  { 201, 23 },
-  { 301, 44 },
-  { 0, 48 }
+  { 101, 4 },
+  { 201, 27 },
+  { 301, 50 },
+  { 0, 56 }
 };
 const ProtobufCMessageDescriptor ctrl_msg__descriptor =
 {
@@ -4684,7 +5656,7 @@ const ProtobufCMessageDescriptor ctrl_msg__descriptor =
   "CtrlMsg",
   "",
   sizeof(CtrlMsg),
-  48,
+  56,
   ctrl_msg__field_descriptors,
   ctrl_msg__field_indices_by_name,
   4,  ctrl_msg__number_ranges,
@@ -4955,7 +5927,7 @@ const ProtobufCEnumDescriptor ctrl_msg_type__descriptor =
   ctrl_msg_type__value_ranges,
   NULL,NULL,NULL,NULL   /* reserved[1234] */
 };
-static const ProtobufCEnumValue ctrl_msg_id__enum_values_by_number[53] =
+static const ProtobufCEnumValue ctrl_msg_id__enum_values_by_number[59] =
 {
   { "MsgId_Invalid", "CTRL_MSG_ID__MsgId_Invalid", 0 },
   { "Req_Base", "CTRL_MSG_ID__Req_Base", 100 },
@@ -4980,7 +5952,9 @@ static const ProtobufCEnumValue ctrl_msg_id__enum_values_by_number[53] =
   { "Req_SetWifiMaxTxPower", "CTRL_MSG_ID__Req_SetWifiMaxTxPower", 119 },
   { "Req_GetWifiCurrTxPower", "CTRL_MSG_ID__Req_GetWifiCurrTxPower", 120 },
   { "Req_ConfigHeartbeat", "CTRL_MSG_ID__Req_ConfigHeartbeat", 121 },
-  { "Req_Max", "CTRL_MSG_ID__Req_Max", 122 },
+  { "Req_EnableDisable", "CTRL_MSG_ID__Req_EnableDisable", 122 },
+  { "Req_GetFwVersion", "CTRL_MSG_ID__Req_GetFwVersion", 123 },
+  { "Req_Max", "CTRL_MSG_ID__Req_Max", 124 },
   { "Resp_Base", "CTRL_MSG_ID__Resp_Base", 200 },
   { "Resp_GetMACAddress", "CTRL_MSG_ID__Resp_GetMACAddress", 201 },
   { "Resp_SetMacAddress", "CTRL_MSG_ID__Resp_SetMacAddress", 202 },
@@ -5003,39 +5977,47 @@ static const ProtobufCEnumValue ctrl_msg_id__enum_values_by_number[53] =
   { "Resp_SetWifiMaxTxPower", "CTRL_MSG_ID__Resp_SetWifiMaxTxPower", 219 },
   { "Resp_GetWifiCurrTxPower", "CTRL_MSG_ID__Resp_GetWifiCurrTxPower", 220 },
   { "Resp_ConfigHeartbeat", "CTRL_MSG_ID__Resp_ConfigHeartbeat", 221 },
-  { "Resp_Max", "CTRL_MSG_ID__Resp_Max", 222 },
+  { "Resp_EnableDisable", "CTRL_MSG_ID__Resp_EnableDisable", 222 },
+  { "Resp_GetFwVersion", "CTRL_MSG_ID__Resp_GetFwVersion", 223 },
+  { "Resp_Max", "CTRL_MSG_ID__Resp_Max", 224 },
   { "Event_Base", "CTRL_MSG_ID__Event_Base", 300 },
   { "Event_ESPInit", "CTRL_MSG_ID__Event_ESPInit", 301 },
   { "Event_Heartbeat", "CTRL_MSG_ID__Event_Heartbeat", 302 },
   { "Event_StationDisconnectFromAP", "CTRL_MSG_ID__Event_StationDisconnectFromAP", 303 },
   { "Event_StationDisconnectFromESPSoftAP", "CTRL_MSG_ID__Event_StationDisconnectFromESPSoftAP", 304 },
-  { "Event_Max", "CTRL_MSG_ID__Event_Max", 305 },
+  { "Event_StationConnectedToAP", "CTRL_MSG_ID__Event_StationConnectedToAP", 305 },
+  { "Event_StationConnectedToESPSoftAP", "CTRL_MSG_ID__Event_StationConnectedToESPSoftAP", 306 },
+  { "Event_Max", "CTRL_MSG_ID__Event_Max", 307 },
 };
 static const ProtobufCIntRange ctrl_msg_id__value_ranges[] = {
-{0, 0},{100, 1},{200, 24},{300, 47},{0, 53}
+{0, 0},{100, 1},{200, 26},{300, 51},{0, 59}
 };
-static const ProtobufCEnumValueIndex ctrl_msg_id__enum_values_by_name[53] =
+static const ProtobufCEnumValueIndex ctrl_msg_id__enum_values_by_name[59] =
 {
-  { "Event_Base", 47 },
-  { "Event_ESPInit", 48 },
-  { "Event_Heartbeat", 49 },
-  { "Event_Max", 52 },
-  { "Event_StationDisconnectFromAP", 50 },
-  { "Event_StationDisconnectFromESPSoftAP", 51 },
+  { "Event_Base", 51 },
+  { "Event_ESPInit", 52 },
+  { "Event_Heartbeat", 53 },
+  { "Event_Max", 58 },
+  { "Event_StationConnectedToAP", 56 },
+  { "Event_StationConnectedToESPSoftAP", 57 },
+  { "Event_StationDisconnectFromAP", 54 },
+  { "Event_StationDisconnectFromESPSoftAP", 55 },
   { "MsgId_Invalid", 0 },
   { "Req_Base", 1 },
   { "Req_ConfigHeartbeat", 22 },
   { "Req_ConnectAP", 8 },
   { "Req_DisconnectAP", 9 },
+  { "Req_EnableDisable", 23 },
   { "Req_GetAPConfig", 7 },
   { "Req_GetAPScanList", 6 },
+  { "Req_GetFwVersion", 24 },
   { "Req_GetMACAddress", 2 },
   { "Req_GetPowerSaveMode", 16 },
   { "Req_GetSoftAPConfig", 10 },
   { "Req_GetSoftAPConnectedSTAList", 13 },
   { "Req_GetWifiCurrTxPower", 21 },
   { "Req_GetWifiMode", 4 },
-  { "Req_Max", 23 },
+  { "Req_Max", 25 },
   { "Req_OTABegin", 17 },
   { "Req_OTAEnd", 19 },
   { "Req_OTAWrite", 18 },
@@ -5046,29 +6028,31 @@ static const ProtobufCEnumValueIndex ctrl_msg_id__enum_values_by_name[53] =
   { "Req_SetWifiMode", 5 },
   { "Req_StartSoftAP", 12 },
   { "Req_StopSoftAP", 14 },
-  { "Resp_Base", 24 },
-  { "Resp_ConfigHeartbeat", 45 },
-  { "Resp_ConnectAP", 31 },
-  { "Resp_DisconnectAP", 32 },
-  { "Resp_GetAPConfig", 30 },
-  { "Resp_GetAPScanList", 29 },
-  { "Resp_GetMACAddress", 25 },
-  { "Resp_GetPowerSaveMode", 39 },
-  { "Resp_GetSoftAPConfig", 33 },
-  { "Resp_GetSoftAPConnectedSTAList", 36 },
-  { "Resp_GetWifiCurrTxPower", 44 },
-  { "Resp_GetWifiMode", 27 },
-  { "Resp_Max", 46 },
-  { "Resp_OTABegin", 40 },
-  { "Resp_OTAEnd", 42 },
-  { "Resp_OTAWrite", 41 },
-  { "Resp_SetMacAddress", 26 },
-  { "Resp_SetPowerSaveMode", 38 },
-  { "Resp_SetSoftAPVendorSpecificIE", 34 },
-  { "Resp_SetWifiMaxTxPower", 43 },
-  { "Resp_SetWifiMode", 28 },
-  { "Resp_StartSoftAP", 35 },
-  { "Resp_StopSoftAP", 37 },
+  { "Resp_Base", 26 },
+  { "Resp_ConfigHeartbeat", 47 },
+  { "Resp_ConnectAP", 33 },
+  { "Resp_DisconnectAP", 34 },
+  { "Resp_EnableDisable", 48 },
+  { "Resp_GetAPConfig", 32 },
+  { "Resp_GetAPScanList", 31 },
+  { "Resp_GetFwVersion", 49 },
+  { "Resp_GetMACAddress", 27 },
+  { "Resp_GetPowerSaveMode", 41 },
+  { "Resp_GetSoftAPConfig", 35 },
+  { "Resp_GetSoftAPConnectedSTAList", 38 },
+  { "Resp_GetWifiCurrTxPower", 46 },
+  { "Resp_GetWifiMode", 29 },
+  { "Resp_Max", 50 },
+  { "Resp_OTABegin", 42 },
+  { "Resp_OTAEnd", 44 },
+  { "Resp_OTAWrite", 43 },
+  { "Resp_SetMacAddress", 28 },
+  { "Resp_SetPowerSaveMode", 40 },
+  { "Resp_SetSoftAPVendorSpecificIE", 36 },
+  { "Resp_SetWifiMaxTxPower", 45 },
+  { "Resp_SetWifiMode", 30 },
+  { "Resp_StartSoftAP", 37 },
+  { "Resp_StopSoftAP", 39 },
 };
 const ProtobufCEnumDescriptor ctrl_msg_id__descriptor =
 {
@@ -5077,11 +6061,41 @@ const ProtobufCEnumDescriptor ctrl_msg_id__descriptor =
   "CtrlMsgId",
   "CtrlMsgId",
   "",
-  53,
+  59,
   ctrl_msg_id__enum_values_by_number,
-  53,
+  59,
   ctrl_msg_id__enum_values_by_name,
   4,
   ctrl_msg_id__value_ranges,
+  NULL,NULL,NULL,NULL   /* reserved[1234] */
+};
+static const ProtobufCEnumValue hosted_feature__enum_values_by_number[3] =
+{
+  { "Hosted_InvalidFeature", "HOSTED_FEATURE__Hosted_InvalidFeature", 0 },
+  { "Hosted_Wifi", "HOSTED_FEATURE__Hosted_Wifi", 1 },
+  { "Hosted_Bluetooth", "HOSTED_FEATURE__Hosted_Bluetooth", 2 },
+};
+static const ProtobufCIntRange hosted_feature__value_ranges[] = {
+{0, 0},{0, 3}
+};
+static const ProtobufCEnumValueIndex hosted_feature__enum_values_by_name[3] =
+{
+  { "Hosted_Bluetooth", 2 },
+  { "Hosted_InvalidFeature", 0 },
+  { "Hosted_Wifi", 1 },
+};
+const ProtobufCEnumDescriptor hosted_feature__descriptor =
+{
+  PROTOBUF_C__ENUM_DESCRIPTOR_MAGIC,
+  "HostedFeature",
+  "HostedFeature",
+  "HostedFeature",
+  "",
+  3,
+  hosted_feature__enum_values_by_number,
+  3,
+  hosted_feature__enum_values_by_name,
+  1,
+  hosted_feature__value_ranges,
   NULL,NULL,NULL,NULL   /* reserved[1234] */
 };

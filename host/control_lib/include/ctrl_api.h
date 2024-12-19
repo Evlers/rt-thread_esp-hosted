@@ -15,10 +15,11 @@
 #define SUCCESS                              0
 #define FAILURE                              -1
 
-#define SSID_LENGTH                          32
-#define MAX_MAC_STR_LEN                      18
-#define BSSID_LENGTH                         MAX_MAC_STR_LEN
-#define PASSWORD_LENGTH                      64
+#define MAC_SIZE_BYTES                       6
+#define SSID_LENGTH                          33
+#define MAX_MAC_STR_SIZE                     18
+#define BSSID_STR_SIZE                       MAX_MAC_STR_SIZE
+#define PASSWORD_LENGTH                      65
 #define STATUS_LENGTH                        14
 #define VENDOR_OUI_BUF                       3
 
@@ -34,7 +35,12 @@
 #define WAIT_TIME_B2B_CTRL_REQ               5
 #define DEFAULT_CTRL_RESP_TIMEOUT            30
 #define DEFAULT_CTRL_RESP_AP_SCAN_TIMEOUT    (60*3)
+#define DEFAULT_CTRL_RESP_CONNECT_AP_TIMEOUT (15*3)
 
+#ifndef MAC2STR
+#define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
+#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+#endif
 
 #define SUCCESS_STR                          "success"
 #define FAILURE_STR                          "failure"
@@ -105,6 +111,9 @@ typedef enum {
 	CTRL_REQ_GET_WIFI_CURR_TX_POWER    = CTRL_MSG_ID__Req_GetWifiCurrTxPower, //0x78
 
 	CTRL_REQ_CONFIG_HEARTBEAT          = CTRL_MSG_ID__Req_ConfigHeartbeat,    //0x79
+	CTRL_REQ_ENABLE_DISABLE            = CTRL_MSG_ID__Req_EnableDisable,      //0x7a
+
+	CTRL_REQ_GET_FW_VERSION            = CTRL_MSG_ID__Req_GetFwVersion,       //0x7b
 	/*
 	 * Add new control path command response before Req_Max
 	 * and update Req_Max
@@ -141,6 +150,9 @@ typedef enum {
 	CTRL_RESP_GET_WIFI_CURR_TX_POWER    = CTRL_MSG_ID__Resp_GetWifiCurrTxPower, //0x78 -> 0xdc
 
 	CTRL_RESP_CONFIG_HEARTBEAT          = CTRL_MSG_ID__Resp_ConfigHeartbeat,    //0x79 -> 0xdd
+	CTRL_RESP_ENABLE_DISABLE            = CTRL_MSG_ID__Resp_EnableDisable,      //0x7a -> 0xde
+
+	CTRL_RESP_GET_FW_VERSION            = CTRL_MSG_ID__Resp_GetFwVersion,       //0x7b -> 0xdf
 	/*
 	 * Add new control path comm       and response before Resp_Max
 	 * and update Resp_Max
@@ -156,6 +168,10 @@ typedef enum {
 		CTRL_MSG_ID__Event_StationDisconnectFromAP,
 	CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP =
 		CTRL_MSG_ID__Event_StationDisconnectFromESPSoftAP,
+	CTRL_EVENT_STATION_CONNECTED_TO_AP =
+		CTRL_MSG_ID__Event_StationConnectedToAP,
+	CTRL_EVENT_STATION_CONNECTED_TO_ESP_SOFTAP =
+		CTRL_MSG_ID__Event_StationConnectedToESPSoftAP,
 	/*
 	 * Add new control path command notification before Event_Max
 	 * and update Event_Max
@@ -208,6 +224,10 @@ typedef enum {
 } wifi_vendor_ie_id_e;
 
 
+enum hosted_features_t {
+	HOSTED_WIFI = HOSTED_FEATURE__Hosted_Wifi,
+	HOSTED_BT = HOSTED_FEATURE__Hosted_Bluetooth,
+};
 
 typedef struct {
 	/* Should be set to WIFI_VENDOR_IE_ELEMENT_ID (0xDD) */
@@ -228,20 +248,20 @@ typedef struct {
 
 typedef struct {
 	uint8_t ssid[SSID_LENGTH];
-	uint8_t bssid[BSSID_LENGTH];
+	uint8_t bssid[BSSID_STR_SIZE];
 	int rssi;
 	int channel;
 	int encryption_mode;
 } wifi_scanlist_t;
 
 typedef struct {
-	uint8_t bssid[BSSID_LENGTH];
+	uint8_t bssid[BSSID_STR_SIZE];
 	int rssi;
 } wifi_connected_stations_list_t;
 
 typedef struct {
 	int mode;
-	char mac[MAX_MAC_STR_LEN];
+	char mac[MAX_MAC_STR_SIZE];
 } wifi_mac_t;
 
 typedef struct {
@@ -251,14 +271,15 @@ typedef struct {
 typedef struct {
 	uint8_t ssid[SSID_LENGTH];
 	uint8_t pwd[PASSWORD_LENGTH];
-	uint8_t bssid[BSSID_LENGTH];
+	uint8_t bssid[BSSID_STR_SIZE];
 	bool is_wpa3_supported;
 	int rssi;
 	int channel;
 	int encryption_mode;
 	uint16_t listen_interval;
 	char status[STATUS_LENGTH];
-	char out_mac[MAX_MAC_STR_LEN];
+	char out_mac[MAX_MAC_STR_SIZE];
+	int band_mode;
 } wifi_ap_config_t;
 
 typedef struct {
@@ -269,7 +290,8 @@ typedef struct {
 	int max_connections;
 	bool ssid_hidden;
 	wifi_bandwidth_e bandwidth;
-	char out_mac[MAX_MAC_STR_LEN];
+	char out_mac[MAX_MAC_STR_SIZE];
+	int band_mode;
 } softap_config_t;
 
 typedef struct {
@@ -305,6 +327,20 @@ typedef struct {
 } wifi_tx_power_t;
 
 typedef struct {
+	char project_name[3];
+	uint8_t major_1;
+	uint8_t major_2;
+	uint8_t minor;
+	uint8_t revision_patch_1;
+	uint8_t revision_patch_2;
+} fw_version_t;
+
+typedef struct {
+	HostedFeature feature;
+	uint8_t enable;
+} feature_enable_disable_t;
+
+typedef struct {
 	/* event */
 	uint32_t hb_num;
 	/* Req */
@@ -313,9 +349,34 @@ typedef struct {
 } event_heartbeat_t;
 
 typedef struct {
-	int32_t reason;
-	char mac[MAX_MAC_STR_LEN];
-} event_station_disconn_t;
+	uint8_t ssid[SSID_LENGTH];
+	uint32_t ssid_len;
+	uint8_t bssid[BSSID_STR_SIZE];
+	int channel;
+	int authmode;
+	int aid;
+} event_sta_conn_t;
+
+typedef struct {
+	uint8_t ssid[SSID_LENGTH];
+	uint32_t ssid_len;
+	uint8_t bssid[BSSID_STR_SIZE];
+	uint32_t reason;
+	int32_t rssi;
+} event_sta_disconn_t;
+
+typedef struct {
+	uint8_t mac[MAX_MAC_STR_SIZE];
+	int32_t aid;
+	int32_t is_mesh_child;
+} event_softap_sta_conn_t;
+
+typedef struct {
+	uint8_t mac[MAX_MAC_STR_SIZE];
+	int32_t aid;
+	int32_t is_mesh_child;
+	uint32_t reason;
+} event_softap_sta_disconn_t;
 
 typedef struct Ctrl_cmd_t {
 	/* msg type could be 1. req 2. resp 3. notification */
@@ -324,8 +385,11 @@ typedef struct Ctrl_cmd_t {
 	/* control path protobuf msg number */
 	uint16_t msg_id;
 
+	/* uid of request / response */
+	int32_t uid;
+
 	/* statusof response or notification */
-	uint8_t resp_event_status;
+	int32_t resp_event_status;
 
 	union {
 		wifi_mac_t                  wifi_mac;
@@ -342,11 +406,18 @@ typedef struct Ctrl_cmd_t {
 
 		ota_write_t                 ota_write;
 
+		feature_enable_disable_t    feat_ena_disable;
+
 		wifi_tx_power_t             wifi_tx_power;
+
+		fw_version_t                fw_version;
 
 		event_heartbeat_t           e_heartbeat;
 
-		event_station_disconn_t     e_sta_disconnected;
+		event_sta_conn_t            e_sta_conn;
+		event_sta_disconn_t         e_sta_disconn;
+		event_softap_sta_conn_t     e_softap_sta_conn;
+		event_softap_sta_disconn_t  e_softap_sta_disconn;
 	}u;
 
 	/* By default this callback is set to NULL.
@@ -523,6 +594,12 @@ ctrl_cmd_t * ota_write(ctrl_cmd_t req);
  * sets newly written OTA partition as boot partition for next boot,
  * Creates timer which reset ESP32 after 5 sec */
 ctrl_cmd_t * ota_end(ctrl_cmd_t req);
+
+/* Enable or disable specific feautures from hosted_features_t */
+ctrl_cmd_t * feature_config(ctrl_cmd_t req);
+
+/* Get FW Version */
+ctrl_cmd_t * get_fw_version(ctrl_cmd_t req);
 
 /* Get the interface up for interface `iface` */
 int interface_up(int sockfd, char* iface);

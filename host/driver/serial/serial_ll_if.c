@@ -169,7 +169,7 @@ static uint8_t * serial_ll_read(const serial_ll_handle_t * serial_ll_hdl,
 	 *
 	 * In our example, first approach of blocking read is used.
 	 */
-	if (RT_EOK != rt_mq_recv(serial_ll_hdl->queue, &buf_handle, sizeof(buf_handle), RT_WAITING_FOREVER)) {
+	if (rt_mq_recv(serial_ll_hdl->queue, &buf_handle, sizeof(buf_handle), RT_WAITING_FOREVER) != sizeof(buf_handle)) {
 		printf("serial queue recv failed \n\r");
 		return NULL;
 	}

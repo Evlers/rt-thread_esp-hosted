@@ -15,7 +15,7 @@ menuconfig RT_USING_ESP_HOSTED
         config ESP_HOSTED_THREAD_STACK_SIZE
             int "The stack size of the esp-hosted thread"
             range 0 8192
-            default 4096
+            default 5120
 
         config ESP_HOSTED_SPI_THREAD_PRIORITY
             int "The priority of the esp-hosted SPI thread"
@@ -25,7 +25,7 @@ menuconfig RT_USING_ESP_HOSTED
         config ESP_HOSTED_SPI_THREAD_STACK_SIZE
             int "The stack size of the esp-hosted SPI thread"
             range 0 4096
-            default 512
+            default 1024
 
         config ESP_HOSTED_SPI_QUEUE_SIZE
             int "The size for esp-hosted SPI queue"
@@ -43,7 +43,7 @@ menuconfig RT_USING_ESP_HOSTED
 
             config ESP_HOSTED_SPI_CS_PIN
                 int "Set the SPI CS pin"
-                default 15
+                default -1
         endif
 
         config ESP_HOSTED_SPI_DEVICE_NAME
@@ -52,19 +52,19 @@ menuconfig RT_USING_ESP_HOSTED
 
         config ESP_HOSTED_SPI_MAX_HZ
             int "Set the maximum spi frequency(Hz)"
-            default 25000000
+            default 30000000
 
         config ESP_HOSTED_DATA_READY_PIN
             int "Set the data ready pin"
-            default 39
+            default -1
 
         config ESP_HOSTED_HANDSHAKE_PIN
             int "Set the handshake pin"
-            default 40
+            default -1
 
         config ESP_HOSTED_RESET_PIN
                 int "Set the reset pin"
-                default 22
+                default -1
 
         config ESP_HOSTED_THREAD_INIT
             bool "Use thread initialization"

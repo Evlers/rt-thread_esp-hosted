@@ -17,7 +17,7 @@
 #include "transport_drv.h"
 #include "common/stats.h"
 
-#define DBG_TAG           "esp.trans"
+#define DBG_TAG           "esp.netdev"
 #define DBG_LVL           DBG_INFO
 #include "rtdbg.h"
 
@@ -182,6 +182,7 @@ static void adjust_spi_clock(uint8_t spi_clk_mhz)
 	// 	spi_context.spi_clk_mhz = spi_clk_mhz;
 	// 	spi_context.esp_spi_dev->max_speed_hz = spi_clk_mhz * NUMBER_1M;
 	// }
+#warning "adjust_spi_clock not implemented"
 }
 
 int process_init_event(uint8_t *evt_buf, uint8_t len)
@@ -205,7 +206,7 @@ int process_init_event(uint8_t *evt_buf, uint8_t len)
 		}
 		else if (*pos == ESP_PRIV_SPI_CLK_MHZ)
 		{
-			LOG_D("adjust spi clock: %uMHz", (*(pos + 2)));
+			LOG_D("adjust spi clock frequency to %u MHz", (*(pos + 2)));
 			adjust_spi_clock(*(pos + 2));
 		}
 		else if (*pos == ESP_PRIV_FIRMWARE_CHIP_ID)
@@ -219,9 +220,16 @@ int process_init_event(uint8_t *evt_buf, uint8_t len)
 			process_test_capabilities(*(pos + 2));
 #endif
 		}
+		else if (*pos == ESP_PRIV_FW_DATA)
+		{
+			struct fw_version *fw_ver = (struct fw_version *) (pos + 2);
+			LOG_D("ESP-Hosted Firmware version :: %s-%d.%d.%d.%d.%d",
+					fw_ver->project_name, fw_ver->major1, fw_ver->major2, fw_ver->minor,
+					fw_ver->revision_patch_1, fw_ver->revision_patch_2);
+		}
 		else
 		{
-			LOG_W("Unsupported tag in event");
+			LOG_W("Unsupported tag in event: %d", *pos);
 		}
 		pos += (tag_len+2);
 		len_left -= (tag_len+2);

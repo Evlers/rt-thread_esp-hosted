@@ -17,6 +17,11 @@
 #define HOSTED_SEM_BLOCKING                    RT_WAITING_FOREVER
 #define HOSTED_SEM_NON_BLOCKING                0
 
+#define CTRL_PATH_TASK_STACK_SIZE              4096
+#define CTRL_PATH_TASK_PRIO                    osPriorityAboveNormal
+
+#define thread_handle_t                        osThreadId
+#define semaphore_handle_t                     osSemaphoreId
 
 #define mem_free(x)                            \
 {                                              \

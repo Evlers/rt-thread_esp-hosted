@@ -52,7 +52,7 @@ Note:
 
 ### 1.2 Raspberry-Pi Software Setup
 By default, the UART pins on Raspberry-Pi are in disabled state. In order to enable UART and setup it for bluetooth connection, follow below steps.
-1. Enable UART pins and disable in built bluetooth on Raspberry-Pi by appending following lines to _/boot/config.txt_ file
+1. Enable UART pins and disable in built bluetooth on Raspberry-Pi by appending following lines to the _/boot/firmware/config.txt_ file (prior to _Bookworm_, the file is at _/boot/config.txt_):
 ```
 enable_uart=1
 dtoverlay=disable-bt
@@ -113,6 +113,8 @@ Make sure that same code base (same git commit) is checked-out/copied at both, E
 
 ##### Set-up ESP-IDF
 - :warning: Omit this & move to `Configure, Build & Flash ESP firmware` step if IDF is already setup while SPI/SDIO setup
+- **Note on Windows 11**: you can follow [these instructions](/esp_hosted_fg/esp/esp_driver/setup_windows11.md),
+instead of the following, to setup ESP-IDF and build the esp firmware.
 - :warning: Following command is dangerous. It will revert all your local changes. Stash if need to keep them.
 - Install the ESP-IDF using script
 ```sh
@@ -185,7 +187,7 @@ $ idf.py -p <serial_port> build flash
 ## 3. Post Setup
 - After setting up host and loading ESP firmware, execute below command to create `hci0` interface
 	```sh
-	$ sudo hciattach -s <baud_rate> <serial_device_name> /dev/serial0 any <baud_rate> flow
+	$ sudo hciattach -s <baud_rate> <serial_device_name> any <baud_rate> flow
 	```
 - <serial_device_name>
   - RPi with Kernels < 6.2.21 => `/dev/serial0`

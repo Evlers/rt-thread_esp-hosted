@@ -15,8 +15,8 @@
 #include "rtdevice.h"
 #include "ctrl_api.h"
 #include "netdev_api.h"
-#include "spi_drv.h"
 #include "common/util.h"
+#include "transport_drv.h"
 
 #define DBG_TAG           "esp.wlan"
 #define DBG_LVL           DBG_INFO
@@ -60,7 +60,6 @@ static void free_ctrl_resp_msg (ctrl_cmd_t *resp)
     }
 
 	free(resp);
-	resp = NULL;
 }
 
 static int get_response_result(ctrl_cmd_t * resp)
@@ -134,7 +133,7 @@ static int esp_ctrl_event_callback (ctrl_cmd_t * event)
 
 		case CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP:
 		{
-			char *p = event->u.e_sta_disconnected.mac;
+			char *p = event->u.e_sta_disconn.bssid;
 			if (p && strlen(p)) {
 				LOG_D("App EVENT: SoftAP mode: Disconnect MAC[%s]", p);
 			}
@@ -403,7 +402,7 @@ static rt_err_t drv_wlan_softap(struct rt_wlan_device *wlan, struct rt_ap_info *
 
 	ctrl_cmd_default_req(&req);
 	strncpy((char *)req.u.wifi_softap_config.ssid, (char *)ap_info->ssid.val, min(ap_info->ssid.len, SSID_LENGTH-1));
-	strncpy((char *)req.u.wifi_softap_config.pwd, (char *)ap_info->key.val, min(ap_info->key.len, MAX_MAC_STR_LEN-1));
+	strncpy((char *)req.u.wifi_softap_config.pwd, (char *)ap_info->key.val, min(ap_info->key.len, PASSWORD_LENGTH-1));
 	req.u.wifi_softap_config.channel = ap_info->channel;
 	req.u.wifi_softap_config.encryption_mode = security_wlan_to_esp(ap_info->security);
 	req.u.wifi_softap_config.max_connections = 2;

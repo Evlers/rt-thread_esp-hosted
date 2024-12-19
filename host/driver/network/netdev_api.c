@@ -85,7 +85,11 @@ struct pbuf * network_read(struct network_handle *handle, rt_int32_t timeout)
 	if (!buffer)
 		return NULL;
 
-	rt_mq_recv(handle->ndev->rx_q, buffer, sizeof(struct pbuf), timeout);
+	if (rt_mq_recv(handle->ndev->rx_q, buffer, sizeof(struct pbuf), timeout) != sizeof(struct pbuf)) {
+		printf ("Failed to read from network\n");
+		free(buffer);
+		return NULL;
+	}
 
 	return buffer;
 }

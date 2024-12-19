@@ -29,6 +29,7 @@
 #include "mempool.h"
 #include "stats.h"
 #include "esp_timer.h"
+#include "esp_fw_version.h"
 
 static const char TAG[] = "SPI_DRIVER";
 /* SPI settings */
@@ -66,8 +67,6 @@ static const char TAG[] = "SPI_DRIVER";
 
     #define DMA_CHAN               ESP_SPI_CONTROLLER
 
-    #define SPI_CLK_MHZ            10
-
 #elif defined CONFIG_IDF_TARGET_ESP32S2
 
     #define ESP_SPI_CONTROLLER     1
@@ -76,8 +75,6 @@ static const char TAG[] = "SPI_DRIVER";
     #define GPIO_SCLK              12
     #define GPIO_CS                10
     #define DMA_CHAN               ESP_SPI_CONTROLLER
-
-    #define SPI_CLK_MHZ            30
 
 #elif defined CONFIG_IDF_TARGET_ESP32C2
 
@@ -88,8 +85,6 @@ static const char TAG[] = "SPI_DRIVER";
     #define GPIO_CS                10
     #define DMA_CHAN               SPI_DMA_CH_AUTO
 
-    #define SPI_CLK_MHZ            30
-
 #elif defined CONFIG_IDF_TARGET_ESP32C3
 
     #define ESP_SPI_CONTROLLER     1
@@ -98,8 +93,6 @@ static const char TAG[] = "SPI_DRIVER";
     #define GPIO_SCLK              6
     #define GPIO_CS                10
     #define DMA_CHAN               SPI_DMA_CH_AUTO
-
-    #define SPI_CLK_MHZ            30
 
 #elif defined CONFIG_IDF_TARGET_ESP32S3
 
@@ -110,7 +103,14 @@ static const char TAG[] = "SPI_DRIVER";
     #define GPIO_CS                10
     #define DMA_CHAN               SPI_DMA_CH_AUTO
 
-    #define SPI_CLK_MHZ            30
+#elif defined CONFIG_IDF_TARGET_ESP32C5
+
+    #define ESP_SPI_CONTROLLER     1
+    #define GPIO_MOSI              7
+    #define GPIO_MISO              2
+    #define GPIO_SCLK              6
+    #define GPIO_CS                10
+    #define DMA_CHAN               SPI_DMA_CH_AUTO
 
 #elif defined CONFIG_IDF_TARGET_ESP32C6
 
@@ -120,8 +120,6 @@ static const char TAG[] = "SPI_DRIVER";
     #define GPIO_SCLK              6
     #define GPIO_CS                10
     #define DMA_CHAN               SPI_DMA_CH_AUTO
-
-    #define SPI_CLK_MHZ            26
 
 #endif
 /* Max SPI slave CLK in IO_MUX tested in IDF:
@@ -140,17 +138,45 @@ static const char TAG[] = "SPI_DRIVER";
 
 /* SPI internal configs */
 #define SPI_BUFFER_SIZE            1600
-#define SPI_QUEUE_SIZE             3
+#define SPI_DRIVER_QUEUE_SIZE      3
 
-#define SPI_RX_QUEUE_SIZE      CONFIG_ESP_SPI_RX_Q_SIZE
-#define SPI_TX_QUEUE_SIZE      CONFIG_ESP_SPI_TX_Q_SIZE
+#ifdef CONFIG_ESP_ENABLE_TX_PRIORITY_QUEUES
+    #define SPI_TX_WIFI_QUEUE_SIZE     CONFIG_ESP_SPI_TX_WIFI_Q_SIZE
+    #define SPI_TX_BT_QUEUE_SIZE       CONFIG_ESP_SPI_TX_BT_Q_SIZE
+    #define SPI_TX_SERIAL_QUEUE_SIZE   CONFIG_ESP_SPI_TX_SERIAL_Q_SIZE
+    #define SPI_TX_TOTAL_QUEUE_SIZE (SPI_TX_WIFI_QUEUE_SIZE+SPI_TX_BT_QUEUE_SIZE+SPI_TX_SERIAL_QUEUE_SIZE)
+#else
+    #define SPI_TX_QUEUE_SIZE          CONFIG_ESP_SPI_TX_Q_SIZE
+    #define SPI_TX_TOTAL_QUEUE_SIZE    SPI_TX_QUEUE_SIZE
+#endif
+
+#ifdef CONFIG_ESP_ENABLE_RX_PRIORITY_QUEUES
+    #define SPI_RX_WIFI_QUEUE_SIZE     CONFIG_ESP_SPI_RX_WIFI_Q_SIZE
+    #define SPI_RX_BT_QUEUE_SIZE       CONFIG_ESP_SPI_RX_BT_Q_SIZE
+    #define SPI_RX_SERIAL_QUEUE_SIZE   CONFIG_ESP_SPI_RX_SERIAL_Q_SIZE
+    #define SPI_RX_TOTAL_QUEUE_SIZE (SPI_RX_WIFI_QUEUE_SIZE+SPI_RX_BT_QUEUE_SIZE+SPI_RX_SERIAL_QUEUE_SIZE)
+#else
+    #define SPI_RX_QUEUE_SIZE          CONFIG_ESP_SPI_RX_Q_SIZE
+    #define SPI_RX_TOTAL_QUEUE_SIZE    SPI_RX_QUEUE_SIZE
+#endif
+
 
 static interface_context_t context;
 static interface_handle_t if_handle_g;
-static SemaphoreHandle_t spi_tx_sem;
-static SemaphoreHandle_t spi_rx_sem;
-static QueueHandle_t spi_rx_queue[MAX_PRIORITY_QUEUES];
-static QueueHandle_t spi_tx_queue[MAX_PRIORITY_QUEUES];
+
+#ifdef CONFIG_ESP_ENABLE_TX_PRIORITY_QUEUES
+  static QueueHandle_t spi_tx_queue[MAX_PRIORITY_QUEUES];
+  static SemaphoreHandle_t spi_tx_sem;
+#else
+  static QueueHandle_t spi_tx_queue;
+#endif
+
+#ifdef CONFIG_ESP_ENABLE_RX_PRIORITY_QUEUES
+  static QueueHandle_t spi_rx_queue[MAX_PRIORITY_QUEUES];
+  static SemaphoreHandle_t spi_rx_sem;
+#else
+  static QueueHandle_t spi_rx_queue;
+#endif
 
 static interface_handle_t * esp_spi_init(void);
 static int32_t esp_spi_write(interface_handle_t *handle,
@@ -169,7 +195,7 @@ if_ops_t if_ops = {
 	.deinit = esp_spi_deinit,
 };
 
-#define SPI_MEMPOOL_NUM_BLOCKS     ((SPI_TX_QUEUE_SIZE+SPI_RX_QUEUE_SIZE))
+#define SPI_MEMPOOL_NUM_BLOCKS     ((SPI_TX_TOTAL_QUEUE_SIZE+SPI_DRIVER_QUEUE_SIZE*2+SPI_RX_TOTAL_QUEUE_SIZE))
 static struct hosted_mempool * buf_mp_tx_g;
 static struct hosted_mempool * buf_mp_rx_g;
 static struct hosted_mempool * trans_mp_g;
@@ -272,6 +298,7 @@ void generate_startup_event(uint8_t cap)
 	uint16_t len = 0;
 	uint8_t raw_tp_cap = 0;
 	uint32_t total_len = 0;
+	struct fw_version fw_ver = { 0 };
 
 	buf_handle.payload = spi_buffer_tx_alloc(MEMSET_REQUIRED);
 
@@ -300,11 +327,6 @@ void generate_startup_event(uint8_t cap)
 	*pos = LENGTH_1_BYTE;               pos++;len++;
 	*pos = CONFIG_IDF_FIRMWARE_CHIP_ID; pos++;len++;
 
-	/* TLV - Peripheral clock in MHz */
-	*pos = ESP_PRIV_SPI_CLK_MHZ;        pos++;len++;
-	*pos = LENGTH_1_BYTE;               pos++;len++;
-	*pos = SPI_CLK_MHZ;                 pos++;len++;
-
 	/* TLV - Capability */
 	*pos = ESP_PRIV_CAPABILITY;         pos++;len++;
 	*pos = LENGTH_1_BYTE;               pos++;len++;
@@ -313,6 +335,22 @@ void generate_startup_event(uint8_t cap)
 	*pos = ESP_PRIV_TEST_RAW_TP;        pos++;len++;
 	*pos = LENGTH_1_BYTE;               pos++;len++;
 	*pos = raw_tp_cap;                  pos++;len++;
+
+	/* fill structure with fw info */
+	strncpy(fw_ver.project_name, PROJECT_NAME, sizeof(fw_ver.project_name) - 1);
+	fw_ver.project_name[sizeof(fw_ver.project_name) - 1] = '\0';
+	fw_ver.major1 = PROJECT_VERSION_MAJOR_1;
+	fw_ver.major2 = PROJECT_VERSION_MAJOR_2;
+	fw_ver.minor  = PROJECT_VERSION_MINOR;
+	fw_ver.revision_patch_1 = PROJECT_REVISION_PATCH_1;
+	fw_ver.revision_patch_2 = PROJECT_REVISION_PATCH_2;
+
+	/* TLV - Firmware Version */
+	*pos = ESP_PRIV_FW_DATA;            pos++;len++;
+	*pos = sizeof(fw_ver);              pos++;len++;
+	memcpy(pos, &fw_ver, sizeof(fw_ver));
+	pos += sizeof(fw_ver);
+	len += sizeof(fw_ver);
 
 	/* TLVs end */
 
@@ -334,8 +372,12 @@ void generate_startup_event(uint8_t cap)
 	header->checksum = htole16(compute_checksum(buf_handle.payload, len + sizeof(struct esp_payload_header)));
 #endif
 
+#ifdef CONFIG_ESP_ENABLE_TX_PRIORITY_QUEUES
 	xQueueSend(spi_tx_queue[PRIO_Q_OTHERS], &buf_handle, portMAX_DELAY);
 	xSemaphoreGive(spi_tx_sem);
+#else
+	xQueueSend(spi_tx_queue, &buf_handle, portMAX_DELAY);
+#endif
 
 	set_dataready_gpio();
 	/* process first data packet here to start transactions */
@@ -370,12 +412,16 @@ static uint8_t * get_next_tx_buffer(uint32_t *len)
 	 *	2. Create a new empty tx buffer and return */
 
 	/* Get buffer from SPI Tx queue */
+#ifdef CONFIG_ESP_ENABLE_TX_PRIORITY_QUEUES
 	ret = xSemaphoreTake(spi_tx_sem, 0);
 	if (pdTRUE == ret)
 		if (pdFALSE == xQueueReceive(spi_tx_queue[PRIO_Q_SERIAL], &buf_handle, 0))
 			if (pdFALSE == xQueueReceive(spi_tx_queue[PRIO_Q_BT], &buf_handle, 0))
 				if (pdFALSE == xQueueReceive(spi_tx_queue[PRIO_Q_OTHERS], &buf_handle, 0))
 					ret = pdFALSE;
+#else
+	ret = xQueueReceive(spi_tx_queue, &buf_handle, 0);
+#endif
 
 	if (ret == pdTRUE && buf_handle.payload) {
 		if (len)
@@ -432,9 +478,8 @@ static int process_spi_rx(interface_buffer_handle_t *buf_handle)
 	if (!len)
 		return -1;
 
-	if (len > SPI_BUFFER_SIZE) {
-		ESP_LOGE(TAG, "rx_pkt len[%u]>max[%u], dropping it", len, SPI_BUFFER_SIZE);
-
+	if (len+offset > SPI_BUFFER_SIZE) {
+		ESP_LOGE(TAG, "rx_pkt len+offset[%u]>max[%u], dropping it", len+offset, SPI_BUFFER_SIZE);
 		return -1;
 	}
 
@@ -462,6 +507,7 @@ static int process_spi_rx(interface_buffer_handle_t *buf_handle)
 	if (buf_handle->if_type == ESP_STA_IF)
 		pkt_stats.sta_rx_in++;
 #endif
+#ifdef CONFIG_ESP_ENABLE_RX_PRIORITY_QUEUES
 	if (header->if_type == ESP_SERIAL_IF) {
 		xQueueSend(spi_rx_queue[PRIO_Q_SERIAL], buf_handle, portMAX_DELAY);
 	} else if (header->if_type == ESP_HCI_IF) {
@@ -471,6 +517,9 @@ static int process_spi_rx(interface_buffer_handle_t *buf_handle)
 	}
 
 	xSemaphoreGive(spi_rx_sem);
+#else
+	xQueueSend(spi_rx_queue, buf_handle, portMAX_DELAY);
+#endif
 	return 0;
 }
 
@@ -549,27 +598,26 @@ static void IRAM_ATTR gpio_disable_hs_isr_handler(void* arg)
 
 static void register_hs_disable_pin(uint32_t gpio_num)
 {
-    if (gpio_num != -1) {
-    gpio_reset_pin(gpio_num);
+	if (gpio_num != -1) {
+		gpio_reset_pin(gpio_num);
 
-    gpio_config_t slave_disable_hs_pin_conf={
-        .intr_type=GPIO_INTR_DISABLE,
-        .mode=GPIO_MODE_INPUT,
-        .pull_up_en=1,
-        .pin_bit_mask=(1<<gpio_num)
-    };
+		gpio_config_t slave_disable_hs_pin_conf={
+			.intr_type=GPIO_INTR_DISABLE,
+			.mode=GPIO_MODE_INPUT,
+			.pull_up_en=1,
+			.pin_bit_mask=(1<<gpio_num)
+		};
 
-    gpio_config(&slave_disable_hs_pin_conf);
-    gpio_set_intr_type(gpio_num, GPIO_INTR_NEGEDGE);
-    gpio_install_isr_service(0);
-    gpio_isr_handler_add(gpio_num, gpio_disable_hs_isr_handler, NULL);
-    }
+		gpio_config(&slave_disable_hs_pin_conf);
+		gpio_set_intr_type(gpio_num, GPIO_INTR_NEGEDGE);
+		gpio_install_isr_service(0);
+		gpio_isr_handler_add(gpio_num, gpio_disable_hs_isr_handler, NULL);
+	}
 }
 
 static interface_handle_t * esp_spi_init(void)
 {
 	esp_err_t ret = ESP_OK;
-	uint16_t prio_q_idx = 0;
 
 	/* Configuration for the SPI bus */
 	spi_bus_config_t buscfg={
@@ -592,7 +640,7 @@ static interface_handle_t * esp_spi_init(void)
 	spi_slave_interface_config_t slvcfg={
 		.mode=SPI_MODE_2,
 		.spics_io_num=GPIO_CS,
-		.queue_size=SPI_QUEUE_SIZE,
+		.queue_size=SPI_DRIVER_QUEUE_SIZE,
 		.flags=0,
 		.post_setup_cb=spi_post_setup_cb,
 		.post_trans_cb=spi_post_trans_cb
@@ -629,11 +677,23 @@ static interface_handle_t * esp_spi_init(void)
 	gpio_set_pull_mode(GPIO_SCLK, GPIO_PULLUP_ONLY);
 	gpio_set_pull_mode(GPIO_CS, GPIO_PULLUP_ONLY);
 
-	ESP_LOGI(TAG, "SPI Ctrl:%u mode: %u, InitFreq: 10MHz, ReqFreq: %uMHz\nGPIOs: MOSI: %u, MISO: %u, CS: %u, CLK: %u HS: %u DR: %u\n",
-			ESP_SPI_CONTROLLER, slvcfg.mode, SPI_CLK_MHZ,
+	ESP_LOGI(TAG, "SPI Ctrl:%u mode: %u, GPIOs: MOSI: %u, MISO: %u, CS: %u, CLK: %u HS: %u DR: %u\n",
+			ESP_SPI_CONTROLLER, slvcfg.mode,
 			GPIO_MOSI, GPIO_MISO, GPIO_CS, GPIO_SCLK, GPIO_HS, GPIO_DR);
 
-	ESP_LOGI(TAG, "Hosted SPI queue size: Tx:%u Rx:%u", SPI_TX_QUEUE_SIZE, SPI_RX_QUEUE_SIZE);
+#ifdef CONFIG_ESP_ENABLE_TX_PRIORITY_QUEUES
+	ESP_LOGI(TAG, "TX Queues :Wifi[%u] bt[%u] serial[%u]",
+			SPI_TX_WIFI_QUEUE_SIZE, SPI_TX_BT_QUEUE_SIZE, SPI_TX_SERIAL_QUEUE_SIZE);
+#else
+	ESP_LOGI(TAG, "TX Queues:%u", SPI_TX_QUEUE_SIZE);
+#endif
+
+#ifdef CONFIG_ESP_ENABLE_RX_PRIORITY_QUEUES
+	ESP_LOGI(TAG, "RX Queues :Wifi[%u] bt[%u] serial[%u]",
+			SPI_RX_WIFI_QUEUE_SIZE, SPI_RX_BT_QUEUE_SIZE, SPI_RX_SERIAL_QUEUE_SIZE);
+#else
+	ESP_LOGI(TAG, "RX Queues:%u", SPI_RX_QUEUE_SIZE);
+#endif
 	register_hs_disable_pin(GPIO_CS);
 
 	/* Initialize SPI slave interface */
@@ -650,18 +710,36 @@ static interface_handle_t * esp_spi_init(void)
 	memset(&if_handle_g, 0, sizeof(if_handle_g));
 	if_handle_g.state = INIT;
 
-	spi_tx_sem = xSemaphoreCreateCounting(SPI_TX_QUEUE_SIZE*3, 0);
-	assert(spi_tx_sem != NULL);
-	spi_rx_sem = xSemaphoreCreateCounting(SPI_RX_QUEUE_SIZE*3, 0);
-	assert(spi_rx_sem != NULL);
+#ifdef CONFIG_ESP_ENABLE_TX_PRIORITY_QUEUES
+	spi_tx_sem = xSemaphoreCreateCounting(SPI_TX_TOTAL_QUEUE_SIZE, 0);
+	assert(spi_tx_sem);
 
-	for (prio_q_idx=0; prio_q_idx<MAX_PRIORITY_QUEUES;prio_q_idx++) {
-		spi_rx_queue[prio_q_idx] = xQueueCreate(SPI_RX_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
-		assert(spi_rx_queue[prio_q_idx] != NULL);
+	spi_tx_queue[PRIO_Q_OTHERS] = xQueueCreate(SPI_TX_WIFI_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
+	assert(spi_tx_queue[PRIO_Q_OTHERS]);
+	spi_tx_queue[PRIO_Q_BT] = xQueueCreate(SPI_TX_BT_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
+	assert(spi_tx_queue[PRIO_Q_BT]);
+	spi_tx_queue[PRIO_Q_SERIAL] = xQueueCreate(SPI_TX_SERIAL_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
+	assert(spi_tx_queue[PRIO_Q_SERIAL]);
+#else
+	spi_tx_queue = xQueueCreate(SPI_TX_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
+	assert(spi_tx_queue);
+#endif
 
-		spi_tx_queue[prio_q_idx] = xQueueCreate(SPI_TX_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
-		assert(spi_tx_queue[prio_q_idx] != NULL);
-	}
+#ifdef CONFIG_ESP_ENABLE_RX_PRIORITY_QUEUES
+	spi_rx_sem = xSemaphoreCreateCounting(SPI_RX_TOTAL_QUEUE_SIZE, 0);
+	assert(spi_rx_sem);
+
+	spi_rx_queue[PRIO_Q_OTHERS] = xQueueCreate(SPI_RX_WIFI_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
+	assert(spi_rx_queue[PRIO_Q_OTHERS]);
+	spi_rx_queue[PRIO_Q_BT] = xQueueCreate(SPI_RX_BT_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
+	assert(spi_rx_queue[PRIO_Q_BT]);
+	spi_rx_queue[PRIO_Q_SERIAL] = xQueueCreate(SPI_RX_SERIAL_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
+	assert(spi_rx_queue[PRIO_Q_SERIAL]);
+#else
+	spi_rx_queue = xQueueCreate(SPI_RX_QUEUE_SIZE, sizeof(interface_buffer_handle_t));
+	assert(spi_rx_queue);
+#endif
+
 
 	assert(xTaskCreate(spi_transaction_post_process_task , "spi_post_process_task" ,
 			CONFIG_ESP_DEFAULT_TASK_STACK_SIZE, NULL,
@@ -734,6 +812,7 @@ static int32_t esp_spi_write(interface_handle_t *handle, interface_buffer_handle
 				offset+buf_handle->payload_len));
 #endif
 
+#ifdef CONFIG_ESP_ENABLE_TX_PRIORITY_QUEUES
 	if (header->if_type == ESP_SERIAL_IF)
 		xQueueSend(spi_tx_queue[PRIO_Q_SERIAL], &tx_buf_handle, portMAX_DELAY);
 	else if (header->if_type == ESP_HCI_IF)
@@ -742,6 +821,9 @@ static int32_t esp_spi_write(interface_handle_t *handle, interface_buffer_handle
 		xQueueSend(spi_tx_queue[PRIO_Q_OTHERS], &tx_buf_handle, portMAX_DELAY);
 
 	xSemaphoreGive(spi_tx_sem);
+#else
+	xQueueSend(spi_tx_queue, &tx_buf_handle, portMAX_DELAY);
+#endif
 
 	/* indicate waiting data on ready pin */
 	set_dataready_gpio();
@@ -761,6 +843,7 @@ static int esp_spi_read(interface_handle_t *if_handle, interface_buffer_handle_t
 		return ESP_FAIL;
 	}
 
+#ifdef CONFIG_ESP_ENABLE_RX_PRIORITY_QUEUES
 	xSemaphoreTake(spi_rx_sem, portMAX_DELAY);
 
 	if (pdFALSE == xQueueReceive(spi_rx_queue[PRIO_Q_SERIAL], buf_handle, 0))
@@ -769,6 +852,9 @@ static int esp_spi_read(interface_handle_t *if_handle, interface_buffer_handle_t
 				ESP_LOGI(TAG, "%s No element in rx queue", __func__);
 		return ESP_FAIL;
 	}
+#else
+	xQueueReceive(spi_rx_queue, buf_handle, portMAX_DELAY);
+#endif
 
 	return buf_handle->payload_len;
 }

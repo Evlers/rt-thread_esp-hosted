@@ -19,9 +19,22 @@
 - [commands_lib.py](../../host/linux/host_control/python_support/commands_lib.py) is a supporting file for Demo APP, where methods are implemented. User can adapt as per their need.
 - [commands_map_py_to_c.py](../../host/linux/host_control/python_support/commands_map_py_to_c.py) is mapper file for `ctypes` library
 - Installation
-  - Install the dependency libraries, `prompt_toolkit`, `docstring_parser` and `fire`. Below command could be used to install:
+  - Install the dependency libraries, `prompt_toolkit`, `docstring_parser`,`fire` and `requests`. Below command could be used to install:
   ```sh
-  $ sudo python3 -m pip install prompt_toolkit fire argparse docstring_parser
+  $ sudo python3 -m pip install prompt_toolkit fire argparse docstring_parser requests
+  ```
+  On Raspberry Pi or other linux distributions, you may see this error when running that command:
+  ```
+  error: externally-managed-environment
+  ```
+  If you get that error, you can try this alternative method, which is to setup a python virtual environment (venv) to install the packages:
+  ```sh
+  $ python -m venv my-venv
+  $ my-venv/bin/pip install prompt_toolkit fire argparse docstring_parser requests
+  ```
+  To run the demo app in a venv (see below section):
+  ```sh
+  $ sudo my-venv/bin/python ./test.py
   ```
 
 ### Modes supported
@@ -125,6 +138,17 @@
     - Subscribe event to get notifications
   - `unsubscribe_event`
     - Unsubscribe event to get notifications
+  - `disable_wifi`
+    - Deinit Wi-Fi driver in slave
+  - `enable_wifi`
+    - Init and start Wi-Fi driver in slave
+  - `disable_bt`
+    - Deinit Bluetooth driver in slave
+  - `enable_bt`
+    - Init and start Bluetooth driver in slave
+  - `get_fw_version`
+    - Fetch firmware version at slave
+
 - Note:
   - Positional arguments are supported in case of `Shell mode`
   - In both, `CLI mode` and `Shell mode`, a single command is supported at a time.

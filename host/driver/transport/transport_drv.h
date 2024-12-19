@@ -56,7 +56,6 @@ void transport_init(void(*transport_evt_handler)(uint8_t));
 
 void process_event(uint8_t *evt_buf, uint16_t len);
 void process_priv_communication(struct pbuf *pbuf);
-void print_capabilities(uint32_t cap);
 int process_init_event(uint8_t *evt_buf, uint8_t len);
 
 stm_ret_t send_to_slave(uint8_t iface_type, uint8_t iface_num,

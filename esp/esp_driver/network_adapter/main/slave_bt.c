@@ -36,7 +36,17 @@
 
 static const char BT_TAG[] = "ESP_BT";
 
+static bool bt_available(void)
+{
+	return esp_bt_controller_get_status() >= ESP_BT_CONTROLLER_STATUS_INITED;
+}
+
 #if BLUETOOTH_HCI
+
+static bool bt_running(void)
+{
+	return esp_bt_controller_get_status() > ESP_BT_CONTROLLER_STATUS_INITED;
+}
 /* ***** HCI specific part ***** */
 
 #define VHCI_MAX_TIMEOUT_MS 	2000
@@ -84,11 +94,15 @@ static int host_rcv_pkt(uint8_t *data, uint16_t len)
 }
 
 static esp_vhci_host_callback_t vhci_host_cb = {
-	controller_rcv_pkt_ready,
-	host_rcv_pkt
+	.notify_host_send_available = controller_rcv_pkt_ready,
+	.notify_host_recv = host_rcv_pkt
 };
 
 void process_hci_rx_pkt(uint8_t *payload, uint16_t payload_len) {
+
+	if (!bt_running())
+		return;
+
 	/* VHCI needs one extra byte at the start of payload */
 	/* that is accomodated in esp_payload_header */
 #if CONFIG_ESP_BT_DEBUG
@@ -408,6 +422,7 @@ void init_uart(void)
 
 #if BLUETOOTH_HCI
 #if SOC_ESP_NIMBLE_CONTROLLER
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
 #include "nimble/ble_hci_trans.h"
 
 typedef enum {
@@ -420,24 +435,35 @@ typedef enum {
 /* Host-to-controller command. */
 #define BLE_HCI_TRANS_BUF_CMD       3
 
-/* ACL_DATA_MBUF_LEADINGSPCAE: The leadingspace in user info header for ACL data */
-#define ACL_DATA_MBUF_LEADINGSPCAE    4
+/* ACL_DATA_MBUF_LEADINGSPACE: The leadingspace in user info header for ACL data */
+#define ACL_DATA_MBUF_LEADINGSPACE    4
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
+void ble_transport_ll_init(void)
+{
+}
+#endif
 
 void esp_vhci_host_send_packet(uint8_t *data, uint16_t len)
 {
-    if (*(data) == DATA_TYPE_COMMAND) {
-        struct ble_hci_cmd *cmd = NULL;
-        cmd = (struct ble_hci_cmd *) ble_hci_trans_buf_alloc(BLE_HCI_TRANS_BUF_CMD);
-        memcpy((uint8_t *)cmd, data + 1, len - 1);
-        ble_hci_trans_hs_cmd_tx((uint8_t *)cmd);
-    }
+	if (*(data) == DATA_TYPE_COMMAND) {
+		struct ble_hci_cmd *cmd = NULL;
+		cmd = (struct ble_hci_cmd *) ble_hci_trans_buf_alloc(BLE_HCI_TRANS_BUF_CMD);
+		if (!cmd) {
+			ESP_LOGE(BT_TAG, "Failed to allocate memory for HCI transport buffer");
+			return;
+		}
 
-    if (*(data) == DATA_TYPE_ACL) {
-        struct os_mbuf *om = os_msys_get_pkthdr(len, ACL_DATA_MBUF_LEADINGSPCAE);
-        assert(om);
-        os_mbuf_append(om, &data[1], len - 1);
-        ble_hci_trans_hs_acl_tx(om);
-    }
+		memcpy((uint8_t *)cmd, data + 1, len - 1);
+		ble_hci_trans_hs_cmd_tx((uint8_t *)cmd);
+	}
+
+	if (*(data) == DATA_TYPE_ACL) {
+		struct os_mbuf *om = os_msys_get_pkthdr(len, ACL_DATA_MBUF_LEADINGSPACE);
+		assert(om);
+		os_mbuf_append(om, &data[1], len - 1);
+		ble_hci_trans_hs_acl_tx(om);
+	}
 
 }
 
@@ -475,11 +501,16 @@ ble_hs_rx_data(struct os_mbuf *om, void *arg)
 
 #endif
 #endif
+#endif
 
 esp_err_t initialise_bluetooth(void)
 {
 	esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
 
+	if (bt_available()) {
+		ESP_LOGI(BT_TAG, "BT is already configured earlier, ignoring");
+		return 0;
+	}
 
 #ifdef BLUETOOTH_UART
   #if BT_OVER_C3_S3
@@ -500,7 +531,7 @@ esp_err_t initialise_bluetooth(void)
 #if BLUETOOTH_HCI
 	esp_err_t ret = ESP_OK;
 
-#if SOC_ESP_NIMBLE_CONTROLLER
+#if SOC_ESP_NIMBLE_CONTROLLER && (ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0))
     ble_hci_trans_cfg_hs((ble_hci_trans_rx_cmd_fn *)ble_hs_hci_rx_evt,NULL,
                          (ble_hci_trans_rx_acl_fn *)ble_hs_rx_data,NULL);
 #else
@@ -526,6 +557,9 @@ esp_err_t initialise_bluetooth(void)
 
 void deinitialize_bluetooth(void)
 {
+	if (!bt_available())
+		return;
+
 #if BLUETOOTH_HCI
 	if (vhci_send_sem) {
 		/* Dummy take and give sema before deleting it */
@@ -534,9 +568,9 @@ void deinitialize_bluetooth(void)
 		vSemaphoreDelete(vhci_send_sem);
 		vhci_send_sem = NULL;
 	}
+#endif
 	esp_bt_controller_disable();
 	esp_bt_controller_deinit();
-#endif
 }
 
 uint8_t get_bluetooth_capabilities(void)

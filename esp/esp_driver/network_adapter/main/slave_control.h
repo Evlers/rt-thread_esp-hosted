@@ -18,16 +18,28 @@
 #include <esp_err.h>
 #define min(X, Y)               (((X) < (Y)) ? (X) : (Y))
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
   #define TIMEOUT_IN_SEC          (1000 / portTICK_PERIOD_MS)
 #else
   #define TIMEOUT_IN_SEC          (1000 / portTICK_RATE_MS)
 #endif
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 0)
+// 5G band support only available in ESP-IDF 5.4 or later
 
-#define SSID_LENGTH             32
+#if CONFIG_SOC_WIFI_HE_SUPPORT_5G
+  #define WIFI_DUALBAND_SUPPORT 1
+#else
+  #define WIFI_DUALBAND_SUPPORT 0
+#endif // CONFIG_SOC_WIFI_HE_SUPPORT_5G
+
+#else
+  #define WIFI_DUALBAND_SUPPORT 0
+#endif
+
+#define SSID_LENGTH             33
 #define PASSWORD_LENGTH         64
-#define BSSID_LENGTH            19
+#define BSSID_LENGTH            18
 #define MAC_LEN                 6
 #define VENDOR_OUI_BUF          3
 
@@ -49,6 +61,6 @@ esp_err_t data_transfer_handler(uint32_t session_id,const uint8_t *inbuf,
 esp_err_t ctrl_notify_handler(uint32_t session_id,const uint8_t *inbuf,
 		ssize_t inlen, uint8_t **outbuf, ssize_t *outlen, void *priv_data);
 void send_event_to_host(int event_id);
-void send_event_data_to_host(int event_id, uint8_t *data, int size);
+void send_event_data_to_host(int event_id, void *data, int size);
 
 #endif /*__SLAVE_CONTROL__H__*/

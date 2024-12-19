@@ -27,7 +27,7 @@ Sample setup image of ESP32 SDIO with RPi looks like:
 ![alt text](rpi_esp_sdio_setup.jpeg "setup of Raspberry-Pi as host and ESP32 as peripheral")
 
 :warning: Note:
-As SDIO faces signal integrity issues over jumper wires, we strongly recommend to **Design PCB boards with above connections**
+As SDIO faces signal integrity issues over jumper wires, we strongly recommend to **Design PCB boards with above connections.**
 If that is not possible
  - Use good quality extremely small (smaller than 5cm) jumper wires, all equal length
  - Join all possible grounds interconnected to lower noise
@@ -35,26 +35,19 @@ If that is not possible
 
 
 ### 1.2 Raspberry-Pi Software Setup
-By default, the SDIO pins of Raspberry-pi are not configured and are internally used for built-in Wi-Fi interface. Please enable SDIO pins by appending following line to _/boot/config.txt_ file
+By default, the SDIO pins of Raspberry-pi are not configured and are internally used for the built-in Wi-Fi interface. Please enable SDIO pins by appending the following line to the _/boot/firmware/config.txt_ file (prior to _Bookworm_, the file is at _/boot/config.txt_):
 ```
 dtoverlay=sdio,poll_once=off
 dtoverlay=disable-bt
 ```
 Please reboot Raspberry-Pi after changing this file.
-Please note, that the default Wi-Fi on your Raspberry Pi will be disabled on reboot. This is because the SDIO used in ESP-Hosted is going to use this SDIO port here on.
-If you are not using desktop variant of Raspberry Pi, It would be good to set up static IP SSH with ethernet cable .
-Also, it is recommended to download (any) software needed (like iperf etc) before rebooting, so that losing wlan0 is not issue
+
+Note that the default Wi-Fi on your Raspberry Pi will be disabled on reboot. This is because the SDIO used in ESP-Hosted is going to use this SDIO port here on. If you are not using desktop variant of Raspberry Pi, It would be good to set up static IP SSH with ethernet cable.
+
+Also, it is recommended to download (any) software needed (like iperf etc) before rebooting, so that losing Wi-Fi is not an issue.
 
 ## 2. Load ESP-Hosted Solution
 ### 2.1 Host Software
-* As ESP32 & ESP32C6, both support SDIO, Let host know which slave chipset is being used by changing `esp_hosted_fg/host/linux/host_control/rpi_init.sh` as:
-```sh
-  ESP_SLAVE_CHIPSET="esp32"
-```
-or
-```sh
-  ESP_SLAVE_CHIPSET="esp32c6"
-```
 * Execute following commands in root directory of cloned ESP-Hosted repository on Raspberry-Pi
 ```sh
 $ cd esp_hosted_fg/host/linux/host_control/
@@ -83,6 +76,8 @@ serial_port is device where ESP chipset is detected. For example, /dev/ttyUSB0
 Make sure that same code base (same git commit) is checked-out/copied at both, ESP and Host
 
 ##### Set-up ESP-IDF
+- **Note on Windows 11**: you can follow [these instructions](/esp_hosted_fg/esp/esp_driver/setup_windows11.md),
+instead of the following, to setup ESP-IDF and build the esp firmware.
 - :warning: Following command is dangerous. It will revert all your local changes. Stash if need to keep them.
 - Install the ESP-IDF using script
 ```sh

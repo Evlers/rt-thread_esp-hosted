@@ -58,6 +58,7 @@ int control_path_platform_init(void)
 	// 	LOG_E("could not obtain readSemaphore");
 	// 	return STM_FAIL;
 	// }
+#warning "control_path_platform_init"
 
 	serial_ll_if_g = serial_ll_init(control_path_rx_indication);
 	if (!serial_ll_if_g) {
@@ -243,7 +244,7 @@ int hosted_timer_stop(void *timer_handle)
  *
  * void expired(union sigval timer_data){
  *     struct mystruct *a = timer_data.sival_ptr;
- * 	printf("Expired %u", a->mydata++);
+ * 	printf("Expired %u\n", a->mydata++);
  * }
  **/
 

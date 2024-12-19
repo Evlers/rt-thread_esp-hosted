@@ -18,13 +18,14 @@
 #include <string.h>
 #include "rtthread.h"
 #include "rtdevice.h"
-#include "string.h"
+#include "common/stats.h"
 #include "common/trace.h"
-#include "spi_drv.h"
+#include "common/common.h"
+#include "transport_drv.h"
 #include "adapter.h"
 #include "serial_drv.h"
 #include "netdev_if.h"
-#include "common/stats.h"
+
 
 #define DBG_TAG           "esp.spi"
 #define DBG_LVL           DBG_INFO
@@ -61,8 +62,8 @@ static void (*spi_drv_evt_handler_fp) (uint8_t);
 /** function declaration **/
 /** Exported functions **/
 static stm_ret_t spi_transaction(uint8_t * txbuff);
-static void transaction_task(void* pvParameters);
-static void process_rx_task(void* pvParameters);
+static void transaction_task(void *pvParameters);
+static void process_rx_task(void *pvParameters);
 static uint8_t * get_tx_buffer(uint8_t *is_valid_tx_buf);
 static void deinit_netdev(void);
 
@@ -317,18 +318,6 @@ stm_ret_t send_to_slave(uint8_t iface_type, uint8_t iface_num,
 	return STM_OK;
 }
 
-/** Local functions **/
-
-/**
-  * @brief  Give breathing time for slave on spi
-  * @param  x - for loop delay count
-  * @retval None
-  */
-static void stop_spi_transactions_for_msec(int x)
-{
-	hard_delay(x);
-}
-
 /**
   * @brief  Full duplex transaction SPI transaction for ESP32S2 hardware
   * @param  txbuff: TX SPI buffer
@@ -373,6 +362,18 @@ static stm_ret_t spi_transaction(uint8_t * txbuff)
 
 		if ((!len) || (len > MAX_PAYLOAD_SIZE) || (offset != sizeof(struct esp_payload_header))) 
 		{
+			if (payload_header->if_num == 0xF && payload_header->if_type == ESP_MAX_IF)
+			{
+				/* dummy packet, ignore it */
+				LOG_D("Dummy packet received from slave");
+			}
+			else
+			{
+				LOG_W("Invalid packet received from slave, length: %d", rx_length);
+				LOG_HEX("rxbuff_head16", 16, rxbuff, min(rx_length, 32));
+				LOG_HEX("rxbuff_tail16", 16, rxbuff + (rx_length - min(rx_length, 32)), min(rx_length, 32));
+			}
+
 			/* Free up buffer, as one of following -
 				* 1. no payload to process
 				* 2. input packet size > driver capacity
@@ -383,7 +384,7 @@ static stm_ret_t spi_transaction(uint8_t * txbuff)
 				free(rxbuff);
 				rxbuff = NULL;
 			}
-			
+
 			/* Give chance to other tasks */
 			rt_thread_yield();
 		}
@@ -403,12 +404,15 @@ static stm_ret_t spi_transaction(uint8_t * txbuff)
 				buf_handle.payload     = rxbuff + offset;
 				buf_handle.seq_num     = le16toh(payload_header->seq_num);
 				buf_handle.flag        = payload_header->flags;
-
-				if (RT_EOK != rt_mq_send_wait(from_slave_queue, &buf_handle, sizeof(buf_handle), RT_WAITING_FOREVER)) {
+				LOG_D("if_type: %d, if_num: %d, len: %d, offset: %d, seq_num: %d, flags: 0x%x",
+						payload_header->if_type, payload_header->if_num, len, offset, le16toh(payload_header->seq_num), payload_header->flags);
+				LOG_HEX("payload", 16, buf_handle.payload, min(buf_handle.payload_len, 32));
+				if (RT_EOK != rt_mq_send_wait(from_slave_queue, &buf_handle, sizeof(interface_buffer_handle_t), 2000)) {
 					LOG_E("Failed to send buffer");
 					goto done;
 				}
 			} else {
+				LOG_E("Checksum mismatch, rx_checksum: 0x%04x, computed_checksum: 0x%04x", rx_checksum, checksum);
 				if (rxbuff) {
 					free(rxbuff);
 					rxbuff = NULL;
@@ -448,7 +452,7 @@ done:
   * @param  argument: Not used
   * @retval None
   */
-static void transaction_task(void* pvParameters)
+static void transaction_task(void *pvParameters)
 {
 	for (;;) {
 
@@ -466,7 +470,7 @@ static void transaction_task(void* pvParameters)
   * @param  argument: Not used
   * @retval None
   */
-static void process_rx_task(void* pvParameters)
+static void process_rx_task(void *pvParameters)
 {
 	interface_buffer_handle_t buf_handle = {0};
 	uint8_t *payload = NULL;
@@ -474,9 +478,12 @@ static void process_rx_task(void* pvParameters)
 	struct esp_priv_event *event = NULL;
 	struct esp_private *priv = NULL;
 
+	LOG_D("Starting RX processing thread");
+
 	while (1) {
 
-		if (rt_mq_recv(from_slave_queue, &buf_handle, sizeof(buf_handle), RT_WAITING_FOREVER) != RT_EOK) {
+		if (rt_mq_recv(from_slave_queue, &buf_handle, sizeof(interface_buffer_handle_t), RT_WAITING_FOREVER) != sizeof(interface_buffer_handle_t)) {
+			LOG_E("Failed to receive buffer");
 			continue;
 		}
 
@@ -527,7 +534,7 @@ static void process_rx_task(void* pvParameters)
 				/* halt spi transactions for some time,
 				 * this is one time delay, to give breathing
 				 * time to slave before spi trans start */
-				stop_spi_transactions_for_msec(50000);
+				// rt_thread_mdelay(100);
 				if (spi_drv_evt_handler_fp) {
 					spi_drv_evt_handler_fp(TRANSPORT_ACTIVE);
 				}
@@ -574,7 +581,7 @@ static uint8_t * get_tx_buffer(uint8_t *is_valid_tx_buf)
 	 * In that case only payload header with zero payload
 	 * length would be transmitted.
 	 */
-	if (RT_EOK == rt_mq_recv(to_slave_queue, &buf_handle, sizeof(buf_handle), 0)) {
+	if (rt_mq_recv(to_slave_queue, &buf_handle, sizeof(buf_handle), 0) == sizeof(buf_handle)) {
 		len = buf_handle.payload_len;
 	}
 

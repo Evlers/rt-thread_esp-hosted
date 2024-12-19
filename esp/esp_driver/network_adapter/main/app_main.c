@@ -46,6 +46,7 @@
 #include "slave_control.h"
 #include "slave_bt.c"
 #include "stats.h"
+#include "esp_fw_version.h"
 
 static const char TAG[] = "NETWORK_ADAPTER";
 
@@ -104,8 +105,8 @@ uint8_t ap_mac[MAC_LEN] = {0};
 static void print_firmware_version()
 {
 	ESP_LOGI(TAG, "*********************************************************************");
-	ESP_LOGI(TAG, "                ESP-Hosted-FG Firmware version :: %d.%d.%d                        ",
-			PROJECT_VERSION_MAJOR_1, PROJECT_VERSION_MAJOR_2, PROJECT_VERSION_MINOR);
+	ESP_LOGI(TAG, "                ESP-Hosted Firmware version :: %s-%d.%d.%d.%d.%d",
+			PROJECT_NAME, PROJECT_VERSION_MAJOR_1, PROJECT_VERSION_MAJOR_2, PROJECT_VERSION_MINOR, PROJECT_REVISION_PATCH_1, PROJECT_REVISION_PATCH_2);
 #if CONFIG_ESP_SPI_HOST_INTERFACE
   #if BLUETOOTH_UART
 	ESP_LOGI(TAG, "                Transport used :: SPI + UART                    ");
@@ -212,20 +213,12 @@ void esp_update_ap_mac(void)
 esp_err_t wlan_ap_rx_callback(void *buffer, uint16_t len, void *eb)
 {
 	interface_buffer_handle_t buf_handle = {0};
-	uint8_t * ap_buf = buffer;
 
 	if (!buffer || !eb || !datapath || ota_ongoing) {
 		if (eb) {
 			esp_wifi_internal_free_rx_buffer(eb);
 		}
 		return ESP_OK;
-	}
-
-	/* Check destination address against self address */
-	if (memcmp(ap_buf, ap_mac, MAC_LEN)) {
-		/* Check for multicast or broadcast address */
-		if (!(ap_buf[0] & 1))
-			goto DONE;
 	}
 
 	buf_handle.if_type = ESP_AP_IF;
@@ -326,7 +319,7 @@ void send_event_to_host(int event_id)
 	protocomm_pserial_data_ready(pc_pserial, NULL, 0, event_id);
 }
 
-void send_event_data_to_host(int event_id, uint8_t *data, int size)
+void send_event_data_to_host(int event_id, void *data, int size)
 {
 	protocomm_pserial_data_ready(pc_pserial, data, size, event_id);
 }
@@ -381,6 +374,7 @@ void process_rx_pkt(interface_buffer_handle_t *buf_handle)
 	struct esp_payload_header *header = NULL;
 	uint8_t *payload = NULL;
 	uint16_t payload_len = 0;
+	int ret = 0;
 
 	header = (struct esp_payload_header *) buf_handle->payload;
 	payload = buf_handle->payload + le16toh(header->offset);
@@ -391,11 +385,36 @@ void process_rx_pkt(interface_buffer_handle_t *buf_handle)
 
 	if ((buf_handle->if_type == ESP_STA_IF) && station_connected) {
 		/* Forward data to wlan driver */
-		esp_wifi_internal_tx(ESP_IF_WIFI_STA, payload, payload_len);
+		int retry = 6;
+
+		do {
+			ret = esp_wifi_internal_tx(ESP_IF_WIFI_STA, payload, payload_len);
+			retry--;
+
+			if (ret) {
+				if (retry % 3)
+					usleep(600);
+				else
+					vTaskDelay(1);
+			}
+
+		} while (ret && retry);
 		/*ESP_LOG_BUFFER_HEXDUMP("spi_sta_rx", payload, payload_len, ESP_LOG_INFO);*/
 	} else if (buf_handle->if_type == ESP_AP_IF && softap_started) {
+		int retry = 6;
 		/* Forward data to wlan driver */
-		esp_wifi_internal_tx(ESP_IF_WIFI_AP, payload, payload_len);
+		do {
+			ret = esp_wifi_internal_tx(ESP_IF_WIFI_AP, payload, payload_len);
+			retry--;
+
+			if (ret) {
+				if (retry % 3)
+					usleep(600);
+				else
+					vTaskDelay(1);
+			}
+
+		} while (ret && retry);
 	} else if (buf_handle->if_type == ESP_SERIAL_IF) {
 		process_serial_rx_pkt(buf_handle->payload);
 	}
