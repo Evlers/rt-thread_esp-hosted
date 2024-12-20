@@ -182,20 +182,30 @@ static int register_esp_event_callbacks(void)
   */
 static void transport_driver_event_handler(uint8_t event)
 {
+	static bool is_esp_init_done = false;
+
     switch (event)
     {
         case TRANSPORT_ACTIVE:
-            /* Initiate control path now */
+			if (is_esp_init_done)
+			{
+				LOG_W("esp network device restarts abnormally");
+				rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_DISCONNECT, RT_NULL);
+				rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_STOP, RT_NULL);
+				break;
+			}
+
+            /* initiate control path now */
             if (init_hosted_control_lib())
             {
                 LOG_E("Init hosted control lib failed");
-                return;
+                break;
             }
 
             LOG_D("Base transport is set-up");
 
             register_esp_event_callbacks();
-
+			is_esp_init_done = true;
             break;
 
         default:
@@ -412,11 +422,11 @@ static rt_err_t drv_wlan_softap(struct rt_wlan_device *wlan, struct rt_ap_info *
 
     if (sync_response_result(resp) == SUCCESS)
     {
-        rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_START, 0);
+        rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_START, RT_NULL);
     }
     else
     {
-        rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_STOP, 0);
+        rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_STOP, RT_NULL);
     }
 
     return RT_EOK;
@@ -447,7 +457,7 @@ static rt_err_t drv_wlan_ap_stop(struct rt_wlan_device *wlan)
 
     if (sync_response_result(resp) == SUCCESS)
     {
-        rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_STOP, 0);
+        rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_STOP, RT_NULL);
     }
 
     return RT_EOK;
