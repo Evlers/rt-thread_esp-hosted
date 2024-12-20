@@ -29,7 +29,7 @@
  */
 int esp_netdev_open(netdev_handle_t netdev)
 {
-	return STM_OK;
+    return ESP_OK;
 }
 
 /**
@@ -39,7 +39,7 @@ int esp_netdev_open(netdev_handle_t netdev)
  */
 int esp_netdev_close(netdev_handle_t netdev)
 {
-	return STM_OK;
+    return ESP_OK;
 }
 
 
@@ -47,193 +47,192 @@ int esp_netdev_close(netdev_handle_t netdev)
  * @brief  transmit on virtual network device
  * @param  netdev - network device
  *         net_buf - buffer to transmit
- * @retval STM_OK for success or failure from enum stm_ret_t
+ * @retval ESP_OK for success or failure from enum esp_ret
  */
 int esp_netdev_xmit(netdev_handle_t netdev, struct pbuf *net_buf)
 {
-	struct esp_private *priv = NULL;
+    struct esp_private *priv = NULL;
 
-	if (!netdev || !net_buf)
-		return STM_FAIL;
-	priv = (struct esp_private *) netdev_stub_get_priv(netdev);
+    if (!netdev || !net_buf)
+        return ESP_FAIL;
+    priv = (struct esp_private *) netdev_stub_get_priv(netdev);
 
-	if (!priv)
-		return STM_FAIL;
+    if (!priv)
+        return ESP_FAIL;
 
-	if (send_to_slave(priv->if_type, priv->if_num, net_buf->payload, net_buf->len) != STM_OK)
-		return STM_FAIL;
+    if (send_to_slave(priv->if_type, priv->if_num, net_buf->payload, net_buf->len) != ESP_OK)
+        return ESP_FAIL;
 
-	free(net_buf);
+    free(net_buf);
 
-	return STM_OK;
+    return ESP_OK;
 }
 
 void process_capabilities(uint8_t cap)
 {
 #if DEBUG_TRANSPORT
-	LOG_D("capabilities: 0x%x",cap);
+    LOG_D("capabilities: 0x%x",cap);
 #else
-	/* warning suppress */
-	if(cap);
+    /* warning suppress */
+    if(cap);
 #endif
 }
 
 void process_priv_communication(struct pbuf *pbuf)
 {
-	struct esp_priv_event *header = NULL;
+    struct esp_priv_event *header = NULL;
 
-	uint8_t *payload = NULL;
-	uint16_t len = 0;
+    uint8_t *payload = NULL;
+    uint16_t len = 0;
 
-	if (!pbuf || !pbuf->payload)
-		return;
+    if (!pbuf || !pbuf->payload)
+        return;
 
-	header = (struct esp_priv_event *) pbuf->payload;
+    header = (struct esp_priv_event *) pbuf->payload;
 
-	payload = pbuf->payload;
-	len = pbuf->len;
+    payload = pbuf->payload;
+    len = pbuf->len;
 
-	if (header->event_type == ESP_PRIV_EVENT_INIT)
-	{
-		LOG_D("event packet type");
-		process_event(payload, len);
-	}
+    if (header->event_type == ESP_PRIV_EVENT_INIT)
+    {
+        LOG_D("event packet type");
+        process_event(payload, len);
+    }
 
-	hosted_free(pbuf);
+    hosted_free(pbuf);
 }
 
 static void print_capabilities(uint32_t cap)
 {
-	LOG_I("Features supported are:");
-	if (cap & (ESP_WLAN_SDIO_SUPPORT | ESP_WLAN_SPI_SUPPORT))
-		LOG_I("\t * WLAN");
-	if (cap & (ESP_BT_UART_SUPPORT | ESP_BT_SDIO_SUPPORT | ESP_BT_SPI_SUPPORT))
-	{
-		LOG_I("\t * BT/BLE");
-		if (cap & ESP_BT_UART_SUPPORT)
-			LOG_I("\t   - HCI over UART");
-		if (cap & ESP_BT_SDIO_SUPPORT)
-			LOG_I("\t   - HCI over SDIO");
-		if (cap & ESP_BT_SPI_SUPPORT)
-			LOG_I("\t   - HCI over SPI");
-		if ((cap & ESP_BLE_ONLY_SUPPORT) && (cap & ESP_BR_EDR_ONLY_SUPPORT))
-			LOG_I("\t   - BT/BLE dual mode");
-		else if (cap & ESP_BLE_ONLY_SUPPORT)
-			LOG_I("\t   - BLE only");
-		else if (cap & ESP_BR_EDR_ONLY_SUPPORT)
-			LOG_I("\t   - BR EDR only");
-	}
+    LOG_I("Features supported are:");
+    if (cap & (ESP_WLAN_SDIO_SUPPORT | ESP_WLAN_SPI_SUPPORT))
+        LOG_I("\t * WLAN");
+    if (cap & (ESP_BT_UART_SUPPORT | ESP_BT_SDIO_SUPPORT | ESP_BT_SPI_SUPPORT))
+    {
+        LOG_I("\t * BT/BLE");
+        if (cap & ESP_BT_UART_SUPPORT)
+            LOG_I("\t   - HCI over UART");
+        if (cap & ESP_BT_SDIO_SUPPORT)
+            LOG_I("\t   - HCI over SDIO");
+        if (cap & ESP_BT_SPI_SUPPORT)
+            LOG_I("\t   - HCI over SPI");
+        if ((cap & ESP_BLE_ONLY_SUPPORT) && (cap & ESP_BR_EDR_ONLY_SUPPORT))
+            LOG_I("\t   - BT/BLE dual mode");
+        else if (cap & ESP_BLE_ONLY_SUPPORT)
+            LOG_I("\t   - BLE only");
+        else if (cap & ESP_BR_EDR_ONLY_SUPPORT)
+            LOG_I("\t   - BR EDR only");
+    }
 }
 
 static void print_chip_type(char chip_type)
 {
-	if ((chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32) &&
-	    (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32S2) &&
-	    (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C2) &&
-	    (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C3) &&
-	    (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C6) &&
-	    (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32S3)) 
-	{
-		LOG_E("ESP board type is not mentioned, ignoring [%d]", chip_type);
-		chip_type = ESP_PRIV_FIRMWARE_CHIP_UNRECOGNIZED;
-	}
-	else
-	{
-		LOG_I("Chip is: %s%s%s%s%s%s",
-				chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32 ? "ESP32" : "",
-				chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32S2 ? "ESP32s2" : "",
-				chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32C2 ? "ESP32c2" : "",
-				chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32C3 ? "ESP32c3" : "",
-				chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32C6 ? "ESP32c6" : "",
-				chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32S3 ? "ESP32s3" : "");
-	}
+    if ((chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32) &&
+        (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32S2) &&
+        (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C2) &&
+        (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C3) &&
+        (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32C6) &&
+        (chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32S3))
+    {
+        LOG_E("ESP board type is not mentioned, ignoring [%d]", chip_type);
+        chip_type = ESP_PRIV_FIRMWARE_CHIP_UNRECOGNIZED;
+    }
+    else
+    {
+        LOG_I("Chip is: %s%s%s%s%s%s",
+                chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32 ? "ESP32" : "",
+                chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32S2 ? "ESP32s2" : "",
+                chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32C2 ? "ESP32c2" : "",
+                chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32C3 ? "ESP32c3" : "",
+                chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32C6 ? "ESP32c6" : "",
+                chip_type == ESP_PRIV_FIRMWARE_CHIP_ESP32S3 ? "ESP32s3" : "");
+    }
 }
 
 void process_event(uint8_t *evt_buf, uint16_t len)
 {
-	struct esp_priv_event *event;
+    struct esp_priv_event *event;
 
-	if (!evt_buf || !len)
-		return;
+    if (!evt_buf || !len)
+        return;
 
-	event = (struct esp_priv_event *) evt_buf;
+    event = (struct esp_priv_event *) evt_buf;
 
-	if (event->event_type == ESP_PRIV_EVENT_INIT)
-	{
-		LOG_D("Received INIT event from ESP peripheral");
+    if (event->event_type == ESP_PRIV_EVENT_INIT)
+    {
+        LOG_D("Received INIT event from ESP peripheral");
 
-		print_hex_dump(event->event_data, event->event_len, "process event");
+        print_hex_dump(event->event_data, event->event_len, "process event");
 
-		if (process_init_event(event->event_data, event->event_len))
-		{
-			LOG_E("failed to init event");
-		}
-	}
-	else
-	{
-		LOG_W("Drop unknown event");
-	}
+        if (process_init_event(event->event_data, event->event_len))
+        {
+            LOG_E("failed to init event");
+        }
+    }
+    else
+    {
+        LOG_W("Drop unknown event");
+    }
 }
 
 static void adjust_spi_clock(uint8_t spi_clk_mhz)
 {
-	// if ((spi_clk_mhz) && (spi_clk_mhz != SPI_INITIAL_CLK_MHZ)) {
-	// 	printk(KERN_INFO "ESP Reconfigure SPI CLK to %u MHz\n",spi_clk_mhz);
-	// 	spi_context.spi_clk_mhz = spi_clk_mhz;
-	// 	spi_context.esp_spi_dev->max_speed_hz = spi_clk_mhz * NUMBER_1M;
-	// }
-#warning "adjust_spi_clock not implemented"
+    // if ((spi_clk_mhz) && (spi_clk_mhz != SPI_INITIAL_CLK_MHZ)) {
+    //  printk(KERN_INFO "ESP Reconfigure SPI CLK to %u MHz\n",spi_clk_mhz);
+    //  spi_context.spi_clk_mhz = spi_clk_mhz;
+    //  spi_context.esp_spi_dev->max_speed_hz = spi_clk_mhz * NUMBER_1M;
+    // }
 }
 
 int process_init_event(uint8_t *evt_buf, uint8_t len)
 {
-	uint8_t len_left = len, tag_len;
-	uint8_t *pos;
+    uint8_t len_left = len, tag_len;
+    uint8_t *pos;
 
-	if (!evt_buf)
-		return STM_FAIL;
+    if (!evt_buf)
+        return ESP_FAIL;
 
-	pos = evt_buf;
-	while (len_left)
-	{
-		tag_len = *(pos + 1);
-		LOG_D("EVENT: %d", *pos);
-		if (*pos == ESP_PRIV_CAPABILITY)
-		{
-			LOG_D("priv capabilty ");
-			process_capabilities(*(pos + 2));
-			print_capabilities(*(pos + 2));
-		}
-		else if (*pos == ESP_PRIV_SPI_CLK_MHZ)
-		{
-			LOG_D("adjust spi clock frequency to %u MHz", (*(pos + 2)));
-			adjust_spi_clock(*(pos + 2));
-		}
-		else if (*pos == ESP_PRIV_FIRMWARE_CHIP_ID)
-		{
-			print_chip_type(*(pos+2));
-		}
-		else if (*pos == ESP_PRIV_TEST_RAW_TP)
-		{
-			LOG_D("priv test raw tp");
+    pos = evt_buf;
+    while (len_left)
+    {
+        tag_len = *(pos + 1);
+        LOG_D("EVENT: %d", *pos);
+        if (*pos == ESP_PRIV_CAPABILITY)
+        {
+            LOG_D("priv capabilty ");
+            process_capabilities(*(pos + 2));
+            print_capabilities(*(pos + 2));
+        }
+        else if (*pos == ESP_PRIV_SPI_CLK_MHZ)
+        {
+            LOG_D("adjust spi clock frequency to %u MHz", (*(pos + 2)));
+            adjust_spi_clock(*(pos + 2));
+        }
+        else if (*pos == ESP_PRIV_FIRMWARE_CHIP_ID)
+        {
+            print_chip_type(*(pos+2));
+        }
+        else if (*pos == ESP_PRIV_TEST_RAW_TP)
+        {
+            LOG_D("priv test raw tp");
 #if TEST_RAW_TP
-			process_test_capabilities(*(pos + 2));
+            process_test_capabilities(*(pos + 2));
 #endif
-		}
-		else if (*pos == ESP_PRIV_FW_DATA)
-		{
-			struct fw_version *fw_ver = (struct fw_version *) (pos + 2);
-			LOG_D("ESP-Hosted Firmware version :: %s-%d.%d.%d.%d.%d",
-					fw_ver->project_name, fw_ver->major1, fw_ver->major2, fw_ver->minor,
-					fw_ver->revision_patch_1, fw_ver->revision_patch_2);
-		}
-		else
-		{
-			LOG_W("Unsupported tag in event: %d", *pos);
-		}
-		pos += (tag_len+2);
-		len_left -= (tag_len+2);
-	}
+        }
+        else if (*pos == ESP_PRIV_FW_DATA)
+        {
+            struct fw_version *fw_ver = (struct fw_version *) (pos + 2);
+            LOG_D("ESP-Hosted Firmware version :: %s-%d.%d.%d.%d.%d",
+                    fw_ver->project_name, fw_ver->major1, fw_ver->major2, fw_ver->minor,
+                    fw_ver->revision_patch_1, fw_ver->revision_patch_2);
+        }
+        else
+        {
+            LOG_W("Unsupported tag in event: %d", *pos);
+        }
+        pos += (tag_len+2);
+        len_left -= (tag_len+2);
+    }
 
-	return STM_OK;
+    return ESP_OK;
 }

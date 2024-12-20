@@ -26,11 +26,11 @@
 #ifdef CONFIG_ESP_CACHE_MALLOC
 #include "mempool_ll.h"
 struct hosted_mempool {
-	struct os_mempool *pool;
-	uint8_t *heap;
-	uint8_t static_heap;
-	size_t num_blocks;
-	size_t block_size;
+    struct os_mempool *pool;
+    uint8_t *heap;
+    uint8_t static_heap;
+    size_t num_blocks;
+    size_t block_size;
 };
 #endif
 
@@ -46,10 +46,10 @@ struct hosted_mempool {
 #define CALLOC(x,y)                      calloc(x,y)
 #define MEM_ALLOC(x)                     heap_caps_malloc(x, MALLOC_CAP_DMA)
 #define FREE(x) do {                     \
-	if (x) {                             \
-		free(x);                         \
-		x = NULL;                        \
-	}                                    \
+    if (x) {                             \
+        free(x);                         \
+        x = NULL;                        \
+    }                                    \
 } while(0);
 
 #define MEMPOOL_NAME_STR_SIZE            32
@@ -71,10 +71,10 @@ struct hosted_mempool {
 
 
 struct hosted_mempool * hosted_mempool_create(void *pre_allocated_mem,
-		size_t pre_allocated_mem_size, size_t num_blocks, size_t block_size);
+        size_t pre_allocated_mem_size, size_t num_blocks, size_t block_size);
 void hosted_mempool_destroy(struct hosted_mempool *mempool);
 void * hosted_mempool_alloc(struct hosted_mempool *mempool,
-		size_t nbytes, uint8_t need_memset);
+        size_t nbytes, uint8_t need_memset);
 int hosted_mempool_free(struct hosted_mempool *mempool, void *mem);
 
 #endif

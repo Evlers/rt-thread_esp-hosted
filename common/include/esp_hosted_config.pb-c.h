@@ -70,7 +70,7 @@ typedef struct CtrlMsg CtrlMsg;
 /* --- enums --- */
 
 /*
- * Enums similar to ESP IDF 
+ * Enums similar to ESP IDF
  */
 typedef enum _CtrlVendorIEType {
   CTRL__VENDOR_IETYPE__Beacon = 0,
@@ -116,7 +116,7 @@ typedef enum _CtrlWifiSecProt {
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(CTRL__WIFI_SEC_PROT)
 } CtrlWifiSecProt;
 /*
- * enums for Control path 
+ * enums for Control path
  */
 typedef enum _CtrlStatus {
   CTRL__STATUS__Connected = 0,
@@ -166,7 +166,7 @@ typedef enum _CtrlMsgId {
   CTRL_MSG_ID__Req_GetFwVersion = 123,
   /*
    * Add new control path command response before Req_Max
-   * and update Req_Max 
+   * and update Req_Max
    */
   CTRL_MSG_ID__Req_Max = 124,
   /*
@@ -198,7 +198,7 @@ typedef enum _CtrlMsgId {
   CTRL_MSG_ID__Resp_GetFwVersion = 223,
   /*
    * Add new control path command response before Resp_Max
-   * and update Resp_Max 
+   * and update Resp_Max
    */
   CTRL_MSG_ID__Resp_Max = 224,
   /*
@@ -213,7 +213,7 @@ typedef enum _CtrlMsgId {
   CTRL_MSG_ID__Event_StationConnectedToESPSoftAP = 306,
   /*
    * Add new control path command notification before Event_Max
-   * and update Event_Max 
+   * and update Event_Max
    */
   CTRL_MSG_ID__Event_Max = 307
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(CTRL_MSG_ID)
@@ -228,7 +228,7 @@ typedef enum _HostedFeature {
 /* --- messages --- */
 
 /*
- * internal supporting structures for CtrlMsg 
+ * internal supporting structures for CtrlMsg
  */
 struct  ScanResult
 {
@@ -855,19 +855,19 @@ struct  CtrlMsg
 {
   ProtobufCMessage base;
   /*
-   * msg_type could be req, resp or Event 
+   * msg_type could be req, resp or Event
    */
   CtrlMsgType msg_type;
   /*
-   * msg id 
+   * msg id
    */
   CtrlMsgId msg_id;
   /*
-   * UID of message 
+   * UID of message
    */
   int32_t uid;
   /*
-   * Request/response type: sync or async 
+   * Request/response type: sync or async
    */
   uint32_t req_resp_type;
   CtrlMsg__PayloadCase payload_case;

@@ -19,7 +19,7 @@
 
 #include "adapter.h"
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
   #include "esp_mac.h"
   #define ESP_TCPIP_INIT() esp_netif_init();
 #else
@@ -27,6 +27,6 @@
 #endif
 
 typedef struct {
-	interface_context_t *context;
+    interface_context_t *context;
 } adapter;
 #endif

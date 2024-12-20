@@ -165,7 +165,7 @@ int hosted_destroy_semaphore(void * semaphore_handle);
  *      NULL : on error
  */
 void *hosted_timer_start(int duration, int type,
-		void (*timeout_handler)(void const *), void *arg);
+        void (*timeout_handler)(void const *), void *arg);
 
 /* hosted_timer_stop is to stop timer
  * Input parameters
@@ -236,7 +236,7 @@ int serial_drv_write (struct serial_drv_handle_t* serial_drv_handle,
  */
 
 uint8_t * serial_drv_read(struct serial_drv_handle_t *serial_drv_handle,
-		uint32_t *out_nbyte);
+        uint32_t *out_nbyte);
 
 /*
  * serial_drv_close function closes driver interface.

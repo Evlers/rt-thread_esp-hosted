@@ -40,9 +40,9 @@ extern "C" {
 #define ESP_PRIV_FIRMWARE_CHIP_ESP32C6      (0xD)
 
 struct esp_private {
-	uint8_t     if_type;
-	uint8_t     if_num;
-	void        *netdev;
+    uint8_t     if_type;
+    uint8_t     if_num;
+    void        *netdev;
 };
 
 /* netdev APIs*/
@@ -58,8 +58,8 @@ void process_event(uint8_t *evt_buf, uint16_t len);
 void process_priv_communication(struct pbuf *pbuf);
 int process_init_event(uint8_t *evt_buf, uint8_t len);
 
-stm_ret_t send_to_slave(uint8_t iface_type, uint8_t iface_num,
-		uint8_t * wbuffer, uint16_t wlen);
+esp_ret send_to_slave(uint8_t iface_type, uint8_t iface_num,
+        uint8_t * wbuffer, uint16_t wlen);
 
 
 #ifdef __cplusplus

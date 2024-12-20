@@ -28,7 +28,7 @@
 #endif
 
 #if (defined(CONFIG_IDF_TARGET_ESP32C3) || \
-	 defined(CONFIG_IDF_TARGET_ESP32S3))
+     defined(CONFIG_IDF_TARGET_ESP32S3))
   #define BT_OVER_C3_S3 1
 #endif
 
@@ -80,8 +80,8 @@
 
   #if defined(CONFIG_IDF_TARGET_ESP32)
 
-    #define BT_TX_PIN	        5
-    #define BT_RX_PIN	        18
+    #define BT_TX_PIN           5
+    #define BT_RX_PIN           18
     #define BT_RTS_PIN         19
     #define BT_CTS_PIN         23
 

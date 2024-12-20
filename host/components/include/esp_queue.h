@@ -13,18 +13,18 @@
 #define ESP_QUEUE_ERR_MEMORY            -2
 
 typedef struct q_element {
-	void *buf;
-	int buf_len;
+    void *buf;
+    int buf_len;
 } esp_queue_elem_t;
 
 /* Queue based on Linked List */
 typedef struct esp_queue_node {
-	void *data;
-	struct esp_queue_node* next;
+    void *data;
+    struct esp_queue_node* next;
 } q_node_t;
 
 typedef struct esp_queue {
-	q_node_t *front, *rear;
+    q_node_t *front, *rear;
 } esp_queue_t;
 
 esp_queue_t* create_esp_queue(void);

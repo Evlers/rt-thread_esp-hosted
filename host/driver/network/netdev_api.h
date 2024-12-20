@@ -26,7 +26,7 @@ extern "C" {
 /**
   * @brief  init network interface
   * @param  None
-  * @retval STM_OK/STM_FAIL
+  * @retval ESP_OK/ESP_FAIL
   */
 int network_init(void);
 

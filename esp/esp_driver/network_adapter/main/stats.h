@@ -80,10 +80,10 @@ void debug_runtime_stats_task(void* pvParameters);
 #define TEST_RAW_TP__TIMEOUT         SEC_TO_USEC(1)
 
 typedef struct {
-	esp_timer_handle_t timer;
-	size_t cur_interval;
-	int64_t t_start;
-	SemaphoreHandle_t done;
+    esp_timer_handle_t timer;
+    size_t cur_interval;
+    int64_t t_start;
+    SemaphoreHandle_t done;
 } test_args_t;
 
 void debug_update_raw_tp_rx_count(uint16_t len);

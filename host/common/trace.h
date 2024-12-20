@@ -29,7 +29,7 @@ extern "C" {
 #define DEBUG_HEX_STREAM_PRINT            0
 #ifndef assert
 #define assert(x) do { if (!(x)) { \
-	printf("Aborting at: %s:%u\n", __FILE__, __LINE__); while(1);}} while (0);
+    printf("Aborting at: %s:%u\n", __FILE__, __LINE__); while(1);}} while (0);
 #endif
 
 /** Exported Structures **/

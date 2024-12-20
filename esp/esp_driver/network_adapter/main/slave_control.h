@@ -44,22 +44,22 @@
 #define VENDOR_OUI_BUF          3
 
 typedef struct {
-	uint8_t ssid[SSID_LENGTH];
-	uint8_t pwd[PASSWORD_LENGTH];
-	uint8_t bssid[BSSID_LENGTH];
-	uint8_t chnl;
-	uint8_t max_conn;
-	int8_t rssi;
-	bool ssid_hidden;
-	wifi_auth_mode_t ecn;
-	uint8_t bw;
-	uint16_t count;
+    uint8_t ssid[SSID_LENGTH];
+    uint8_t pwd[PASSWORD_LENGTH];
+    uint8_t bssid[BSSID_LENGTH];
+    uint8_t chnl;
+    uint8_t max_conn;
+    int8_t rssi;
+    bool ssid_hidden;
+    wifi_auth_mode_t ecn;
+    uint8_t bw;
+    uint16_t count;
 } credentials_t;
 
 esp_err_t data_transfer_handler(uint32_t session_id,const uint8_t *inbuf,
-		ssize_t inlen,uint8_t **outbuf, ssize_t *outlen, void *priv_data);
+        ssize_t inlen,uint8_t **outbuf, ssize_t *outlen, void *priv_data);
 esp_err_t ctrl_notify_handler(uint32_t session_id,const uint8_t *inbuf,
-		ssize_t inlen, uint8_t **outbuf, ssize_t *outlen, void *priv_data);
+        ssize_t inlen, uint8_t **outbuf, ssize_t *outlen, void *priv_data);
 void send_event_to_host(int event_id);
 void send_event_data_to_host(int event_id, void *data, int size);
 

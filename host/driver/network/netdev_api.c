@@ -18,12 +18,12 @@
 /**
   * @brief  init network interface
   * @param  None
-  * @retval STM_OK/STM_FAIL
+  * @retval ESP_OK/ESP_FAIL
   */
 int network_init(void)
 {
-	netdev_stub_init();
-	return STM_OK;
+    netdev_stub_init();
+    return ESP_OK;
 }
 
 
@@ -35,34 +35,34 @@ int network_init(void)
   */
 struct network_handle * network_open(char *if_name, void (* net_rx_callback)(struct network_handle *))
 {
-	struct netdev *ndev = NULL;
-	struct network_handle *net_handle = NULL;
+    struct netdev *ndev = NULL;
+    struct network_handle *net_handle = NULL;
 
-	if (!if_name)
-		return NULL;
+    if (!if_name)
+        return NULL;
 
-	ndev = netdev_stub_get(if_name);
+    ndev = netdev_stub_get(if_name);
 
-	if (!ndev) {
-		printf ("Invalid interface name\n");
-		return NULL;
-	}
+    if (!ndev) {
+        printf ("Invalid interface name\n");
+        return NULL;
+    }
 
-	/* create network handle */
-	net_handle = malloc(sizeof(struct network_handle));
+    /* create network handle */
+    net_handle = malloc(sizeof(struct network_handle));
 
-	net_handle->ndev = ndev;
-	net_handle->net_rx_callback = net_rx_callback;
+    net_handle->ndev = ndev;
+    net_handle->net_rx_callback = net_rx_callback;
 
-	if (netdev_stub_open(ndev)) {
-		printf ("Failed to setup netdev\n");
-		free(net_handle);
-		return NULL;
-	}
+    if (netdev_stub_open(ndev)) {
+        printf ("Failed to setup netdev\n");
+        free(net_handle);
+        return NULL;
+    }
 
-	ndev->net_handle = net_handle;
+    ndev->net_handle = net_handle;
 
-	return net_handle;
+    return net_handle;
 }
 
 
@@ -75,23 +75,23 @@ struct network_handle * network_open(char *if_name, void (* net_rx_callback)(str
   */
 struct pbuf * network_read(struct network_handle *handle, rt_int32_t timeout)
 {
-	struct pbuf *buffer = NULL;
+    struct pbuf *buffer = NULL;
 
-	if (!handle || !handle->ndev)
-		return NULL;
+    if (!handle || !handle->ndev)
+        return NULL;
 
-	buffer = malloc(sizeof(struct pbuf));
+    buffer = malloc(sizeof(struct pbuf));
 
-	if (!buffer)
-		return NULL;
+    if (!buffer)
+        return NULL;
 
-	if (rt_mq_recv(handle->ndev->rx_q, buffer, sizeof(struct pbuf), timeout) != sizeof(struct pbuf)) {
-		printf ("Failed to read from network\n");
-		free(buffer);
-		return NULL;
-	}
+    if (rt_mq_recv(handle->ndev->rx_q, buffer, sizeof(struct pbuf), timeout) != sizeof(struct pbuf)) {
+        printf ("Failed to read from network\n");
+        free(buffer);
+        return NULL;
+    }
 
-	return buffer;
+    return buffer;
 }
 
 
@@ -103,21 +103,21 @@ struct pbuf * network_read(struct network_handle *handle, rt_int32_t timeout)
   */
 int network_write(struct network_handle *net_handle, struct pbuf *buffer)
 {
-	struct netdev *ndev;
-	int ret;
+    struct netdev *ndev;
+    int ret;
 
-	if (!net_handle || !buffer)
-		return STM_FAIL;
+    if (!net_handle || !buffer)
+        return ESP_FAIL;
 
-	ndev = net_handle->ndev;
+    ndev = net_handle->ndev;
 
-	if (ndev && (ndev->state == NETDEV_STATE_UP)) {
-		if (ndev->net_ops && ndev->net_ops->netdev_xmit) {
-			ret = ndev->net_ops->netdev_xmit(ndev, buffer);
-		}
-	}
+    if (ndev && (ndev->state == NETDEV_STATE_UP)) {
+        if (ndev->net_ops && ndev->net_ops->netdev_xmit) {
+            ret = ndev->net_ops->netdev_xmit(ndev, buffer);
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
 
@@ -128,10 +128,10 @@ int network_write(struct network_handle *net_handle, struct pbuf *buffer)
   */
 int network_close(struct network_handle *net_handle)
 {
-	netdev_stub_close(net_handle->ndev);
-	free(net_handle);
+    netdev_stub_close(net_handle->ndev);
+    free(net_handle);
 
-	return STM_OK;
+    return ESP_OK;
 }
 
 
@@ -142,5 +142,5 @@ int network_close(struct network_handle *net_handle)
   */
 int network_deinit(void)
 {
-	return STM_OK;
+    return ESP_OK;
 }

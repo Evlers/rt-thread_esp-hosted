@@ -48,10 +48,6 @@ path += [cwd + '/host/port/include']
 src += Glob('wlan/*.c')
 path += [cwd + '/wlan']
 
-# add sample source files
-if GetDepend(['ESP_HOSTED_USING_SAMPLE']):
-    src += Glob('sample/*.c')
-
 CPPDEFINES = ['']
 
 group = DefineGroup('esp-hosted', src, depend = ['RT_USING_ESP_HOSTED'], CPPPATH = path, CPPDEFINES = CPPDEFINES)

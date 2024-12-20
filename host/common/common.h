@@ -54,36 +54,36 @@ extern "C" {
 
 #define FREQ_IN_MHZ(x)                    ((x)*1000000)
 
-typedef enum stm_ret_s {
-	STM_OK                =  0,
-	STM_FAIL              = -1,
-	STM_FAIL_TIMEOUT      = -2,
-	STM_FAIL_INVALID_ARG  = -3,
-	STM_FAIL_NO_MEMORY    = -4,
-	STM_FAIL_NOT_FOUND    = -5,
-	STM_FAIL_NOT_FINISHED = -6,
-	STM_FAIL_ALIGNMENT    = -7
-}stm_ret_t;
+typedef enum {
+    ESP_OK                =  0,
+    ESP_FAIL              = -1,
+    ESP_FAIL_TIMEOUT      = -2,
+    ESP_FAIL_INVALID_ARG  = -3,
+    ESP_FAIL_NO_MEMORY    = -4,
+    ESP_FAIL_NOT_FOUND    = -5,
+    ESP_FAIL_NOT_FINISHED = -6,
+    ESP_FAIL_ALIGNMENT    = -7
+} esp_ret;
 
 typedef enum {
-	TRANSPORT_INACTIVE,
-	TRANSPORT_ACTIVE
-} transport_drv_events_e;
+    TRANSPORT_INACTIVE,
+    TRANSPORT_ACTIVE
+} transport_drv_events;
 
 /** Exported Structures **/
 /* interface header */
 typedef struct {
-	union {
-		void *priv_buffer_handle;
-	};
-	uint8_t if_type;
-	uint8_t if_num;
-	uint8_t *payload;
-	uint8_t flag;
-	uint16_t payload_len;
-	uint16_t seq_num;
+    union {
+        void *priv_buffer_handle;
+    };
+    uint8_t if_type;
+    uint8_t if_num;
+    uint8_t *payload;
+    uint8_t flag;
+    uint16_t payload_len;
+    uint16_t seq_num;
 
-	void (*free_buf_handle)(void *buf_handle);
+    void (*free_buf_handle)(void *buf_handle);
 } interface_buffer_handle_t;
 
 /** Exported variables **/

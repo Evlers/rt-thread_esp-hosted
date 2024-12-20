@@ -36,28 +36,28 @@ extern "C" {
 struct network_handle;
 
 struct netdev {
-	/* Interface name */
-	char name[MAX_IF_NAME_SIZE];
+    /* Interface name */
+    char name[MAX_IF_NAME_SIZE];
 
-	/* Driver API's */
-	struct netdev_ops *net_ops;
+    /* Driver API's */
+    struct netdev_ops *net_ops;
 
-	/* Netdev state */
-	uint8_t state;
+    /* Netdev state */
+    uint8_t state;
 
-	/*Application handle */
-	struct network_handle *net_handle;
+    /*Application handle */
+    struct network_handle *net_handle;
 
-	/* Rx queue */
-	rt_mq_t rx_q;
+    /* Rx queue */
+    rt_mq_t rx_q;
 
-	/* Driver priv */
-	void *priv;
+    /* Driver priv */
+    void *priv;
 };
 
 struct network_handle {
-	struct netdev *ndev;
-	void (* net_rx_callback)();
+    struct netdev *ndev;
+    void (* net_rx_callback)();
 };
 
 /**

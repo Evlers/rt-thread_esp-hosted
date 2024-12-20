@@ -126,7 +126,7 @@ void hard_delay(int x)
   * @brief  get numbers from string
   * @param  val - return integer value,
   *         arg - input string
-  * @retval STM_OK on success, else STM_FAIL
+  * @retval ESP_OK on success, else ESP_FAIL
   */
 int get_num_from_string(int *val, char *arg)
 {
@@ -135,12 +135,12 @@ int get_num_from_string(int *val, char *arg)
 
   if (!arg || (arg[0]=='\0')) {
     printf("No number Identified \n");
-    return STM_FAIL;
+    return ESP_FAIL;
   }
 
   if (!val) {
     printf("No memory allocated \n");
-    return STM_FAIL;
+    return ESP_FAIL;
   }
 
   errno = 0;
@@ -150,16 +150,16 @@ int get_num_from_string(int *val, char *arg)
   if (endptr == str) {
     printf("No digits found \n");
     *val = 0;
-    return STM_FAIL;
+    return ESP_FAIL;
   }
 
   if ((errno == ERANGE) && ((*val == INT32_MAX) || (*val == INT32_MIN))) {
     perror("strtol");
     *val = 0;
-    return STM_FAIL;
+    return ESP_FAIL;
   }
 
-  return STM_OK;
+  return ESP_OK;
 }
 
 /** Local functions **/

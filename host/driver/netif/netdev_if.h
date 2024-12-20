@@ -25,10 +25,10 @@ extern "C" {
  * @brief Network data buffer
  */
 struct pbuf {
-	/* Data buffer */
-	uint8_t *payload;
-	/* Length of data buffer */
-	uint16_t len;
+    /* Data buffer */
+    uint8_t *payload;
+    /* Length of data buffer */
+    uint16_t len;
 };
 
 /**
@@ -40,12 +40,12 @@ typedef struct netdev * netdev_handle_t;
  * @brief Network operations implemented by driver
  */
 struct netdev_ops {
-	/* Open device */
-	int (* netdev_open) (netdev_handle_t netdev);
-	/* Close device */
-	int (* netdev_close) (netdev_handle_t netdev);
-	/* Transmit packet */
-	int (* netdev_xmit) (netdev_handle_t netdev, struct pbuf *net_buf);
+    /* Open device */
+    int (* netdev_open) (netdev_handle_t netdev);
+    /* Close device */
+    int (* netdev_close) (netdev_handle_t netdev);
+    /* Transmit packet */
+    int (* netdev_xmit) (netdev_handle_t netdev, struct pbuf *net_buf);
 };
 
 /**
