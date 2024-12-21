@@ -75,7 +75,7 @@ But I recommend using the `release/v5.3` branch because this project uses it
 
 - Install the ESP-IDF using script
 ```sh
-$ cd esp/esp_driver
+$ cd esp
 $ cmake .
 ```
 - Set-Up the build environment using
