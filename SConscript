@@ -45,8 +45,8 @@ src += Glob('host/port/src/*.c')
 path += [cwd + '/host/port/include']
 
 # add wlan source and header files
-src += Glob('wlan/*.c')
-path += [cwd + '/wlan']
+src += Glob('host/wlan/*.c')
+path += [cwd + '/host/wlan']
 
 CPPDEFINES = ['']
 
