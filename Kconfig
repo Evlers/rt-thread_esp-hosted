@@ -44,21 +44,52 @@ menuconfig RT_USING_ESP_HOSTED
             int "Set the maximum spi frequency(Hz)"
             default 30000000
 
-        config ESP_HOSTED_SPI_CS_PIN
-            int "Set the SPI CS pin"
-            default -1
+        choice
+            prompt "Select the pin name or number"
+            default ESP_HOSTED_USING_PIN_NAME
 
-        config ESP_HOSTED_DATA_READY_PIN
-            int "Set the data ready pin"
-            default -1
+            config ESP_HOSTED_USING_PIN_NAME
+                bool "Name"
 
-        config ESP_HOSTED_HANDSHAKE_PIN
-            int "Set the handshake pin"
-            default -1
+            config ESP_HOSTED_USING_PIN_NUMBER
+                bool "Number"
+        endchoice
 
-        config ESP_HOSTED_RESET_PIN
+        if ESP_HOSTED_USING_PIN_NAME
+            config ESP_HOSTED_SPI_CS_PIN_NAME
+                string "Set the SPI CS pin name"
+                default "PA.0"
+
+            config ESP_HOSTED_DATA_READY_PIN_NAME
+                string "Set the data ready pin name"
+                default "PA.0"
+
+            config ESP_HOSTED_HANDSHAKE_PIN_NAME
+                string "Set the handshake pin name"
+                default "PA.0"
+
+            config ESP_HOSTED_RESET_PIN_NAME
+                string "Set the reset pin name"
+                default "PA.0"
+        endif
+
+        if ESP_HOSTED_USING_PIN_NUMBER
+            config ESP_HOSTED_SPI_CS_PIN
+                int "Set the SPI CS pin"
+                default -1
+
+            config ESP_HOSTED_DATA_READY_PIN
+                int "Set the data ready pin"
+                default -1
+
+            config ESP_HOSTED_HANDSHAKE_PIN
+                int "Set the handshake pin"
+                default -1
+
+            config ESP_HOSTED_RESET_PIN
                 int "Set the reset pin"
                 default -1
+        endif
 
         config ESP_HOSTED_THREAD_INIT
             bool "Use thread initialization"

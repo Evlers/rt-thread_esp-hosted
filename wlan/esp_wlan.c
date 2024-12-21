@@ -686,11 +686,16 @@ int rt_hw_esp_wlan_init (void)
 
 static void esp_hosted_init (void *parameter)
 {
+#ifdef ESP_HOSTED_USING_PIN_NUMBER
+    rt_base_t pin_reset = ESP_HOSTED_RESET_PIN;
+#else
+    rt_base_t pin_reset = rt_pin_get(ESP_HOSTED_RESET_PIN_NAME);
+#endif
     /* reset esp32 chip */
-    rt_pin_mode(ESP_HOSTED_RESET_PIN, PIN_MODE_OUTPUT);
-    rt_pin_write(ESP_HOSTED_RESET_PIN, PIN_LOW);
+    rt_pin_mode(pin_reset, PIN_MODE_OUTPUT);
+    rt_pin_write(pin_reset, PIN_LOW);
     rt_thread_mdelay(50);
-    rt_pin_write(ESP_HOSTED_RESET_PIN, PIN_HIGH);
+    rt_pin_write(pin_reset, PIN_HIGH);
 
     /* stop spi transactions short time to avoid slave sync issues */
     rt_thread_mdelay(50);

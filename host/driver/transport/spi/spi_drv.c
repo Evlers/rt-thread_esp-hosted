@@ -45,7 +45,8 @@ static struct netdev_ops esp_net_ops =
 };
 
 /** Exported variables **/
-
+static rt_base_t pin_handshake = -1;
+static rt_base_t pin_data_ready = -1;
 static rt_sem_t trans_semaphore;
 
 static rt_thread_t process_rx_thread_id = 0;
@@ -195,8 +196,13 @@ void transport_init(void(*transport_evt_handler_fp)(uint8_t))
     assert(from_slave_queue);
 
     /* Initializes the spi bus */
+#ifdef ESP_HOSTED_USING_PIN_NUMBER
+    rt_base_t pin_cs = ESP_HOSTED_SPI_CS_PIN;
+#else
+    rt_base_t pin_cs = rt_pin_get(ESP_HOSTED_SPI_CS_PIN_NAME);
+#endif
     static struct rt_spi_device esp_spi_device;
-    if (rt_spi_bus_attach_device_cspin(&esp_spi_device, ESP_HOSTED_SPI_DEVICE_NAME, ESP_HOSTED_SPI_BUS_NAME, ESP_HOSTED_SPI_CS_PIN, NULL) == RT_EOK)
+    if (rt_spi_bus_attach_device_cspin(&esp_spi_device, ESP_HOSTED_SPI_DEVICE_NAME, ESP_HOSTED_SPI_BUS_NAME, pin_cs, NULL) == RT_EOK)
     {
         /* Configure SPI bus */
         struct rt_spi_configuration cfg;
@@ -222,12 +228,20 @@ void transport_init(void(*transport_evt_handler_fp)(uint8_t))
     rt_thread_startup(process_rx_thread_id);
 
     /* Initializes an external interrupt */
-    rt_pin_mode(ESP_HOSTED_HANDSHAKE_PIN, PIN_MODE_INPUT_PULLUP);
-    rt_pin_mode(ESP_HOSTED_DATA_READY_PIN, PIN_MODE_INPUT_PULLUP);
-    rt_pin_attach_irq(ESP_HOSTED_HANDSHAKE_PIN, PIN_IRQ_MODE_RISING, gpio_interrupt, NULL);
-    rt_pin_attach_irq(ESP_HOSTED_DATA_READY_PIN, PIN_IRQ_MODE_RISING, gpio_interrupt, NULL);
-    rt_pin_irq_enable(ESP_HOSTED_HANDSHAKE_PIN, RT_TRUE);
-    rt_pin_irq_enable(ESP_HOSTED_DATA_READY_PIN, RT_TRUE);
+#ifdef ESP_HOSTED_USING_PIN_NUMBER
+    pin_handshake = ESP_HOSTED_HANDSHAKE_PIN;
+    pin_data_ready = ESP_HOSTED_DATA_READY_PIN;
+#else
+    pin_handshake = rt_pin_get(ESP_HOSTED_HANDSHAKE_PIN_NAME);
+    pin_data_ready = rt_pin_get(ESP_HOSTED_DATA_READY_PIN_NAME);
+#endif
+
+    rt_pin_mode(pin_handshake, PIN_MODE_INPUT_PULLUP);
+    rt_pin_mode(pin_data_ready, PIN_MODE_INPUT_PULLUP);
+    rt_pin_attach_irq(pin_handshake, PIN_IRQ_MODE_RISING, gpio_interrupt, NULL);
+    rt_pin_attach_irq(pin_data_ready, PIN_IRQ_MODE_RISING, gpio_interrupt, NULL);
+    rt_pin_irq_enable(pin_handshake, RT_TRUE);
+    rt_pin_irq_enable(pin_data_ready, RT_TRUE);
 }
 
 /**
@@ -429,10 +443,10 @@ static void transaction_thread(void *parameter)
         rt_sem_take(trans_semaphore, RT_WAITING_FOREVER);
 
         /* handshake line SET -> slave ready for next transaction */
-        gpio_handshake = rt_pin_read(ESP_HOSTED_HANDSHAKE_PIN);
+        gpio_handshake = rt_pin_read(pin_handshake);
 
         /* data ready line SET -> slave wants to send something */
-        gpio_rx_data_ready = rt_pin_read(ESP_HOSTED_DATA_READY_PIN);
+        gpio_rx_data_ready = rt_pin_read(pin_data_ready);
 
         if (gpio_handshake)
         {
