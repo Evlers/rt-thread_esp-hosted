@@ -2257,7 +2257,7 @@ void   ctrl_msg__free_unpacked
   assert(message->base.descriptor == &ctrl_msg__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor scan_result__field_descriptors[5] =
+static const ProtobufCFieldDescriptor scan_result__field_descriptors[7] =
 {
   {
     "ssid",
@@ -2319,6 +2319,30 @@ static const ProtobufCFieldDescriptor scan_result__field_descriptors[5] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "bandwidth",
+    6,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_ENUM,
+    0,   /* quantifier_offset */
+    offsetof(ScanResult, bw),
+    &ctrl__wifi_bw__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "support",
+    7,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(ScanResult, support),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned scan_result__field_indices_by_name[] = {
   3,   /* field[3] = bssid */
@@ -2326,11 +2350,13 @@ static const unsigned scan_result__field_indices_by_name[] = {
   2,   /* field[2] = rssi */
   4,   /* field[4] = sec_prot */
   0,   /* field[0] = ssid */
+  5,   /* field[5] = bandwidth */
+  6,   /* field[6] = support */
 };
 static const ProtobufCIntRange scan_result__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 5 }
+  { 0, 7 }
 };
 const ProtobufCMessageDescriptor scan_result__descriptor =
 {
@@ -2340,7 +2366,7 @@ const ProtobufCMessageDescriptor scan_result__descriptor =
   "ScanResult",
   "",
   sizeof(ScanResult),
-  5,
+  7,
   scan_result__field_descriptors,
   scan_result__field_indices_by_name,
   1,  scan_result__number_ranges,
@@ -5817,7 +5843,7 @@ const ProtobufCEnumDescriptor ctrl__wifi_power_save__descriptor =
   ctrl__wifi_power_save__value_ranges,
   NULL,NULL,NULL,NULL   /* reserved[1234] */
 };
-static const ProtobufCEnumValue ctrl__wifi_sec_prot__enum_values_by_number[8] =
+static const ProtobufCEnumValue ctrl__wifi_sec_prot__enum_values_by_number[14] =
 {
   { "Open", "CTRL__WIFI_SEC_PROT__Open", 0 },
   { "WEP", "CTRL__WIFI_SEC_PROT__WEP", 1 },
@@ -5827,11 +5853,17 @@ static const ProtobufCEnumValue ctrl__wifi_sec_prot__enum_values_by_number[8] =
   { "WPA2_ENTERPRISE", "CTRL__WIFI_SEC_PROT__WPA2_ENTERPRISE", 5 },
   { "WPA3_PSK", "CTRL__WIFI_SEC_PROT__WPA3_PSK", 6 },
   { "WPA2_WPA3_PSK", "CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK", 7 },
+  { "WIFI_AUTH_WAPI_PSK", "CTRL__WIFI_SEC_PROT__WAPI_PSK", 8 },
+  { "WIFI_AUTH_OWE", "CTRL__WIFI_SEC_PROT__OWE", 9 },
+  { "WIFI_AUTH_WPA3_ENT_192", "CTRL__WIFI_SEC_PROT__WPA3_ENT_192", 10 },
+  { "WIFI_AUTH_WPA3_EXT_PSK", "CTRL__WIFI_SEC_PROT__WPA3_EXT_PSK", 11 },
+  { "WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE", "CTRL__WIFI_SEC_PROT__WPA3_EXT_PSK_MIXED_MODE", 12 },
+  { "WIFI_AUTH_DPP", "CTRL__WIFI_SEC_PROT__DPP", 13 },
 };
 static const ProtobufCIntRange ctrl__wifi_sec_prot__value_ranges[] = {
-{0, 0},{0, 8}
+{0, 0},{0, 14}
 };
-static const ProtobufCEnumValueIndex ctrl__wifi_sec_prot__enum_values_by_name[8] =
+static const ProtobufCEnumValueIndex ctrl__wifi_sec_prot__enum_values_by_name[14] =
 {
   { "Open", 0 },
   { "WEP", 1 },
@@ -5841,6 +5873,12 @@ static const ProtobufCEnumValueIndex ctrl__wifi_sec_prot__enum_values_by_name[8]
   { "WPA3_PSK", 6 },
   { "WPA_PSK", 2 },
   { "WPA_WPA2_PSK", 4 },
+  { "WIFI_AUTH_WAPI_PSK", 8},
+  { "WIFI_AUTH_OWE", 9},
+  { "WIFI_AUTH_WPA3_ENT_192", 10},
+  { "WIFI_AUTH_WPA3_EXT_PSK", 11},
+  { "WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE", 12},
+  { "WIFI_AUTH_DPP", 13},
 };
 const ProtobufCEnumDescriptor ctrl__wifi_sec_prot__descriptor =
 {
@@ -5849,9 +5887,9 @@ const ProtobufCEnumDescriptor ctrl__wifi_sec_prot__descriptor =
   "Ctrl_WifiSecProt",
   "CtrlWifiSecProt",
   "",
-  8,
+  14,
   ctrl__wifi_sec_prot__enum_values_by_number,
-  8,
+  14,
   ctrl__wifi_sec_prot__enum_values_by_name,
   1,
   ctrl__wifi_sec_prot__value_ranges,

@@ -196,6 +196,12 @@ typedef enum {
     WIFI_AUTH_WPA2_ENTERPRISE = CTRL__WIFI_SEC_PROT__WPA2_ENTERPRISE,
     WIFI_AUTH_WPA3_PSK = CTRL__WIFI_SEC_PROT__WPA3_PSK,
     WIFI_AUTH_WPA2_WPA3_PSK = CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK,
+    WIFI_AUTH_WAPI_PSK = CTRL__WIFI_SEC_PROT__WAPI_PSK,
+    WIFI_AUTH_OWE = CTRL__WIFI_SEC_PROT__OWE,
+    WIFI_AUTH_WPA3_ENT_192 = CTRL__WIFI_SEC_PROT__WPA3_ENT_192,
+    WIFI_AUTH_WPA3_EXT_PSK = CTRL__WIFI_SEC_PROT__WPA3_EXT_PSK,
+    WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE = CTRL__WIFI_SEC_PROT__WPA3_EXT_PSK_MIXED_MODE,
+    WIFI_AUTH_DPP = CTRL__WIFI_SEC_PROT__DPP,
     WIFI_AUTH_MAX,
 } wifi_auth_mode_e;
 
@@ -252,6 +258,20 @@ typedef struct {
     int rssi;
     int channel;
     int encryption_mode;
+    wifi_bandwidth_e bandwidth;
+    struct {
+    uint32_t phy_11b: 1;                  /**< Bit: 0 flag to identify if 11b mode is enabled or not */
+    uint32_t phy_11g: 1;                  /**< Bit: 1 flag to identify if 11g mode is enabled or not */
+    uint32_t phy_11n: 1;                  /**< Bit: 2 flag to identify if 11n mode is enabled or not */
+    uint32_t phy_lr: 1;                   /**< Bit: 3 flag to identify if low rate is enabled or not */
+    uint32_t phy_11a: 1;                  /**< Bit: 4 flag to identify if 11ax mode is enabled or not */
+    uint32_t phy_11ac: 1;                 /**< Bit: 5 flag to identify if 11ax mode is enabled or not */
+    uint32_t phy_11ax: 1;                 /**< Bit: 6 flag to identify if 11ax mode is enabled or not */
+    uint32_t wps: 1;                      /**< Bit: 7 flag to identify if WPS is supported or not */
+    uint32_t ftm_responder: 1;            /**< Bit: 8 flag to identify if FTM is supported in responder mode */
+    uint32_t ftm_initiator: 1;            /**< Bit: 9 flag to identify if FTM is supported in initiator mode */
+    uint32_t reserved: 22;                /**< Bit: 10..31 reserved */
+  } support;
 } wifi_scanlist_t;
 
 typedef struct {

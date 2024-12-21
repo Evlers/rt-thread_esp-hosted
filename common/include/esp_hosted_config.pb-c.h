@@ -112,7 +112,13 @@ typedef enum _CtrlWifiSecProt {
   CTRL__WIFI_SEC_PROT__WPA_WPA2_PSK = 4,
   CTRL__WIFI_SEC_PROT__WPA2_ENTERPRISE = 5,
   CTRL__WIFI_SEC_PROT__WPA3_PSK = 6,
-  CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK = 7
+  CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK = 7,
+  CTRL__WIFI_SEC_PROT__WAPI_PSK = 8,
+  CTRL__WIFI_SEC_PROT__OWE = 9,
+  CTRL__WIFI_SEC_PROT__WPA3_ENT_192 = 10,
+  CTRL__WIFI_SEC_PROT__WPA3_EXT_PSK = 11,
+  CTRL__WIFI_SEC_PROT__WPA3_EXT_PSK_MIXED_MODE = 12,
+  CTRL__WIFI_SEC_PROT__DPP = 13
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(CTRL__WIFI_SEC_PROT)
 } CtrlWifiSecProt;
 /*
@@ -238,10 +244,24 @@ struct  ScanResult
   int32_t rssi;
   ProtobufCBinaryData bssid;
   CtrlWifiSecProt sec_prot;
+  CtrlWifiBw bw;
+  struct {
+    uint32_t phy_11b: 1;                  /**< Bit: 0 flag to identify if 11b mode is enabled or not */
+    uint32_t phy_11g: 1;                  /**< Bit: 1 flag to identify if 11g mode is enabled or not */
+    uint32_t phy_11n: 1;                  /**< Bit: 2 flag to identify if 11n mode is enabled or not */
+    uint32_t phy_lr: 1;                   /**< Bit: 3 flag to identify if low rate is enabled or not */
+    uint32_t phy_11a: 1;                  /**< Bit: 4 flag to identify if 11ax mode is enabled or not */
+    uint32_t phy_11ac: 1;                 /**< Bit: 5 flag to identify if 11ax mode is enabled or not */
+    uint32_t phy_11ax: 1;                 /**< Bit: 6 flag to identify if 11ax mode is enabled or not */
+    uint32_t wps: 1;                      /**< Bit: 7 flag to identify if WPS is supported or not */
+    uint32_t ftm_responder: 1;            /**< Bit: 8 flag to identify if FTM is supported in responder mode */
+    uint32_t ftm_initiator: 1;            /**< Bit: 9 flag to identify if FTM is supported in initiator mode */
+    uint32_t reserved: 22;                /**< Bit: 10..31 reserved */
+  } support;
 };
 #define SCAN_RESULT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&scan_result__descriptor) \
-    , {0,NULL}, 0, 0, {0,NULL}, CTRL__WIFI_SEC_PROT__Open }
+    , {0,NULL}, 0, 0, {0,NULL}, CTRL__WIFI_SEC_PROT__Open, CTRL__WIFI_BW__BW_Invalid, {0} }
 
 
 struct  ConnectedSTAList

@@ -1273,6 +1273,41 @@ static esp_err_t req_get_ap_scan_list_handler (CtrlMsg *req,
         credentials.rssi = ap_info[i].rssi;
         results[i]->rssi = credentials.rssi;
 
+        /* bandwidth */
+        {
+            /* Since esp32 does not provide an API to obtain AP MIMO information, 
+            * and esp32 only does not support MIMO,
+            * our evaluated rate is also based on 1x1.
+            */
+
+            /* HT20 */
+            if (ap_info[i].second == WIFI_SECOND_CHAN_NONE)
+            {
+                credentials.bw = CTRL__WIFI_BW__HT20;
+            }
+            /* HT40 */
+            else if (ap_info[i].second == WIFI_SECOND_CHAN_ABOVE || ap_info[i].second == WIFI_SECOND_CHAN_BELOW)
+            {
+                credentials.bw = CTRL__WIFI_BW__HT40;
+            }
+        }
+        results[i]->bw = credentials.bw;
+
+        /* supports */
+        {
+            results[i]->support.phy_11b = ap_info[i].phy_11b;
+            results[i]->support.phy_11g = ap_info[i].phy_11g;
+            results[i]->support.phy_11n = ap_info[i].phy_11n;
+            results[i]->support.phy_lr = ap_info[i].phy_lr;
+            results[i]->support.phy_11a = ap_info[i].phy_11a;
+            results[i]->support.phy_11ac = ap_info[i].phy_11ac;
+            results[i]->support.phy_11ax = ap_info[i].phy_11ax;
+            results[i]->support.wps = ap_info[i].wps;
+            results[i]->support.ftm_responder = ap_info[i].ftm_responder;
+            results[i]->support.ftm_initiator = ap_info[i].ftm_initiator;
+            results[i]->support.reserved = ap_info[i].reserved;
+        }
+
         snprintf((char *)credentials.bssid, BSSID_LENGTH,
                 MACSTR, MAC2STR(ap_info[i].bssid));
         results[i]->bssid.len = strnlen((char *)credentials.bssid, BSSID_LENGTH);
@@ -1291,13 +1326,15 @@ static esp_err_t req_get_ap_scan_list_handler (CtrlMsg *req,
 
         credentials.ecn = ap_info[i].authmode;
         results[i]->sec_prot = credentials.ecn;
+        uint32_t support;
+        memcpy(&support, &results[i]->support, sizeof(results[i]->support));
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        ESP_LOGI(TAG, "SSID      \t\t%s\nRSSI      \t\t%ld\nChannel   \t\t%lu\nBSSID     \t\t%s\nAuth mode \t\t%d\n",
+        ESP_LOGI(TAG, "SSID      \t\t%s\nRSSI      \t\t%ld\nChannel   \t\t%lu\nBSSID     \t\t%s\nAuth mode \t\t%d\nbandwidth\t\t%d\nsupport\t\t\t%08lx\n",
 #else
-        ESP_LOGI(TAG,"\nSSID      \t\t%s\nRSSI      \t\t%d\nChannel   \t\t%d\nBSSID     \t\t%s\nAuth mode \t\t%d\n",
+        ESP_LOGI(TAG,"\nSSID      \t\t%s\nRSSI      \t\t%d\nChannel   \t\t%d\nBSSID     \t\t%s\nAuth mode \t\t%d\nbandwidth\t\t%d\nsupport\t\t\t%08lx\n",
 #endif
                 results[i]->ssid.data, results[i]->rssi, results[i]->chnl,
-                results[i]->bssid.data, results[i]->sec_prot);
+                results[i]->bssid.data, results[i]->sec_prot, results[i]->bw, support);
         vTaskDelay(1);
 
         resp_payload->n_entries++;

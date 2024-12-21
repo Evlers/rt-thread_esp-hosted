@@ -423,6 +423,8 @@ static int ctrl_app_parse_resp(CtrlMsg *ctrl_msg, ctrl_cmd_t *app_resp)
                 list[i].channel = rp->entries[i]->chnl;
                 list[i].rssi = rp->entries[i]->rssi;
                 list[i].encryption_mode = rp->entries[i]->sec_prot;
+                list[i].bandwidth = rp->entries[i]->bw;
+                memcpy(&list[i].support, &rp->entries[i]->support, sizeof(list[i].support));
             }
 
             ap->out_list = list;

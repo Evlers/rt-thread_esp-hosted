@@ -257,6 +257,52 @@ static int security_wlan_to_esp (rt_wlan_security_t security)
     }
 }
 
+/* estimate the maximum rate for ap
+ *  MIMO    Channel Width   Protocol        rate
+ *  -           22MHz       802.11b         11Mbps
+ *  -           20MHz       802.11g         54 Mbps
+ *  1x1         20MHz       802.11n         72Mbps
+ *  1x1         40MHz       802.11n         150Mbps
+ *  2x2         20MHz       802.11n         144Mbps
+ *  2x2         40MHz       802.11n         300Mbps
+*/
+static int estimate_ap_max_rate(wifi_scanlist_t *ap_info)
+{
+    int max_rate = 0;
+
+    /* Check whether 802.11n (Wi-Fi 4) is supported */
+    if (ap_info->support.phy_11n)
+    {
+        /* Since esp32 does not provide an API to obtain AP MIMO information, 
+         * and esp32 only does not support MIMO,
+         * our evaluated rate is also based on 1x1.
+         */
+
+        /* 20 MHz */
+        if (ap_info->bandwidth == WIFI_BW_HT20)
+        {
+            max_rate = 72;
+        }
+        /* 40 MHz */
+        else if (ap_info->bandwidth == WIFI_BW_HT40)
+        {
+            max_rate = 150;
+        }
+    }
+    /* Check whether 802.11g is supported */
+    else if (ap_info->support.phy_11g)
+    {
+        max_rate = 54;
+    }
+    /* Check whether 802.11b is supported */
+    else if (ap_info->support.phy_11b)
+    {
+        max_rate = 11;
+    }
+
+    return max_rate;
+}
+
 static rt_err_t drv_wlan_init(struct rt_wlan_device *wlan)
 {
     return RT_EOK;
@@ -314,8 +360,8 @@ static int esp_scan_callback(ctrl_cmd_t * resp)
                 wlan_info.channel = (rt_int16_t)list[i].channel;
                 wlan_info.rssi = list[i].rssi;
 
-                wlan_info.datarate = 0;
-                wlan_info.band = RT_802_11_BAND_2_4GHZ;
+                wlan_info.datarate = estimate_ap_max_rate(&list[i]) * 1000000;
+                wlan_info.band = RT_802_11_BAND_UNKNOWN;
 
                 wlan_info.security = security_esp_to_wlan(list[i].encryption_mode);
 
