@@ -399,7 +399,6 @@ static rt_err_t drv_wlan_scan(struct rt_wlan_device *wlan, struct rt_scan_info *
     ctrl_cmd_t req;
 
     ctrl_cmd_default_req(&req);
-    req.cmd_timeout_sec = 300;
     req.ctrl_resp_cb = esp_scan_callback;
 
     wifi_ap_scan_list(req);
@@ -441,6 +440,7 @@ static rt_err_t drv_wlan_join(struct rt_wlan_device *wlan, struct rt_sta_info *s
     memcpy(req.u.wifi_ap_config.pwd, sta_info->key.val, min(sta_info->key.len, sizeof(req.u.wifi_ap_config.pwd)));
     req.u.wifi_ap_config.is_wpa3_supported = false;
     req.u.wifi_ap_config.listen_interval = 3; // default
+    req.u.wifi_ap_config.encryption_mode = security_wlan_to_esp(sta_info->security);
 
     /* register callback for handling reply asynch-ly */
     req.ctrl_resp_cb = esp_join_callback;
