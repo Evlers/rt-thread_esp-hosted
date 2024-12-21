@@ -4,4 +4,4 @@
 [submodule "esp/esp_driver/esp-idf"]
 	path = esp/esp_driver/esp-idf
 	url = https://github.com/espressif/esp-idf
-	branch = release/v5.1
+	branch = release/v5.3

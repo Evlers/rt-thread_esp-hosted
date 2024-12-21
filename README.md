@@ -1,6 +1,6 @@
 ## RT-Thread ESP-Hosted
 
-### Overview
+## Overview
 The repository has adapted `ESP-Hosted-FG` to the RT-Thread system, currently only supports the SPI bus protocol, and uses the rt_spi_device of RT-Thread for SPI bus operations.<br>
 
 This version of ESP-Hosted provides:
@@ -14,9 +14,9 @@ Although the project doesn't provide a standard 802.11 interface to the host, it
 
 Details about ESP-Hosted-FG can be found in the [ESP-Hosted README](./docs/README.md).<br>
 
-### Using
+## Using
 
-#### Add this repository
+### Add this repository
 - Clone the repository to the `packages` or `libraries` directory in the RT-Thread project.
 - Because the `esp-idf` and `protobuf-c` is a submodule, you will need to clone with the --recursive option.
 - In the `libraries` or `packages` folder in the RT-Thread project, include `Kconfig` file for `ESP-Hosted` in its Kconfig files.
@@ -27,7 +27,7 @@ menu "External Libraries"
 endmenu
 ```
 
-#### Configure ESP-Hosted
+### Configure ESP-Hosted
 - Use the `menuconfig` command in the env window
 - Select Open `Using esp-hosted for espressif` 
 ```
@@ -54,7 +54,7 @@ endmenu
 (20)    The priority of the init thread
 ```
 
-### Hardware connections for ESP32
+## Hardware connections for ESP32
 | Function  | ESP32 Pin | ESP32-S2/S3 | ESP32-C2/C3/C5/C6 |
 |-----------|-----------|-------------|----------------|
 | MISO      | IO19      | IO13        | IO2            |
@@ -68,8 +68,11 @@ endmenu
 
 If you are familiar with esp-idf, you can also try to modify the pins
 
-### Build ESP32 firmware
-#### Set-up ESP-IDF
+## Build ESP32 firmware
+### Set-up ESP-IDF
+If you already have an `esp-idf` environment, you can skip this `Set-up`<br>
+But I recommend using the `release/v5.3` branch because this project uses it
+
 - Install the ESP-IDF using script
 ```sh
 $ cd esp/esp_driver
@@ -81,7 +84,7 @@ $ . ./esp-idf/export.sh
 # Optionally, You can add alias for this command in ~/.bashrc for later use
 ```
 
-#### Configure, Build & Flash ESP firmware
+### Configure, Build & Flash ESP firmware
 - Set slave chipset environment
 ```
 $ cd network_adapter
@@ -111,13 +114,13 @@ $ idf.py -p <serial_port> build flash
 $ idf.py -p <serial_port> monitor
 ```
 
-### Checking the Setup
+## Checking the Setup
 
 - Firmware log
 On successful flashing, you should see following entry in ESP log:
 ```
 I (412) NETWORK_ADAPTER: *********************************************************************
-I (422) NETWORK_ADAPTER:                 ESP-Hosted-FG Firmware version :: 0.0.5
+I (422) NETWORK_ADAPTER:                 ESP-Hosted Firmware version :: FG-0.0.6.0.0
 I (432) NETWORK_ADAPTER:                 Transport used :: SPI only
 I (442) NETWORK_ADAPTER: *********************************************************************
 ```
@@ -154,7 +157,7 @@ msh />[10856] I/WLAN.mgnt: wifi connect success ssid:TP-LINK_86A9
 [30173] I/ntp: Get local time from NTP server: Fri Dec 20 15:13:16 2024
 ```
 
-### Supported Chip
+## Supported Chip
 
 | **CHIP**  |**SDIO**|**SPI**|
 |-----------|--------|-------|
@@ -170,6 +173,6 @@ msh />[10856] I/WLAN.mgnt: wifi connect success ssid:TP-LINK_86A9
 'o' indicates tested and supported<br>
 '*' means theoretically supported, but not tested
 
-### More information
+## More information
 * [esp-hosted](https://github.com/espressif/esp-hosted)
 * [espressif](https://www.espressif.com.cn)
