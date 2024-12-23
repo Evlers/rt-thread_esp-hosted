@@ -140,7 +140,7 @@ static int esp_ctrl_event_callback (ctrl_cmd_t * event)
             break;
 
         default:
-            LOG_D("Invalid event[%u] to parse", event->msg_id);
+            LOG_W("Invalid event[%u] to parse", event->msg_id);
             break;
     }
     free_ctrl_resp_msg(event);
@@ -175,42 +175,28 @@ static int register_esp_event_callbacks(void)
     return ret;
 }
 
-/**
-  * @brief  transport driver event handler callback
-  * @param  event - spi_drv_events_e event to be handled
-  * @retval None
-  */
-static void transport_driver_event_handler(uint8_t event)
+static void esp_hosted_up_cb(void)
 {
 	static bool is_esp_init_done = false;
 
-    switch (event)
+    if (is_esp_init_done)
     {
-        case TRANSPORT_ACTIVE:
-			if (is_esp_init_done)
-			{
-				LOG_W("esp network device restarts abnormally");
-				rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_DISCONNECT, RT_NULL);
-				rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_STOP, RT_NULL);
-				break;
-			}
-
-            /* initiate control path now */
-            if (init_hosted_control_lib())
-            {
-                LOG_E("Init hosted control lib failed");
-                break;
-            }
-
-            LOG_D("Base transport is set-up");
-
-            register_esp_event_callbacks();
-			is_esp_init_done = true;
-            break;
-
-        default:
-            break;
+        LOG_W("esp network device restarts abnormally");
+        rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_DISCONNECT, RT_NULL);
+        rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_STOP, RT_NULL);
+        return;
     }
+
+    /* initiate control path now */
+    if (init_hosted_control_lib())
+    {
+        LOG_E("Init hosted control lib failed");
+        return;
+    }
+
+    register_esp_event_callbacks();
+    is_esp_init_done = true;
+    return;
 }
 
 
@@ -635,8 +621,8 @@ int rt_hw_esp_wlan_init (void)
     /* init network interface */
     network_init();
 
-    /* init spi driver */
-    transport_init(transport_driver_event_handler);
+    /* init transport drivers */
+    transport_drv_init(esp_hosted_up_cb);
 
     /* wait for WiFi initialization */
     if (rt_sem_take(sem_esp_init, rt_tick_from_millisecond(10 * 1000)))

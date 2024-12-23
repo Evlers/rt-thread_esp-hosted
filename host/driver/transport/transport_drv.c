@@ -17,10 +17,11 @@
 #include "transport_drv.h"
 #include "common/stats.h"
 
-#define DBG_TAG           "esp.netdev"
+#define DBG_TAG           "esp.trans"
 #define DBG_LVL           DBG_INFO
 #include "rtdbg.h"
 
+void(*transport_esp_hosted_up_cb)(void) = NULL;
 
 /**
  * @brief  open virtual network device
@@ -68,6 +69,30 @@ int esp_netdev_xmit(netdev_handle_t netdev, struct pbuf *net_buf)
     return ESP_OK;
 }
 
+static void transport_driver_event_handler(uint8_t event)
+{
+	switch(event)
+	{
+		case TRANSPORT_ACTIVE:
+		{
+			/* Initiate control path now */
+			LOG_D("Base transport is set-up");
+			if (transport_esp_hosted_up_cb)
+				transport_esp_hosted_up_cb();
+			break;
+		}
+
+		default:
+		break;
+	}
+}
+
+void transport_drv_init(void(*esp_hosted_up_cb)(void))
+{
+	transport_init_internal();
+	transport_esp_hosted_up_cb = esp_hosted_up_cb;
+}
+
 void process_capabilities(uint8_t cap)
 {
 #if DEBUG_TRANSPORT
@@ -78,28 +103,12 @@ void process_capabilities(uint8_t cap)
 #endif
 }
 
-void process_priv_communication(struct pbuf *pbuf)
+void process_priv_communication(interface_buffer_handle_t *buf_handle)
 {
-    struct esp_priv_event *header = NULL;
+	if (!buf_handle || !buf_handle->payload || !buf_handle->payload_len)
+		return;
 
-    uint8_t *payload = NULL;
-    uint16_t len = 0;
-
-    if (!pbuf || !pbuf->payload)
-        return;
-
-    header = (struct esp_priv_event *) pbuf->payload;
-
-    payload = pbuf->payload;
-    len = pbuf->len;
-
-    if (header->event_type == ESP_PRIV_EVENT_INIT)
-    {
-        LOG_D("event packet type");
-        process_event(payload, len);
-    }
-
-    hosted_free(pbuf);
+	process_event(buf_handle->payload, buf_handle->payload_len);
 }
 
 static void print_capabilities(uint32_t cap)
@@ -175,15 +184,6 @@ void process_event(uint8_t *evt_buf, uint16_t len)
     }
 }
 
-static void adjust_spi_clock(uint8_t spi_clk_mhz)
-{
-    // if ((spi_clk_mhz) && (spi_clk_mhz != SPI_INITIAL_CLK_MHZ)) {
-    //  printk(KERN_INFO "ESP Reconfigure SPI CLK to %u MHz\n",spi_clk_mhz);
-    //  spi_context.spi_clk_mhz = spi_clk_mhz;
-    //  spi_context.esp_spi_dev->max_speed_hz = spi_clk_mhz * NUMBER_1M;
-    // }
-}
-
 int process_init_event(uint8_t *evt_buf, uint8_t len)
 {
     uint8_t len_left = len, tag_len;
@@ -202,11 +202,6 @@ int process_init_event(uint8_t *evt_buf, uint8_t len)
             LOG_D("priv capabilty ");
             process_capabilities(*(pos + 2));
             print_capabilities(*(pos + 2));
-        }
-        else if (*pos == ESP_PRIV_SPI_CLK_MHZ)
-        {
-            LOG_D("adjust spi clock frequency to %u MHz", (*(pos + 2)));
-            adjust_spi_clock(*(pos + 2));
         }
         else if (*pos == ESP_PRIV_FIRMWARE_CHIP_ID)
         {
@@ -234,5 +229,6 @@ int process_init_event(uint8_t *evt_buf, uint8_t len)
         len_left -= (tag_len+2);
     }
 
+    transport_driver_event_handler(TRANSPORT_ACTIVE);
     return ESP_OK;
 }

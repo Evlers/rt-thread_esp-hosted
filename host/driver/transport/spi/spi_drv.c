@@ -56,9 +56,6 @@ static rt_thread_t transaction_thread_id = 0;
 static rt_mq_t to_slave_queue = NULL;
 static rt_mq_t from_slave_queue = NULL;
 
-/* callback of event handler */
-static void (*spi_drv_evt_handler_fp) (uint8_t);
-
 /** function declaration **/
 /** Exported functions **/
 static void transaction_thread(void *parameter);
@@ -105,13 +102,15 @@ static int init_netdev(void)
     {
         /* Alloc and init netdev */
         ndev = netdev_stub_alloc(sizeof(struct esp_private), if_name);
-        if (!ndev) {
+        if (!ndev)
+        {
             deinit_netdev();
             return ESP_FAIL;
         }
 
         priv = (struct esp_private *) netdev_stub_get_priv(ndev);
-        if (!priv) {
+        if (!priv)
+        {
             deinit_netdev();
             return ESP_FAIL;
         }
@@ -120,7 +119,8 @@ static int init_netdev(void)
         priv->if_type = if_type;
         priv->if_num = 0;
 
-        if (netdev_stub_register(ndev, &esp_net_ops)) {
+        if (netdev_stub_register(ndev, &esp_net_ops))
+        {
             deinit_netdev();
             return ESP_FAIL;
         }
@@ -143,8 +143,10 @@ static void deinit_netdev(void)
 {
     for (int i = 0; i < MAX_NETWORK_INTERFACES; i++)
     {
-        if (esp_priv[i]) {
-            if (esp_priv[i]->netdev) {
+        if (esp_priv[i])
+        {
+            if (esp_priv[i]->netdev)
+            {
                 netdev_stub_unregister(esp_priv[i]->netdev);
                 netdev_stub_free(esp_priv[i]->netdev);
             }
@@ -169,14 +171,10 @@ static void gpio_interrupt(void *args)
 
 /**
   * @brief  transport initializes
-  * @param  transport_evt_handler_fp - event handler
   * @retval None
   */
-void transport_init(void(*transport_evt_handler_fp)(uint8_t))
+void transport_init_internal(void)
 {
-    /* register callback */
-    spi_drv_evt_handler_fp = transport_evt_handler_fp;
-
     if (init_netdev())
     {
         LOG_E("netdev failed to init");
@@ -252,8 +250,7 @@ void transport_init(void(*transport_evt_handler_fp)(uint8_t))
   *         wlen - size of wbuffer
   * @retval sendbuf - Tx buffer
   */
-esp_ret send_to_slave(uint8_t iface_type, uint8_t iface_num,
-        uint8_t * wbuffer, uint16_t wlen)
+esp_ret send_to_slave(uint8_t iface_type, uint8_t iface_num, uint8_t *wbuffer, uint16_t wlen)
 {
     interface_buffer_handle_t buf_handle = {0};
 
@@ -261,7 +258,8 @@ esp_ret send_to_slave(uint8_t iface_type, uint8_t iface_num,
     {
         LOG_E("write fail: buff(%p) 0? OR (0<len(%u)<=max_poss_len(%u))?",
                 wbuffer, wlen, MAX_PAYLOAD_SIZE);
-        if(wbuffer) {
+        if(wbuffer)
+        {
             free(wbuffer);
             wbuffer = NULL;
         }
@@ -279,9 +277,9 @@ esp_ret send_to_slave(uint8_t iface_type, uint8_t iface_num,
     if (RT_EOK != rt_mq_send_wait(to_slave_queue, &buf_handle, sizeof(buf_handle), RT_WAITING_FOREVER))
     {
         LOG_E("Failed to send tx buffer to the queue");
-        if(wbuffer) {
+        if(wbuffer)
+        {
             free(wbuffer);
-            wbuffer = NULL;
         }
         return ESP_FAIL;
     }
@@ -344,8 +342,8 @@ static esp_ret spi_transaction(struct rt_spi_device *dev, uint8_t * txbuff)
             else
             {
                 LOG_W("Invalid packet received from slave, length: %d", rx_length);
-                LOG_HEX("rxbuff_head16", 16, rxbuff, min(rx_length, 32));
-                LOG_HEX("rxbuff_tail16", 16, rxbuff + (rx_length - min(rx_length, 32)), min(rx_length, 32));
+                print_hex_dump(rxbuff, min(rx_length, 32), "rxbuff_head16");
+                print_hex_dump(rxbuff + (rx_length - min(rx_length, 32)), min(rx_length, 32), "rxbuff_tail16");
             }
 
             /* Free up buffer, as one of following -
@@ -379,7 +377,7 @@ static esp_ret spi_transaction(struct rt_spi_device *dev, uint8_t * txbuff)
                 buf_handle.flag        = payload_header->flags;
                 LOG_D("if_type: %d, if_num: %d, len: %d, offset: %d, seq_num: %d, flags: 0x%x",
                         payload_header->if_type, payload_header->if_num, len, offset, le16toh(payload_header->seq_num), payload_header->flags);
-                LOG_HEX("payload", 16, buf_handle.payload, min(buf_handle.payload_len, 32));
+                print_hex_dump(buf_handle.payload, min(buf_handle.payload_len, 32), "payload");
                 if (RT_EOK != rt_mq_send_wait(from_slave_queue, &buf_handle, sizeof(interface_buffer_handle_t), 2000))
                 {
                     LOG_E("Failed to send rx buffer to the queue");
@@ -389,7 +387,8 @@ static esp_ret spi_transaction(struct rt_spi_device *dev, uint8_t * txbuff)
             else
             {
                 LOG_W("Checksum mismatch, rx_checksum: 0x%04x, computed_checksum: 0x%04x", rx_checksum, checksum);
-                if (rxbuff) {
+                if (rxbuff)
+                {
                     free(rxbuff);
                     rxbuff = NULL;
                 }
@@ -412,15 +411,17 @@ static esp_ret spi_transaction(struct rt_spi_device *dev, uint8_t * txbuff)
 
 done:
     /* error cases, abort */
-    if (txbuff) {
+    if (txbuff)
+    {
         free(txbuff);
-        txbuff = NULL;
     }
 
-    if (rxbuff) {
+    if (rxbuff)
+    {
         free(rxbuff);
         rxbuff = NULL;
     }
+
     return ESP_FAIL;
 }
 
@@ -518,35 +519,15 @@ static void process_rx_thread(void *parameter)
         }
         else if (buf_handle.if_type == ESP_PRIV_IF)
         {
-            buffer = (struct pbuf *)malloc(sizeof(struct pbuf));
-            assert(buffer);
-
-            buffer->len = buf_handle.payload_len;
-            buffer->payload = malloc(buf_handle.payload_len);
-            assert(buffer->payload);
-
-            memcpy(buffer->payload, buf_handle.payload,
-                    buf_handle.payload_len);
-
-            process_priv_communication(buffer);
+            process_priv_communication(&buf_handle);
             /* priv transaction received */
             LOG_D("Received INIT event");
 
-            event = (struct esp_priv_event *) (payload);
+            event = (struct esp_priv_event *) (buf_handle.payload);
             if (event->event_type == ESP_PRIV_EVENT_INIT)
             {
-                /* halt spi transactions for some time,
-                 * this is one time delay, to give breathing
-                 * time to slave before spi trans start */
-                // rt_thread_mdelay(100);
-                if (spi_drv_evt_handler_fp) {
-                    spi_drv_evt_handler_fp(TRANSPORT_ACTIVE);
-                }
-            }
-            else
-            {
-                /* User can re-use this type of transaction */
-            }
+				/* User can re-use this type of transaction */
+			}
         }
         else if (buf_handle.if_type == ESP_TEST_IF)
         {
@@ -564,7 +545,8 @@ static void process_rx_thread(void *parameter)
          * responsible for freeing buffer. In case not offloaded or
          * failed to offload, buffer should be freed here.
          */
-        if (buf_handle.free_buf_handle) {
+        if (buf_handle.free_buf_handle)
+        {
             buf_handle.free_buf_handle(buf_handle.priv_buffer_handle);
         }
     }
@@ -591,7 +573,8 @@ static uint8_t * get_tx_buffer(uint8_t *is_valid_tx_buf)
      * In that case only payload header with zero payload
      * length would be transmitted.
      */
-    if (rt_mq_recv(to_slave_queue, &buf_handle, sizeof(buf_handle), 0) == sizeof(buf_handle)) {
+    if (rt_mq_recv(to_slave_queue, &buf_handle, sizeof(buf_handle), 0) == sizeof(buf_handle))
+    {
         len = buf_handle.payload_len;
     }
 

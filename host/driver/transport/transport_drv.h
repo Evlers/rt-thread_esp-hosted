@@ -45,22 +45,21 @@ struct esp_private {
     void        *netdev;
 };
 
-/* netdev APIs*/
+/* netdev APIs */
 int esp_netdev_open(netdev_handle_t netdev);
 int esp_netdev_close(netdev_handle_t netdev);
 int esp_netdev_xmit(netdev_handle_t netdev, struct pbuf *net_buf);
 
+/* transport API for SPI / SDIO */
+void transport_init_internal(void);
+esp_ret send_to_slave(uint8_t iface_type, uint8_t iface_num, uint8_t *wbuffer, uint16_t wlen);
 
+/* transport drivers */
+void transport_drv_init(void(*esp_hosted_up_cb)(void));
 void process_capabilities(uint8_t cap);
-void transport_init(void(*transport_evt_handler)(uint8_t));
-
 void process_event(uint8_t *evt_buf, uint16_t len);
-void process_priv_communication(struct pbuf *pbuf);
+void process_priv_communication(interface_buffer_handle_t *buf_handle);
 int process_init_event(uint8_t *evt_buf, uint8_t len);
-
-esp_ret send_to_slave(uint8_t iface_type, uint8_t iface_num,
-        uint8_t * wbuffer, uint16_t wlen);
-
 
 #ifdef __cplusplus
 }
