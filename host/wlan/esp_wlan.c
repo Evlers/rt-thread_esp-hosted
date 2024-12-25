@@ -510,6 +510,41 @@ static int drv_wlan_get_rssi(struct rt_wlan_device *wlan)
     return resp->u.wifi_ap_record.rssi;
 }
 
+#ifdef RT_WLAN_DEV_VERSION
+#if RT_WLAN_DEV_VERSION >= 0x10000 /* >= 1.0.0 */
+static int drv_wlan_get_info(struct rt_wlan_device *wlan, struct rt_wlan_info *info)
+{
+    ctrl_cmd_t req;
+    ctrl_cmd_t *resp = NULL;
+
+    ctrl_cmd_default_req(&req);
+    resp = wifi_get_ap_config(req);
+
+    if (resp && SUCCESS == resp->resp_event_status)
+    {
+        memcpy(info->bssid, resp->u.wifi_ap_record.bssid, sizeof(info->bssid));
+        info->ssid.len = min(strlen((const char *)resp->u.wifi_ap_record.ssid), sizeof(info->ssid.val));
+        rt_memcpy(info->ssid.val, resp->u.wifi_ap_record.ssid, info->ssid.len);
+
+        if (info->ssid.len)
+            info->hidden = 0;
+        else
+            info->hidden = 1;
+
+        info->channel = (rt_int16_t)resp->u.wifi_ap_record.primary;
+        info->rssi = resp->u.wifi_ap_record.rssi;
+
+        info->datarate = estimate_ap_max_rate(&resp->u.wifi_ap_record) * 1000000;
+        info->band = RT_802_11_BAND_UNKNOWN;
+
+        info->security = security_esp_to_wlan(resp->u.wifi_ap_record.authmode);
+    }
+
+    return sync_response_result(resp);
+}
+#endif /* RT_WLAN_DEV_VERSION >= 0x10000 */
+#endif /* RT_WLAN_DEV_VERSION */
+
 static rt_err_t drv_wlan_set_mac(struct rt_wlan_device *wlan, rt_uint8_t mac[])
 {
     ctrl_cmd_t req;
@@ -588,6 +623,11 @@ static const struct rt_wlan_dev_ops ops =
     .wlan_ap_deauth = NULL,
     .wlan_scan_stop = NULL,
     .wlan_get_rssi = drv_wlan_get_rssi,
+#ifdef RT_WLAN_DEV_VERSION
+#if RT_WLAN_DEV_VERSION >= 0x10000 /* >= 1.0.0 */
+    .wlan_get_info = drv_wlan_get_info,
+#endif /* RT_WLAN_DEV_VERSION >= 0x10000 */
+#endif /* RT_WLAN_DEV_VERSION */
     .wlan_set_powersave = NULL,
     .wlan_get_powersave = NULL,
     .wlan_cfg_promisc = NULL,
