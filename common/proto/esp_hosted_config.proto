@@ -36,17 +36,6 @@ enum Ctrl_WifiPowerSave {
 	MAX_MODEM = 2;
 }
 
-enum Ctrl_WifiSecProt {
-	Open = 0;
-	WEP = 1;
-	WPA_PSK = 2;
-	WPA2_PSK = 3;
-	WPA_WPA2_PSK = 4;
-	WPA2_ENTERPRISE = 5;
-	WPA3_PSK = 6;
-	WPA2_WPA3_PSK = 7;
-}
-
 /* enums for Control path */
 enum Ctrl_Status {
 	Connected = 0;
@@ -162,13 +151,122 @@ enum HostedFeature {
 	/* Add your new features here and re-build prot using build_proto.sh */
 }
 
-/* internal supporting structures for CtrlMsg */
-message ScanResult {
-	bytes ssid = 1;
-	uint32 chnl = 2;
-	int32 rssi = 3;
-	bytes bssid = 4;
-	Ctrl_WifiSecProt sec_prot = 5;
+message wifi_country {
+	bytes          cc = 1;                      /**< country code string of 3 chars*/
+	uint32         schan = 2;                   /**< start channel */
+	uint32         nchan = 3;                   /**< total channel number */
+	int32          max_tx_power = 4;            /**< This field is used for getting WiFi maximum transmitting power,
+												  call esp_wifi_set_max_tx_power to set the maximum transmitting power. */
+	int32          policy = 5;                  /**< country policy */
+}
+
+message wifi_he_ap_info {
+    //uint8_t bss_color:6;                  /**< an unsigned integer whose value is the BSS Color of the BSS corresponding to the AP */
+    //uint8_t partial_bss_color:1;          /**< indicate if an AID assignment rule based on the BSS color */
+    //uint8_t bss_color_disabled:1;         /**< indicate if the use of BSS color is disabled */
+    uint32         bitmask = 1;                 /* Manually have to parse for above bits */
+    uint32         bssid_index = 2;             /**< in M-BSSID set, identifies the nontransmitted BSSID */
+}
+
+message wifi_ap_record {
+	bytes          bssid = 1;                   /**< MAC address of AP 6char */
+	bytes          ssid = 2;                    /**< SSID of AP 33char */
+	uint32         primary = 3;                 /**< channel of AP */
+	int32          second = 4;                  /**< secondary channel of AP */
+	int32          rssi = 5;                    /**< signal strength of AP */
+	int32          authmode = 6;                /**< authmode of AP */
+	int32          pairwise_cipher = 7;         /**< pairwise cipher of AP */
+	int32          group_cipher = 8;            /**< group cipher of AP */
+	int32          ant = 9;                     /**< antenna used to receive beacon from AP */
+	//uint32_t phy_11b:1;                       /**< bit: 0 flag to identify if 11b mode is enabled or not */
+	//uint32_t phy_11g:1;                       /**< bit: 1 flag to identify if 11g mode is enabled or not */
+	//uint32_t phy_11n:1;                       /**< bit: 2 flag to identify if 11n mode is enabled or not */
+	//uint32_t phy_lr:1;                        /**< bit: 3 flag to identify if low rate is enabled or not */
+	//uint32_t wps:1;                           /**< bit: 4 flag to identify if WPS is supported or not */
+	//uint32_t ftm_responder:1;                 /**< bit: 5 flag to identify if FTM is supported in responder mode */
+	//uint32_t ftm_initiator:1;                 /**< bit: 6 flag to identify if FTM is supported in initiator mode */
+	//uint32_t reserved:25;                     /**< bit: 7..31 reserved */
+	uint32         bitmask = 10;                /* Manually have to parse for above bits */
+
+	wifi_country   country = 11;                /**< country information of AP */
+	wifi_he_ap_info he_ap = 12;
+}
+
+message wifi_scan_threshold {
+	int32          rssi = 1;                    /**< The minimum rssi to accept in the fast scan mode */
+	int32          authmode = 2;                /**< The weakest authmode to accept in the fast scan mode
+Note: Incase this value is not set and password is set as per WPA2 standards(password len >= 8),
+it will be defaulted to WPA2 and device won't connect to deprecated WEP/WPA networks.
+Please set authmode threshold as WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK to connect to WEP/WPA networks */
+}
+
+message wifi_pmf_config {
+	bool           capable = 1;                 /**< Deprecated variable. Device will always connect in PMF mode if other device also advertizes PMF capability. */
+	bool           required = 2;                /**< Advertizes that Protected Management Frame is required. Device will not associate to non-PMF capable devices. */
+}
+
+message wifi_ap_config {
+	bytes          ssid = 1;                    /**< SSID of ESP32 soft-AP. If ssid_len field is 0, this must be a Null terminated string. Otherwise, length is set according to ssid_len. 32 char*/
+	bytes          password = 2;                /**< Password of ESP32 soft-AP. 64 char*/
+	uint32         ssid_len = 3;                /**< Optional length of SSID field. */
+	uint32         channel = 4;                 /**< Channel of ESP32 soft-AP */
+	int32          authmode = 5;                /**< Auth mode of ESP32 soft-AP. Do not support AUTH_WEP in soft-AP mode */
+	uint32         ssid_hidden = 6;             /**< Broadcast SSID or not, default 0, broadcast the SSID */
+	uint32         max_connection = 7;          /**< Max number of stations allowed to connect in */
+	uint32         beacon_interval = 8;         /**< Beacon interval which should be multiples of 100. Unit: TU(time unit, 1 TU = 1024 us). Range: 100 ~ 60000. Default value: 100 */
+	int32          pairwise_cipher = 9;         /**< pairwise cipher of SoftAP, group cipher will be derived using this.
+												  cipher values are valid starting from WIFI_CIPHER_TYPE_TKIP, enum values before that will be considered as invalid and default cipher suites(TKIP+CCMP) will be used.
+												  Valid cipher suites in softAP mode are WIFI_CIPHER_TYPE_TKIP, WIFI_CIPHER_TYPE_CCMP and WIFI_CIPHER_TYPE_TKIP_CCMP. */
+	bool           ftm_responder = 10;          /**< Enable FTM Responder mode */
+	wifi_pmf_config pmf_cfg = 11;               /**< Configuration for Protected Management Frame */
+	int32         sae_pwe_h2e = 12;             /**< Configuration for SAE PWE derivation method */
+}
+
+message  wifi_sta_config {
+	bytes               ssid = 1;               /**< SSID of target AP. 32char */
+	bytes               password = 2;           /**< Password of target AP. 64char */
+	int32               scan_method = 3;        /**< do all channel scan or fast scan */
+	bool                bssid_set = 4;          /**< whether set MAC address of target AP or not. Generally, station_config.bssid_set needs to be 0,
+												  and it needs to be 1 only when users need to check the MAC address of the AP.*/
+	bytes               bssid = 5;              /**< MAC address of target AP 6char */
+	uint32              channel = 6;            /**< channel of target AP. Set to 1~13 to scan starting from the specified channel
+												  before connecting to AP. If the channel of AP is unknown, set it to 0.*/
+	uint32              listen_interval = 7;    /**< Listen interval for ESP32 station to receive beacon when WIFI_PS_MAX_MODEM is set.
+Units: AP beacon intervals. Defaults to 3 if set to 0. */
+	int32               sort_method = 8;        /**< sort the connect AP in the list by rssi or security mode */
+	wifi_scan_threshold threshold = 9;          /**< When sort_method is set, only APs which have an auth mode that is more secure
+												  than the selected auth mode and a signal stronger than the minimum RSSI will be used. */
+	wifi_pmf_config     pmf_cfg = 10;           /**< Configuration for Protected Management Frame. Will be advertized in RSN Capabilities in RSN IE. */
+	//uint32_t rm_enabled:1;                    /**< Whether Radio Measurements are enabled for the connection */
+	//uint32_t btm_enabled:1;                   /**< Whether BSS Transition Management is enabled for the connection */
+	//uint32_t mbo_enabled:1;                   /**< Whether MBO is enabled for the connection */
+	//uint32_t ft_enabled:1;                    /**< Whether FT is enabled for the connection */
+	//uint32_t owe_enabled:1;                   /**< Whether OWE is enabled for the connection */
+	//uint32_t transition_disable:1;            /**< Whether to enable transition disable feature */
+	//uint32_t reserved:26;                     /**< Reserved for future feature set */
+	uint32              bitmask = 11;
+	int32               sae_pwe_h2e = 12;       /**< Whether SAE hash to element is enabled */
+	uint32              failure_retry_cnt = 13; /**< Number of connection retries station will do before moving to next AP.
+												  scan_method should be set as WIFI_ALL_CHANNEL_SCAN to use this config.
+												  Note: Enabling this may cause connection time to increase incase best AP doesn't behave properly. */
+    //uint32_t he_dcm_set:1;                                        /**< Whether DCM max.constellation for transmission and reception is set. */
+    //uint32_t he_dcm_max_constellation_tx:2;                       /**< Indicate the max.constellation for DCM in TB PPDU the STA supported. 0: not supported. 1: BPSK, 2: QPSK, 3: 16-QAM. The default value is 3. */
+    //uint32_t he_dcm_max_constellation_rx:2;                       /**< Indicate the max.constellation for DCM in both Data field and HE-SIG-B field the STA supported. 0: not supported. 1: BPSK, 2: QPSK, 3: 16-QAM. The default value is 3. */
+    //uint32_t he_mcs9_enabled:1;                                   /**< Whether to support HE-MCS 0 to 9. The default value is 0. */
+    //uint32_t he_su_beamformee_disabled:1;                         /**< Whether to disable support for operation as an SU beamformee. */
+    //uint32_t he_trig_su_bmforming_feedback_disabled:1;            /**< Whether to disable support the transmission of SU feedback in an HE TB sounding sequence. */
+    //uint32_t he_trig_mu_bmforming_partial_feedback_disabled:1;    /**< Whether to disable support the transmission of partial-bandwidth MU feedback in an HE TB sounding sequence. */
+    // uint32_t he_trig_cqi_feedback_disabled:1;                     /**< Whether to disable support the transmission of CQI feedback in an HE TB sounding sequence. */
+    // uint32_t he_reserved:22;                                      /**< Reserved for future feature set */
+    uint32              he_bitmask = 14;
+    bytes               sae_h2e_identifier = 15;                     /**< Password identifier for H2E. this needs to be null terminated string. SAE_H2E_IDENTIFIER_LEN chars */
+}
+
+message wifi_config {
+	oneof u {
+		wifi_ap_config    ap = 1;                 /**< configuration of AP */
+		wifi_sta_config   sta = 2;                /**< configuration of STA */
+	}
 }
 
 message ConnectedSTAList {
@@ -224,28 +322,16 @@ message CtrlMsg_Req_GetAPConfig {
 }
 
 message CtrlMsg_Resp_GetAPConfig {
-	bytes ssid = 1;
-	bytes bssid = 2;
-	int32 rssi = 3;
-	int32 chnl = 4;
-	Ctrl_WifiSecProt sec_prot = 5;
-	int32 resp = 6;
-	int32 band_mode = 7;
+	int32 resp = 1;
+	wifi_ap_record ap_records = 2;
 }
 
 message CtrlMsg_Req_ConnectAP {
-	string ssid = 1;
-	string pwd = 2;
-	string bssid = 3;
-	bool is_wpa3_supported = 4;
-	int32 listen_interval = 5;
-	int32 band_mode = 6;
+	wifi_config config = 1;
 }
 
 message  CtrlMsg_Resp_ConnectAP {
 	int32 resp = 1;
-	bytes mac = 2;
-	int32 band_mode = 3;
 }
 
 message CtrlMsg_Req_GetSoftAPConfig {
@@ -255,7 +341,7 @@ message CtrlMsg_Resp_GetSoftAPConfig {
 	bytes ssid = 1;
 	bytes pwd = 2;
 	int32 chnl = 3;
-	Ctrl_WifiSecProt sec_prot = 4;
+	int32 sec_prot = 4;
 	int32 max_conn = 5;
 	bool ssid_hidden = 6;
 	int32 bw = 7;
@@ -267,7 +353,7 @@ message CtrlMsg_Req_StartSoftAP {
 	string ssid = 1;
 	string pwd = 2;
 	int32 chnl = 3;
-	Ctrl_WifiSecProt sec_prot = 4;
+	int32 sec_prot = 4;
 	int32 max_conn = 5;
 	bool ssid_hidden = 6;
 	int32 bw = 7;
@@ -285,7 +371,7 @@ message CtrlMsg_Req_ScanResult {
 
 message CtrlMsg_Resp_ScanResult {
 	uint32 count = 1;
-	repeated ScanResult entries = 2;
+	repeated wifi_ap_record entries = 2;
 	int32 resp = 3;
 }
 

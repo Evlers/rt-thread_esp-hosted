@@ -216,10 +216,12 @@ int process_init_event(uint8_t *evt_buf, uint8_t len)
         }
         else if (*pos == ESP_PRIV_FW_DATA)
         {
+#if DBG_LVL >= DBG_LOG
             struct fw_version *fw_ver = (struct fw_version *) (pos + 2);
             LOG_D("ESP-Hosted Firmware version :: %s-%d.%d.%d.%d.%d",
                     fw_ver->project_name, fw_ver->major1, fw_ver->major2, fw_ver->minor,
                     fw_ver->revision_patch_1, fw_ver->revision_patch_2);
+#endif /* DBG_LVL >= DBG_LOG */
         }
         else
         {

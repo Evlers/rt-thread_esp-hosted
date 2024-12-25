@@ -27,6 +27,7 @@
 #define CALLBACK_AVAILABLE                   0
 #define CALLBACK_NOT_REGISTERED              -1
 #define MSG_ID_OUT_OF_ORDER                  -2
+#define MAX_FREE_BUFF_HANDLES                20
 
 /* If request is already being served and
  * another request is pending, time period for
@@ -41,10 +42,6 @@
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 #endif
-
-#define SUCCESS_STR                          "success"
-#define FAILURE_STR                          "failure"
-#define NOT_CONNECTED_STR                    "not_connected"
 
 /*---- Control structures ----*/
 
@@ -188,24 +185,6 @@ typedef enum {
 } wifi_mode_e;
 
 typedef enum {
-    WIFI_AUTH_OPEN = CTRL__WIFI_SEC_PROT__Open,
-    WIFI_AUTH_WEP = CTRL__WIFI_SEC_PROT__WEP,
-    WIFI_AUTH_WPA_PSK = CTRL__WIFI_SEC_PROT__WPA_PSK,
-    WIFI_AUTH_WPA2_PSK = CTRL__WIFI_SEC_PROT__WPA2_PSK,
-    WIFI_AUTH_WPA_WPA2_PSK = CTRL__WIFI_SEC_PROT__WPA_WPA2_PSK,
-    WIFI_AUTH_WPA2_ENTERPRISE = CTRL__WIFI_SEC_PROT__WPA2_ENTERPRISE,
-    WIFI_AUTH_WPA3_PSK = CTRL__WIFI_SEC_PROT__WPA3_PSK,
-    WIFI_AUTH_WPA2_WPA3_PSK = CTRL__WIFI_SEC_PROT__WPA2_WPA3_PSK,
-    WIFI_AUTH_WAPI_PSK = CTRL__WIFI_SEC_PROT__WAPI_PSK,
-    WIFI_AUTH_OWE = CTRL__WIFI_SEC_PROT__OWE,
-    WIFI_AUTH_WPA3_ENT_192 = CTRL__WIFI_SEC_PROT__WPA3_ENT_192,
-    WIFI_AUTH_WPA3_EXT_PSK = CTRL__WIFI_SEC_PROT__WPA3_EXT_PSK,
-    WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE = CTRL__WIFI_SEC_PROT__WPA3_EXT_PSK_MIXED_MODE,
-    WIFI_AUTH_DPP = CTRL__WIFI_SEC_PROT__DPP,
-    WIFI_AUTH_MAX,
-} wifi_auth_mode_e;
-
-typedef enum {
     WIFI_BW_HT20 = CTRL__WIFI_BW__HT20,
     WIFI_BW_HT40 = CTRL__WIFI_BW__HT40,
 } wifi_bandwidth_e;
@@ -252,14 +231,128 @@ typedef struct {
 
 } vendor_ie_data_t;
 
+/**
+  * @brief Wi-Fi second channel type
+  */
+typedef enum {
+    WIFI_SECOND_CHAN_NONE = 0,  /**< The channel width is HT20 */
+    WIFI_SECOND_CHAN_ABOVE,     /**< The channel width is HT40 and the secondary channel is above the primary channel */
+    WIFI_SECOND_CHAN_BELOW,     /**< The channel width is HT40 and the secondary channel is below the primary channel */
+} wifi_second_chan_t;
+
+/**
+  * @brief Wi-Fi authmode type
+  * Strength of authmodes
+  * Personal Networks   : OPEN < WEP < WPA_PSK < OWE < WPA2_PSK = WPA_WPA2_PSK < WAPI_PSK < WPA3_PSK = WPA2_WPA3_PSK = DPP
+  * Enterprise Networks : WIFI_AUTH_WPA2_ENTERPRISE < WIFI_AUTH_WPA3_ENTERPRISE = WIFI_AUTH_WPA2_WPA3_ENTERPRISE < WIFI_AUTH_WPA3_ENT_192
+  */
+typedef enum {
+    WIFI_AUTH_OPEN = 0,         /**< Authenticate mode : open */
+    WIFI_AUTH_WEP,              /**< Authenticate mode : WEP */
+    WIFI_AUTH_WPA_PSK,          /**< Authenticate mode : WPA_PSK */
+    WIFI_AUTH_WPA2_PSK,         /**< Authenticate mode : WPA2_PSK */
+    WIFI_AUTH_WPA_WPA2_PSK,     /**< Authenticate mode : WPA_WPA2_PSK */
+    WIFI_AUTH_ENTERPRISE,       /**< Authenticate mode : Wi-Fi EAP security */
+    WIFI_AUTH_WPA2_ENTERPRISE = WIFI_AUTH_ENTERPRISE,  /**< Authenticate mode : Wi-Fi EAP security */
+    WIFI_AUTH_WPA3_PSK,         /**< Authenticate mode : WPA3_PSK */
+    WIFI_AUTH_WPA2_WPA3_PSK,    /**< Authenticate mode : WPA2_WPA3_PSK */
+    WIFI_AUTH_WAPI_PSK,         /**< Authenticate mode : WAPI_PSK */
+    WIFI_AUTH_OWE,              /**< Authenticate mode : OWE */
+    WIFI_AUTH_WPA3_ENT_192,     /**< Authenticate mode : WPA3_ENT_SUITE_B_192_BIT */
+    WIFI_AUTH_WPA3_EXT_PSK,     /**< This authentication mode will yield same result as WIFI_AUTH_WPA3_PSK and not recommended to be used. It will be deprecated in future, please use WIFI_AUTH_WPA3_PSK instead. */
+    WIFI_AUTH_WPA3_EXT_PSK_MIXED_MODE, /**< This authentication mode will yield same result as WIFI_AUTH_WPA3_PSK and not recommended to be used. It will be deprecated in future, please use WIFI_AUTH_WPA3_PSK instead.*/
+    WIFI_AUTH_DPP,              /**< Authenticate mode : DPP */
+    WIFI_AUTH_MAX
+} wifi_auth_mode_t;
+
+/**
+  * @brief Wi-Fi cipher type
+  */
+typedef enum {
+    WIFI_CIPHER_TYPE_NONE = 0,   /**< The cipher type is none */
+    WIFI_CIPHER_TYPE_WEP40,      /**< The cipher type is WEP40 */
+    WIFI_CIPHER_TYPE_WEP104,     /**< The cipher type is WEP104 */
+    WIFI_CIPHER_TYPE_TKIP,       /**< The cipher type is TKIP */
+    WIFI_CIPHER_TYPE_CCMP,       /**< The cipher type is CCMP */
+    WIFI_CIPHER_TYPE_TKIP_CCMP,  /**< The cipher type is TKIP and CCMP */
+    WIFI_CIPHER_TYPE_AES_CMAC128,/**< The cipher type is AES-CMAC-128 */
+    WIFI_CIPHER_TYPE_SMS4,       /**< The cipher type is SMS4 */
+    WIFI_CIPHER_TYPE_GCMP,       /**< The cipher type is GCMP */
+    WIFI_CIPHER_TYPE_GCMP256,    /**< The cipher type is GCMP-256 */
+    WIFI_CIPHER_TYPE_AES_GMAC128,/**< The cipher type is AES-GMAC-128 */
+    WIFI_CIPHER_TYPE_AES_GMAC256,/**< The cipher type is AES-GMAC-256 */
+    WIFI_CIPHER_TYPE_UNKNOWN,    /**< The cipher type is unknown */
+} wifi_cipher_type_t;
+
+/**
+  * @brief Wi-Fi antenna
+  */
+typedef enum {
+    WIFI_ANT_ANT0,          /**< Wi-Fi antenna 0 */
+    WIFI_ANT_ANT1,          /**< Wi-Fi antenna 1 */
+    WIFI_ANT_MAX,           /**< Invalid Wi-Fi antenna */
+} wifi_ant_t;
+
+/**
+  * @brief Wi-Fi country policy
+  */
+typedef enum {
+    WIFI_COUNTRY_POLICY_AUTO,   /**< Country policy is auto, use the country info of AP to which the station is connected */
+    WIFI_COUNTRY_POLICY_MANUAL, /**< Country policy is manual, always use the configured country info */
+} wifi_country_policy_t;
+
+/**
+  * @brief Structure describing Wi-Fi country-based regional restrictions.
+  */
 typedef struct {
-    uint8_t ssid[SSID_LENGTH];
-    uint8_t bssid[BSSID_STR_SIZE];
-    int rssi;
-    int channel;
-    int encryption_mode;
-    wifi_bandwidth_e bandwidth;
-    struct {
+    char                  cc[3];   /**< Country code string */
+    uint8_t               schan;   /**< Start channel of the allowed 2.4GHz Wi-Fi channels */
+    uint8_t               nchan;   /**< Total channel number of the allowed 2.4GHz Wi-Fi channels */
+    int8_t                max_tx_power;   /**< This field is used for getting Wi-Fi maximum transmitting power, call esp_wifi_set_max_tx_power to set the maximum transmitting power. */
+    wifi_country_policy_t policy;  /**< Country policy */
+} wifi_country_t;
+
+/**
+  * @brief Description of a Wi-Fi AP HE Info
+  */
+typedef struct {
+    uint8_t bss_color: 6;                 /**< The BSS Color value associated with the AP's corresponding BSS */
+    uint8_t partial_bss_color: 1;         /**< Indicates whether an AID assignment rule is based on the BSS color */
+    uint8_t bss_color_disabled: 1;        /**< Indicates whether the BSS color usage is disabled */
+    uint8_t bssid_index;                  /**< In a M-BSSID set, identifies the non-transmitted BSSID */
+} wifi_he_ap_info_t;
+
+/**
+  * @brief Configuration structure for Protected Management Frame
+  */
+typedef struct {
+    bool capable;            /**< Deprecated variable. Device will always connect in PMF mode if other device also advertises PMF capability. */
+    bool required;           /**< Advertises that Protected Management Frame is required. Device will not associate to non-PMF capable devices. */
+} wifi_pmf_config_t;
+
+/**
+  * @brief Configuration for SAE PWE derivation
+  */
+typedef enum {
+    WPA3_SAE_PWE_UNSPECIFIED,
+    WPA3_SAE_PWE_HUNT_AND_PECK,
+    WPA3_SAE_PWE_HASH_TO_ELEMENT,
+    WPA3_SAE_PWE_BOTH,
+} wifi_sae_pwe_method_t;
+
+/**
+  * @brief Description of a Wi-Fi AP
+  */
+typedef struct {
+    uint8_t bssid[6];                     /**< MAC address of AP */
+    uint8_t ssid[33];                     /**< SSID of AP */
+    uint8_t primary;                      /**< Channel of AP */
+    wifi_second_chan_t second;            /**< Secondary channel of AP */
+    int8_t  rssi;                         /**< Signal strength of AP. Note that in some rare cases where signal strength is very strong, RSSI values can be slightly positive */
+    wifi_auth_mode_t authmode;            /**< Auth mode of AP */
+    wifi_cipher_type_t pairwise_cipher;   /**< Pairwise cipher of AP */
+    wifi_cipher_type_t group_cipher;      /**< Group cipher of AP */
+    wifi_ant_t ant;                       /**< Antenna used to receive beacon from AP */
     uint32_t phy_11b: 1;                  /**< Bit: 0 flag to identify if 11b mode is enabled or not */
     uint32_t phy_11g: 1;                  /**< Bit: 1 flag to identify if 11g mode is enabled or not */
     uint32_t phy_11n: 1;                  /**< Bit: 2 flag to identify if 11n mode is enabled or not */
@@ -271,8 +364,123 @@ typedef struct {
     uint32_t ftm_responder: 1;            /**< Bit: 8 flag to identify if FTM is supported in responder mode */
     uint32_t ftm_initiator: 1;            /**< Bit: 9 flag to identify if FTM is supported in initiator mode */
     uint32_t reserved: 22;                /**< Bit: 10..31 reserved */
-  } support;
-} wifi_scanlist_t;
+    wifi_country_t country;               /**< Country information of AP */
+    wifi_he_ap_info_t he_ap;              /**< HE AP info */
+    uint8_t bandwidth;                    /**< For AP 20 MHz this value is set to 1. For AP 40 MHz this value is set to 2.
+                                               For AP 80 MHz this value is set to 3. For AP 160MHz this value is set to 4.
+                                               For AP 80+80MHz this value is set to 5*/
+    uint8_t vht_ch_freq1;                 /**< This fields are used only AP bandwidth is 80 and 160 MHz, to transmit the center channel
+                                               frequency of the BSS. For AP bandwidth is 80 + 80 MHz, it is the center channel frequency
+                                               of the lower frequency segment.*/
+    uint8_t vht_ch_freq2;                 /**< This fields are used only AP bandwidth is 80 + 80 MHz, and is used to transmit the center
+                                               channel frequency of the second segment. */
+} wifi_ap_record_t;
+
+/**
+  * @brief Wi-Fi scan method
+  */
+typedef enum {
+    WIFI_FAST_SCAN = 0,                   /**< Do fast scan, scan will end after find SSID match AP */
+    WIFI_ALL_CHANNEL_SCAN,                /**< All channel scan, scan will end after scan all the channel */
+} wifi_scan_method_t;
+
+/**
+  * @brief Wi-Fi sort AP method
+  */
+typedef enum {
+    WIFI_CONNECT_AP_BY_SIGNAL = 0,        /**< Sort match AP in scan list by RSSI */
+    WIFI_CONNECT_AP_BY_SECURITY,          /**< Sort match AP in scan list by security mode */
+} wifi_sort_method_t;
+
+/**
+  * @brief Structure describing parameters for a Wi-Fi fast scan
+  */
+typedef struct {
+    int8_t              rssi;             /**< The minimum rssi to accept in the fast scan mode */
+    wifi_auth_mode_t    authmode;         /**< The weakest auth mode to accept in the fast scan mode
+                                               Note: In case this value is not set and password is set as per WPA2 standards(password len >= 8), it will be defaulted to WPA2 and device won't connect to deprecated WEP/WPA networks. Please set auth mode threshold as WIFI_AUTH_WEP/WIFI_AUTH_WPA_PSK to connect to WEP/WPA networks */
+} wifi_scan_threshold_t;
+
+/**
+  * @brief Configuration for SAE-PK
+  */
+typedef enum {
+    WPA3_SAE_PK_MODE_AUTOMATIC = 0,
+    WPA3_SAE_PK_MODE_ONLY = 1,
+    WPA3_SAE_PK_MODE_DISABLED = 2,
+} wifi_sae_pk_mode_t;
+
+/**
+  * @brief Soft-AP configuration settings for the device
+  */
+typedef struct {
+    uint8_t ssid[32];           /**< SSID of soft-AP. If ssid_len field is 0, this must be a Null terminated string. Otherwise, length is set according to ssid_len. */
+    uint8_t password[64];       /**< Password of soft-AP. */
+    uint8_t ssid_len;           /**< Optional length of SSID field. */
+    uint8_t channel;            /**< Channel of soft-AP */
+    wifi_auth_mode_t authmode;  /**< Auth mode of soft-AP. Do not support AUTH_WEP, AUTH_WAPI_PSK and AUTH_OWE in soft-AP mode. When the auth mode is set to WPA2_PSK, WPA2_WPA3_PSK or WPA3_PSK, the pairwise cipher will be overwritten with WIFI_CIPHER_TYPE_CCMP.  */
+    uint8_t ssid_hidden;        /**< Broadcast SSID or not, default 0, broadcast the SSID */
+    uint8_t max_connection;     /**< Max number of stations allowed to connect in */
+    uint16_t beacon_interval;   /**< Beacon interval which should be multiples of 100. Unit: TU(time unit, 1 TU = 1024 us). Range: 100 ~ 60000. Default value: 100 */
+    uint8_t csa_count;          /**< Channel Switch Announcement Count. Notify the station that the channel will switch after the csa_count beacon intervals. Range: 1 ~ 30. Default value: 3 */
+    uint8_t dtim_period;        /**< Dtim period of soft-AP. Range: 1 ~ 10. Default value: 1 */
+    wifi_cipher_type_t pairwise_cipher;   /**< Pairwise cipher of SoftAP, group cipher will be derived using this. Cipher values are valid starting from WIFI_CIPHER_TYPE_TKIP, enum values before that will be considered as invalid and default cipher suites(TKIP+CCMP) will be used. Valid cipher suites in softAP mode are WIFI_CIPHER_TYPE_TKIP, WIFI_CIPHER_TYPE_CCMP and WIFI_CIPHER_TYPE_TKIP_CCMP. */
+    bool ftm_responder;         /**< Enable FTM Responder mode */
+    wifi_pmf_config_t pmf_cfg;  /**< Configuration for Protected Management Frame */
+    wifi_sae_pwe_method_t sae_pwe_h2e;  /**< Configuration for SAE PWE derivation method */
+} wifi_ap_config_t;
+
+
+#define SAE_H2E_IDENTIFIER_LEN 32    /**< Length of the password identifier for H2E */
+
+/**
+  * @brief STA configuration settings for the device
+  */
+typedef struct {
+    uint8_t ssid[32];                         /**< SSID of target AP. */
+    uint8_t password[64];                     /**< Password of target AP. */
+    wifi_scan_method_t scan_method;           /**< Do all channel scan or fast scan */
+    bool bssid_set;                           /**< Whether set MAC address of target AP or not. Generally, station_config.bssid_set needs to be 0; and it needs to be 1 only when users need to check the MAC address of the AP.*/
+    uint8_t bssid[6];                         /**< MAC address of target AP*/
+    uint8_t channel;                          /**< Channel of target AP. Set to 1~13 to scan starting from the specified channel before connecting to AP. If the channel of AP is unknown, set it to 0.*/
+    uint16_t listen_interval;                 /**< Listen interval for ESP32 station to receive beacon when WIFI_PS_MAX_MODEM is set. Units: AP beacon intervals. Defaults to 3 if set to 0. */
+    wifi_sort_method_t sort_method;           /**< Sort the connect AP in the list by rssi or security mode */
+    wifi_scan_threshold_t  threshold;         /**< When scan_threshold is set, only APs which have an auth mode that is more secure than the selected auth mode and a signal stronger than the minimum RSSI will be used. */
+    wifi_pmf_config_t pmf_cfg;                /**< Configuration for Protected Management Frame. Will be advertised in RSN Capabilities in RSN IE. */
+    uint32_t rm_enabled: 1;                   /**< Whether Radio Measurements are enabled for the connection */
+    uint32_t btm_enabled: 1;                  /**< Whether BSS Transition Management is enabled for the connection. Note that when btm is enabled, the application itself should not set specific bssid (i.e using bssid_set and bssid in this config)or channel to connect to. This defeats the purpose of a BTM supported network, and hence if btm is supported and a specific bssid or channel is set in this config, it will be cleared from the config at the first disconnection or connection so that the device can roam to other BSS. It is recommended not to set BSSID when BTM is enabled.  */
+    uint32_t mbo_enabled: 1;                  /**< Whether MBO is enabled for the connection. Note that when mbo is enabled, the application itself should not set specific bssid (i.e using bssid_set and bssid in this config)or channel to connect to. This defeats the purpose of a MBO supported network, and hence if btm is supported and a specific bssid or channel is set in this config, it will be cleared from the config at the first disconnection or connection so that the device can roam to other BSS. It is recommended not to set BSSID when MBO is enabled. Enabling mbo here, automatically enables btm and rm above.*/
+    uint32_t ft_enabled: 1;                   /**< Whether FT is enabled for the connection */
+    uint32_t owe_enabled: 1;                  /**< Whether OWE is enabled for the connection */
+    uint32_t transition_disable: 1;           /**< Whether to enable transition disable feature */
+    uint32_t reserved: 26;                    /**< Reserved for future feature set */
+    wifi_sae_pwe_method_t sae_pwe_h2e;        /**< Configuration for SAE PWE derivation method */
+    wifi_sae_pk_mode_t sae_pk_mode;           /**< Configuration for SAE-PK (Public Key) Authentication method */
+    uint8_t failure_retry_cnt;                /**< Number of connection retries station will do before moving to next AP. scan_method should be set as WIFI_ALL_CHANNEL_SCAN to use this config.
+                                                   Note: Enabling this may cause connection time to increase in case best AP doesn't behave properly. */
+    uint32_t he_dcm_set: 1;                                       /**< Whether DCM max.constellation for transmission and reception is set. */
+    uint32_t he_dcm_max_constellation_tx: 2;                      /**< Indicate the max.constellation for DCM in TB PPDU the STA supported. 0: not supported. 1: BPSK, 2: QPSK, 3: 16-QAM. The default value is 3. */
+    uint32_t he_dcm_max_constellation_rx: 2;                      /**< Indicate the max.constellation for DCM in both Data field and HE-SIG-B field the STA supported. 0: not supported. 1: BPSK, 2: QPSK, 3: 16-QAM. The default value is 3. */
+    uint32_t he_mcs9_enabled: 1;                                  /**< Whether to support HE-MCS 0 to 9. The default value is 0. */
+    uint32_t he_su_beamformee_disabled: 1;                        /**< Whether to disable support for operation as an SU beamformee. */
+    uint32_t he_trig_su_bmforming_feedback_disabled: 1;           /**< Whether to disable support the transmission of SU feedback in an HE TB sounding sequence. */
+    uint32_t he_trig_mu_bmforming_partial_feedback_disabled: 1;   /**< Whether to disable support the transmission of partial-bandwidth MU feedback in an HE TB sounding sequence. */
+    uint32_t he_trig_cqi_feedback_disabled: 1;                    /**< Whether to disable support the transmission of CQI feedback in an HE TB sounding sequence. */
+    uint32_t he_reserved: 22;                                     /**< Reserved for future feature set */
+    uint8_t sae_h2e_identifier[SAE_H2E_IDENTIFIER_LEN];/**< Password identifier for H2E. this needs to be null terminated string */
+} wifi_sta_config_t;
+
+/**
+  * @brief Configuration data for device's AP or STA or NAN.
+  *
+  * The usage of this union (for ap, sta or nan configuration) is determined by the accompanying
+  * interface argument passed to esp_wifi_set_config() or esp_wifi_get_config()
+  *
+  */
+typedef union {
+    wifi_ap_config_t  ap;  /**< Configuration of AP */
+    wifi_sta_config_t sta; /**< Configuration of STA */
+} wifi_config_t;
 
 typedef struct {
     uint8_t bssid[BSSID_STR_SIZE];
@@ -291,20 +499,6 @@ typedef struct {
 typedef struct {
     uint8_t ssid[SSID_LENGTH];
     uint8_t pwd[PASSWORD_LENGTH];
-    uint8_t bssid[BSSID_STR_SIZE];
-    bool is_wpa3_supported;
-    int rssi;
-    int channel;
-    int encryption_mode;
-    uint16_t listen_interval;
-    char status[STATUS_LENGTH];
-    char out_mac[MAX_MAC_STR_SIZE];
-    int band_mode;
-} wifi_ap_config_t;
-
-typedef struct {
-    uint8_t ssid[SSID_LENGTH];
-    uint8_t pwd[PASSWORD_LENGTH];
     int channel;
     int encryption_mode;
     int max_connections;
@@ -317,7 +511,7 @@ typedef struct {
 typedef struct {
     int count;
     /* dynamic size */
-    wifi_scanlist_t *out_list;
+    wifi_ap_record_t *out_list;
 } wifi_ap_scan_list_t;
 
 typedef struct {
@@ -416,7 +610,9 @@ typedef struct Ctrl_cmd_t {
         wifi_mode_t                 wifi_mode;
 
         wifi_ap_scan_list_t         wifi_ap_scan;
-        wifi_ap_config_t            wifi_ap_config;
+        wifi_ap_record_t            wifi_ap_record;
+        // wifi_ap_config_t            wifi_ap_config;
+        wifi_sta_config_t           wifi_sta_config;
 
         softap_config_t             wifi_softap_config;
         wifi_softap_vendor_ie_t     wifi_softap_vendor_ie;
@@ -464,6 +660,9 @@ typedef struct Ctrl_cmd_t {
     /* free handle to be registered
      * Ignored if assigned as NULL */
     void (*free_buffer_func)(void *free_buffer_handle);
+
+    void *ctrl_free_buff_hdls[MAX_FREE_BUFF_HANDLES];
+	uint8_t n_ctrl_free_buff_hdls;
 } ctrl_cmd_t;
 
 

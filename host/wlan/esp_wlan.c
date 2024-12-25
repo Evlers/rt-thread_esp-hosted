@@ -131,12 +131,13 @@ static int esp_ctrl_event_callback (ctrl_cmd_t * event)
             break;
 
         case CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP:
-        {
-            char *p = event->u.e_sta_disconn.bssid;
-            if (p && strlen(p)) {
-                LOG_D("App EVENT: SoftAP mode: Disconnect MAC[%s]", p);
-            }
-        }
+            LOG_D("App EVENT: SoftAP mode: Disconnect MAC[%02x:%02x:%02x:%02x:%02x:%02x]",
+                    event->u.e_sta_disconn.bssid[0],
+                    event->u.e_sta_disconn.bssid[1],
+                    event->u.e_sta_disconn.bssid[2],
+                    event->u.e_sta_disconn.bssid[3],
+                    event->u.e_sta_disconn.bssid[4],
+                    event->u.e_sta_disconn.bssid[5]);
             break;
 
         default:
@@ -252,12 +253,12 @@ static int security_wlan_to_esp (rt_wlan_security_t security)
  *  2x2         20MHz       802.11n         144Mbps
  *  2x2         40MHz       802.11n         300Mbps
 */
-static int estimate_ap_max_rate(wifi_scanlist_t *ap_info)
+static int estimate_ap_max_rate(wifi_ap_record_t *ap_info)
 {
     int max_rate = 0;
 
     /* Check whether 802.11n (Wi-Fi 4) is supported */
-    if (ap_info->support.phy_11n)
+    if (ap_info->phy_11n)
     {
         /* Since esp32 does not provide an API to obtain AP MIMO information, 
          * and esp32 only does not support MIMO,
@@ -265,23 +266,23 @@ static int estimate_ap_max_rate(wifi_scanlist_t *ap_info)
          */
 
         /* 20 MHz */
-        if (ap_info->bandwidth == WIFI_BW_HT20)
+        if (ap_info->second == WIFI_SECOND_CHAN_NONE)
         {
             max_rate = 72;
         }
         /* 40 MHz */
-        else if (ap_info->bandwidth == WIFI_BW_HT40)
+        else if (ap_info->second == WIFI_SECOND_CHAN_ABOVE || ap_info->second == WIFI_SECOND_CHAN_BELOW)
         {
             max_rate = 150;
         }
     }
     /* Check whether 802.11g is supported */
-    else if (ap_info->support.phy_11g)
+    else if (ap_info->phy_11g)
     {
         max_rate = 54;
     }
     /* Check whether 802.11b is supported */
-    else if (ap_info->support.phy_11b)
+    else if (ap_info->phy_11b)
     {
         max_rate = 11;
     }
@@ -310,7 +311,7 @@ static int esp_scan_callback(ctrl_cmd_t * resp)
     if (resp->msg_id == CTRL_RESP_GET_AP_SCAN_LIST)
     {
         wifi_ap_scan_list_t * w_scan_p = &resp->u.wifi_ap_scan;
-        wifi_scanlist_t *list = w_scan_p->out_list;
+        wifi_ap_record_t *list = w_scan_p->out_list;
 
         if (!w_scan_p->count)
         {
@@ -334,7 +335,7 @@ static int esp_scan_callback(ctrl_cmd_t * resp)
 
                 rt_memset(&wlan_info, 0, sizeof(wlan_info));
 
-                convert_mac_to_bytes(wlan_info.bssid, (const char *)list[i].bssid);
+                memcpy(wlan_info.bssid, list[i].bssid, sizeof(wlan_info.bssid));
                 wlan_info.ssid.len = min(strlen((const char *)list[i].ssid), sizeof(wlan_info.ssid.val));
                 rt_memcpy(wlan_info.ssid.val, list[i].ssid, wlan_info.ssid.len);
 
@@ -343,22 +344,25 @@ static int esp_scan_callback(ctrl_cmd_t * resp)
                 else
                     wlan_info.hidden = 1;
 
-                wlan_info.channel = (rt_int16_t)list[i].channel;
+                wlan_info.channel = (rt_int16_t)list[i].primary;
                 wlan_info.rssi = list[i].rssi;
 
                 wlan_info.datarate = estimate_ap_max_rate(&list[i]) * 1000000;
                 wlan_info.band = RT_802_11_BAND_UNKNOWN;
 
-                wlan_info.security = security_esp_to_wlan(list[i].encryption_mode);
+                wlan_info.security = security_esp_to_wlan(list[i].authmode);
 
                 buff.data = &wlan_info;
                 buff.len = sizeof(wlan_info);
 
                 rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_SCAN_REPORT, &buff);
 
-                LOG_D("%d) ssid \"%s\" bssid \"%s\" rssi \"%d\" channel \"%d\" auth mode \"%d\" ",\
-                        i, list[i].ssid, list[i].bssid, list[i].rssi,
-                        list[i].channel, list[i].encryption_mode);
+                LOG_D("Bitmask: 11b:%u g:%u n:%u ax: %u lr:%u wps:%u ftm_resp:%u ftm_ini:%u res: %u",
+					list[i].phy_11b, list[i].phy_11g,
+					list[i].phy_11n, list[i].phy_11ax, list[i].phy_lr,
+					list[i].wps, list[i].ftm_responder,
+					list[i].ftm_initiator, list[i].reserved
+					);
             }
 
             rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_SCAN_DONE, RT_NULL);
@@ -422,11 +426,11 @@ static rt_err_t drv_wlan_join(struct rt_wlan_device *wlan, struct rt_sta_info *s
     ctrl_cmd_t req;
 
     ctrl_cmd_default_req(&req);
-    memcpy(req.u.wifi_ap_config.ssid, sta_info->ssid.val, min(sta_info->ssid.len, sizeof(req.u.wifi_ap_config.ssid)));
-    memcpy(req.u.wifi_ap_config.pwd, sta_info->key.val, min(sta_info->key.len, sizeof(req.u.wifi_ap_config.pwd)));
-    req.u.wifi_ap_config.is_wpa3_supported = false;
-    req.u.wifi_ap_config.listen_interval = 3; // default
-    req.u.wifi_ap_config.encryption_mode = security_wlan_to_esp(sta_info->security);
+    memcpy(req.u.wifi_sta_config.ssid, sta_info->ssid.val, min(sta_info->ssid.len, sizeof(req.u.wifi_sta_config.ssid)));
+    if (sta_info->key.val != NULL)
+    {
+        memcpy(req.u.wifi_sta_config.password, sta_info->key.val, min(sta_info->key.len, sizeof(req.u.wifi_sta_config.password)));
+    }
 
     /* register callback for handling reply asynch-ly */
     req.ctrl_resp_cb = esp_join_callback;
@@ -493,6 +497,17 @@ static rt_err_t drv_wlan_ap_stop(struct rt_wlan_device *wlan)
     }
 
     return RT_EOK;
+}
+
+static int drv_wlan_get_rssi(struct rt_wlan_device *wlan)
+{
+    ctrl_cmd_t req;
+    ctrl_cmd_t *resp = NULL;
+
+    ctrl_cmd_default_req(&req);
+    resp = wifi_get_ap_config(req);
+
+    return resp->u.wifi_ap_record.rssi;
 }
 
 static rt_err_t drv_wlan_set_mac(struct rt_wlan_device *wlan, rt_uint8_t mac[])
@@ -572,7 +587,7 @@ static const struct rt_wlan_dev_ops ops =
     .wlan_ap_stop = drv_wlan_ap_stop,
     .wlan_ap_deauth = NULL,
     .wlan_scan_stop = NULL,
-    .wlan_get_rssi = NULL,
+    .wlan_get_rssi = drv_wlan_get_rssi,
     .wlan_set_powersave = NULL,
     .wlan_get_powersave = NULL,
     .wlan_cfg_promisc = NULL,

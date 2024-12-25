@@ -23,6 +23,7 @@
 #include "esp_ota_ops.h"
 #include "slave_bt.h"
 #include "esp_fw_version.h"
+#include "adapter.h"
 
 #define MAC_STR_LEN                 17
 #define MAC2STR(a)                  (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
@@ -422,19 +423,13 @@ err:
 static esp_err_t req_connect_ap_handler (CtrlMsg *req,
         CtrlMsg *resp, void *priv_data)
 {
-    char mac_str[BSSID_LENGTH] = "";
-    uint8_t mac[MAC_LEN] = {0};
     esp_err_t ret = ESP_OK;
     wifi_config_t *wifi_cfg = NULL;
     CtrlMsgRespConnectAP *resp_payload = NULL;
     EventBits_t bits = {0};
     int retry = 0;
-#if WIFI_DUALBAND_SUPPORT
-    wifi_band_mode_t band_mode = 0; // 0 is currently an invalid value
-    wifi_band_mode_t requested_band_mode = 0; // 0 is currently an invalid value
-#endif
 
-    if (!req || !resp || !req->req_connect_ap) {
+    if (!req || !resp || !req->req_connect_ap || !req->req_connect_ap->config || !req->req_connect_ap->config->sta) {
         ESP_LOGE(TAG, "Invalid parameters");
         return ESP_FAIL;
     }
@@ -499,89 +494,61 @@ static esp_err_t req_connect_ap_handler (CtrlMsg *req,
         goto err;
     }
 
-    if (req->req_connect_ap->ssid) {
-        strncpy((char *)wifi_cfg->sta.ssid, req->req_connect_ap->ssid,
-                min(sizeof(wifi_cfg->sta.ssid),
-                    strlen(req->req_connect_ap->ssid)+1));
-    }
-    if (req->req_connect_ap->pwd) {
-        strncpy((char *)wifi_cfg->sta.password, req->req_connect_ap->pwd,
-                min(sizeof(wifi_cfg->sta.password),
-                    strlen((char *)req->req_connect_ap->pwd)+1));
-    }
-    if ((req->req_connect_ap->bssid) &&
-        (strlen((char *)req->req_connect_ap->bssid))) {
-        ret = convert_mac_to_bytes(wifi_cfg->sta.bssid, req->req_connect_ap->bssid);
-        if (ret) {
-            ESP_LOGE(TAG, "Failed to convert BSSID into bytes");
-            resp_payload->resp = ret;
-            goto err;
-        }
-        wifi_cfg->sta.bssid_set = true;
-    }
-    if (req->req_connect_ap->is_wpa3_supported) {
-        wifi_cfg->sta.pmf_cfg.capable = true;
-        wifi_cfg->sta.pmf_cfg.required = false;
-    }
-    if (req->req_connect_ap->listen_interval >= 0) {
-        wifi_cfg->sta.listen_interval = req->req_connect_ap->listen_interval;
-    }
-#if WIFI_DUALBAND_SUPPORT
-    // get current band_mode
-    ret = esp_wifi_get_band_mode(&band_mode);
-    if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "failed to get band mode, defaulting to AUTO");
-        band_mode = WIFI_BAND_MODE_AUTO;
-    }
+    wifi_sta_config_t *p_a_sta = &(wifi_cfg->sta);
+    WifiStaConfig *p_c_sta = req->req_connect_ap->config->sta;
 
-    // get requested band mode
-    if (req->req_connect_ap->band_mode) {
-        requested_band_mode = req->req_connect_ap->band_mode;
-    } else {
-        // requested band mode not set: default to auto
-        requested_band_mode = WIFI_BAND_MODE_AUTO;
-    }
+    memcpy((char *)p_a_sta->ssid, p_c_sta->ssid.data, min(min(sizeof(p_a_sta->ssid), SSID_LENGTH), p_c_sta->ssid.len));
+    if (strlen((char*)p_a_sta->ssid))
+        ESP_LOGI(TAG, "STA set config: SSID:%s", (char *)p_a_sta->ssid);
+    memcpy((char *)p_a_sta->password, p_c_sta->password.data, min(min(sizeof(p_a_sta->password), PASSWORD_LENGTH), p_c_sta->password.len));
+    if (strlen((char*)p_a_sta->password))
+        ESP_LOGD(TAG, "STA: password:%s", (char *)p_a_sta->password);
+    p_a_sta->scan_method = p_c_sta->scan_method;
+    p_a_sta->bssid_set = p_c_sta->bssid_set;
 
-    // compare and update current band mode, if needed
-    if (band_mode != requested_band_mode) {
-        ret = esp_wifi_set_band_mode(requested_band_mode);
-        if (ret) {
-            ESP_LOGE(TAG, "failed to set band mode");
-            goto err;
-        }
-        band_mode = requested_band_mode;
-    }
-#endif
+    if (p_a_sta->bssid_set)
+        memcpy(p_a_sta->bssid, p_c_sta->bssid.data, min(min(sizeof(p_a_sta->bssid), MAC_LEN), p_c_sta->bssid.len));
 
-    /* Make sure that we connect to strongest signal, when multiple SSID with
-     * the same name. This should take a small extra time to search for all SSIDs,
-     * but with this, there will be hige performace gain on data throughput
-     */
-    wifi_cfg->sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
-    wifi_cfg->sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL;
+    p_a_sta->channel = p_c_sta->channel;
+    p_a_sta->listen_interval = p_c_sta->listen_interval;
+    p_a_sta->sort_method = p_c_sta->sort_method;
+    p_a_sta->threshold.rssi = p_c_sta->threshold->rssi;
+    p_a_sta->threshold.authmode = p_c_sta->threshold->authmode;
+    //p_a_sta->ssid_hidden = p_c_sta->ssid_hidden;
+    //p_a_sta->max_connections = p_c_sta->max_connections;
+    p_a_sta->pmf_cfg.capable = p_c_sta->pmf_cfg->capable;
+    p_a_sta->pmf_cfg.required = p_c_sta->pmf_cfg->required;
 
-    ret = esp_wifi_get_mac(ESP_IF_WIFI_STA , mac);
-    ESP_LOGI(TAG,"Get station mac address");
-    if (ret) {
-        ESP_LOGE(TAG,"Error in getting MAC of ESP Station %d", ret);
-        resp_payload->resp = ret;
-        goto err;
-    }
-    snprintf(mac_str,BSSID_LENGTH,MACSTR,MAC2STR(mac));
-    ESP_LOGI(TAG,"mac [%s] ", mac_str);
+    p_a_sta->rm_enabled = H_GET_BIT(STA_RM_ENABLED_BIT, p_c_sta->bitmask);
+    p_a_sta->btm_enabled = H_GET_BIT(STA_BTM_ENABLED_BIT, p_c_sta->bitmask);
+    p_a_sta->mbo_enabled = H_GET_BIT(STA_MBO_ENABLED_BIT, p_c_sta->bitmask);
+    p_a_sta->ft_enabled = H_GET_BIT(STA_FT_ENABLED_BIT, p_c_sta->bitmask);
+    p_a_sta->owe_enabled = H_GET_BIT(STA_OWE_ENABLED_BIT, p_c_sta->bitmask);
+    p_a_sta->transition_disable = H_GET_BIT(STA_TRASITION_DISABLED_BIT, p_c_sta->bitmask);
+    p_a_sta->reserved = WIFI_CONFIG_STA_GET_RESERVED_VAL(p_c_sta->bitmask);
 
-    resp_payload->mac.len = strnlen(mac_str, BSSID_LENGTH);
-    if (!resp_payload->mac.len) {
-        ESP_LOGE(TAG, "Invalid MAC address length");
-        resp_payload->resp = FAILURE;
-        goto err;
-    }
-    resp_payload->mac.data = (uint8_t *)strndup(mac_str, BSSID_LENGTH);
-    if (!resp_payload->mac.data) {
-        ESP_LOGE(TAG, "Failed to allocate memory for MAC address");
-        resp_payload->resp = FAILURE;
-        goto err;
-    }
+    p_a_sta->sae_pwe_h2e = p_c_sta->sae_pwe_h2e;
+    p_a_sta->failure_retry_cnt = p_c_sta->failure_retry_cnt;
+
+    p_a_sta->he_dcm_set = H_GET_BIT(WIFI_HE_STA_CONFIG_he_dcm_set_BIT, p_c_sta->he_bitmask);
+    // WIFI_HE_STA_CONFIG_he_dcm_max_constellation_tx is two bits wide
+    p_a_sta->he_dcm_max_constellation_tx = (p_c_sta->he_bitmask >> WIFI_HE_STA_CONFIG_he_dcm_max_constellation_tx_BITS) & 0x03;
+    // WIFI_HE_STA_CONFIG_he_dcm_max_constellation_rx is two bits wide
+    p_a_sta->he_dcm_max_constellation_rx = (p_c_sta->he_bitmask >> WIFI_HE_STA_CONFIG_he_dcm_max_constellation_rx_BITS) & 0x03;
+    p_a_sta->he_mcs9_enabled = H_GET_BIT(WIFI_HE_STA_CONFIG_he_mcs9_enabled_BIT, p_c_sta->he_bitmask);
+    p_a_sta->he_su_beamformee_disabled = H_GET_BIT(WIFI_HE_STA_CONFIG_he_su_beamformee_disabled_BIT, p_c_sta->he_bitmask);
+    p_a_sta->he_trig_su_bmforming_feedback_disabled = H_GET_BIT(WIFI_HE_STA_CONFIG_he_trig_su_bmforming_feedback_disabled_BIT, p_c_sta->bitmask);
+    p_a_sta->he_trig_mu_bmforming_partial_feedback_disabled = H_GET_BIT(WIFI_HE_STA_CONFIG_he_trig_mu_bmforming_partial_feedback_disabled_BIT, p_c_sta->bitmask);
+    p_a_sta->he_trig_cqi_feedback_disabled = H_GET_BIT(WIFI_HE_STA_CONFIG_he_trig_cqi_feedback_disabled_BIT, p_c_sta->bitmask);
+    p_a_sta->he_reserved = WIFI_HE_STA_GET_RESERVED_VAL(p_c_sta->bitmask);
+
+    /* Avoid using fast scan, which leads to faster SSID selection,
+        * but faces data throughput issues when same SSID broadcasted by weaker AP
+        */
+    p_a_sta->scan_method = WIFI_ALL_CHANNEL_SCAN;
+    p_a_sta->sort_method = WIFI_CONNECT_AP_BY_SIGNAL;
+
+    memcpy((char*)p_a_sta->sae_h2e_identifier, p_c_sta->sae_h2e_identifier.data, min(min(sizeof(p_a_sta->sae_h2e_identifier), SAE_H2E_IDENTIFIER_LEN), p_c_sta->sae_h2e_identifier.len));
 
     do {
         ret = esp_wifi_set_config(ESP_IF_WIFI_STA, wifi_cfg);
@@ -598,8 +565,8 @@ static esp_err_t req_connect_ap_handler (CtrlMsg *req,
         ret = esp_wifi_connect();
         if (ret) {
             ESP_LOGI(TAG, "Failed to connect to SSID:'%s', password:'%s'",
-                    req->req_connect_ap->ssid ? req->req_connect_ap->ssid : "(null)",
-                    req->req_connect_ap->pwd ? req->req_connect_ap->pwd : "(null)");
+                    (char *)p_a_sta->ssid ? (char *)p_a_sta->ssid : "(null)",
+                    (char *)p_a_sta->password ? (char *)p_a_sta->password : "(null)");
         }
 
         if (event_registered)
@@ -611,8 +578,8 @@ static esp_err_t req_connect_ap_handler (CtrlMsg *req,
                     STA_MODE_TIMEOUT);
         if (bits & WIFI_CONNECTED_BIT) {
             ESP_LOGI(TAG, "connected to ap SSID:'%s', password:'%s'",
-                    req->req_connect_ap->ssid ? req->req_connect_ap->ssid :"(null)",
-                    req->req_connect_ap->pwd ? req->req_connect_ap->pwd :"(null)");
+                    (char *)p_a_sta->ssid ? (char *)p_a_sta->ssid :"(null)",
+                    (char *)p_a_sta->password ? (char *)p_a_sta->password :"(null)");
             station_connected = true;
             esp_wifi_internal_reg_rxcb(ESP_IF_WIFI_STA, (wifi_rxcb_t) wlan_sta_rx_callback);
             ret = SUCCESS;
@@ -620,17 +587,17 @@ static esp_err_t req_connect_ap_handler (CtrlMsg *req,
         } else {
             if (bits & WIFI_NO_AP_FOUND_BIT) {
                 ESP_LOGI(TAG, "No AP available as SSID:'%s'",
-                        req->req_connect_ap->ssid ? req->req_connect_ap->ssid : "(null)");
+                        (char *)p_a_sta->ssid ? (char *)p_a_sta->ssid : "(null)");
                 resp_payload->resp = CTRL__STATUS__No_AP_Found;
             } else if (bits & WIFI_WRONG_PASSWORD_BIT) {
                 ESP_LOGI(TAG, "Password incorrect for SSID:'%s', password:'%s'",
-                        req->req_connect_ap->ssid ? req->req_connect_ap->ssid : "(null)",
-                        req->req_connect_ap->pwd ? req->req_connect_ap->pwd :"(null)");
+                        (char *)p_a_sta->ssid ? (char *)p_a_sta->ssid : "(null)",
+                        (char *)p_a_sta->password ? (char *)p_a_sta->password :"(null)");
                 resp_payload->resp = CTRL__STATUS__Connection_Fail;
             } else if (bits & WIFI_FAIL_BIT) {
                 ESP_LOGI(TAG, "Failed to connect to SSID:'%s', password:'%s'",
-                        req->req_connect_ap->ssid ? req->req_connect_ap->ssid : "(null)",
-                        req->req_connect_ap->pwd ? req->req_connect_ap->pwd : "(null)");
+                        (char *)p_a_sta->ssid ? (char *)p_a_sta->ssid : "(null)",
+                        (char *)p_a_sta->password ? (char *)p_a_sta->password : "(null)");
             } else {
                 ESP_LOGE(TAG, "STA_MODE_TIMEOUT occured");
             }
@@ -647,15 +614,10 @@ static esp_err_t req_connect_ap_handler (CtrlMsg *req,
 
 err:
     if (station_connected) {
-#if WIFI_DUALBAND_SUPPORT
-        resp_payload->band_mode = band_mode;
-#endif
         ESP_LOGI(TAG, "%s:%u Set resp to Success",__func__,__LINE__);
         resp_payload->resp = SUCCESS;
     } else {
         ESP_LOGI(TAG, "%s:%u Set resp[%"PRId32"]",__func__,__LINE__, resp_payload->resp);
-        mem_free(resp_payload->mac.data);
-        resp_payload->mac.len = 0;
     }
     mem_free(wifi_cfg);
 
@@ -671,8 +633,7 @@ static esp_err_t req_get_ap_config_handler (CtrlMsg *req,
         CtrlMsg *resp, void *priv_data)
 {
     esp_err_t ret = ESP_OK;
-    credentials_t credentials = {0};
-    wifi_ap_record_t *ap_info = NULL;
+    wifi_ap_record_t ap_info;
     CtrlMsgRespGetAPConfig *resp_payload = NULL;
 #if WIFI_DUALBAND_SUPPORT
     wifi_band_mode_t band_mode = 0; // 0 is currently an invalid value
@@ -682,16 +643,9 @@ static esp_err_t req_get_ap_config_handler (CtrlMsg *req,
         return ESP_FAIL;
     }
 
-    ap_info = (wifi_ap_record_t *)calloc(1,sizeof(wifi_ap_record_t));
-    if (!ap_info) {
-        ESP_LOGE(TAG,"Failed to allocate memory");
-        return ESP_ERR_NO_MEM;
-    }
-    resp_payload = (CtrlMsgRespGetAPConfig *)
-        calloc(1,sizeof(CtrlMsgRespGetAPConfig));
+    resp_payload = (CtrlMsgRespGetAPConfig *)calloc(1,sizeof(CtrlMsgRespGetAPConfig));
     if (!resp_payload) {
         ESP_LOGE(TAG,"Failed to allocate memory");
-        mem_free(ap_info);
         return ESP_ERR_NO_MEM;
     }
 
@@ -702,70 +656,118 @@ static esp_err_t req_get_ap_config_handler (CtrlMsg *req,
     if (!station_connected) {
         ESP_LOGI(TAG,"ESP32 station is not connected with AP, can't get AP config");
         resp_payload->resp = CTRL__STATUS__Not_Connected;
-        goto err;
+        return ESP_FAIL;
     }
 
-    ret = esp_wifi_sta_get_ap_info(ap_info);
+    ret = esp_wifi_sta_get_ap_info(&ap_info);
     if (ret == ESP_ERR_WIFI_NOT_CONNECT) {
         ESP_LOGI(TAG,"Disconnected from previously connected AP");
         resp_payload->resp = CTRL__STATUS__Not_Connected;
-        goto err;
+        return ESP_FAIL;
     } else if (ret) {
         ESP_LOGE(TAG,"Failed to get AP config %d \n", ret);
         resp_payload->resp = FAILURE;
-        goto err;
+        return ESP_FAIL;
     }
 
-    snprintf((char *)credentials.bssid,BSSID_LENGTH,MACSTR,MAC2STR(ap_info->bssid));
-    if (strlen((char *)ap_info->ssid)) {
-        strncpy((char *)credentials.ssid, (char *)ap_info->ssid,
-                min(sizeof(credentials.ssid), strlen((char *)ap_info->ssid)+1));
+    resp_payload->ap_records = (WifiApRecord *)calloc(1, sizeof(WifiApRecord));
+    if (!resp_payload->ap_records) {
+        ESP_LOGE(TAG,"Failed to allocate memory");
+        resp_payload->resp = FAILURE;
+        return ESP_ERR_NO_MEM;
     }
-    credentials.rssi = ap_info->rssi;
-    credentials.chnl = ap_info->primary;
-    credentials.ecn = ap_info->authmode;
-    resp_payload->ssid.len = min(strlen((char *)credentials.ssid)+1,
-            sizeof(credentials.ssid));
-    if (!resp_payload->ssid.len) {
-        ESP_LOGE(TAG, "Invalid SSID length");
-        goto err;
+    wifi_ap_record__init(resp_payload->ap_records);
+
+    resp_payload->ap_records->country = (WifiCountry *)calloc(1, sizeof(WifiCountry));
+    if (!resp_payload->ap_records->country) {
+        ESP_LOGE(TAG,"Failed to allocate memory");
+        return ESP_ERR_NO_MEM;
     }
-    resp_payload->ssid.data = (uint8_t *)strndup((char *)credentials.ssid,
-            min(sizeof(credentials.ssid), strlen((char *)credentials.ssid) + 1));
-    if (!resp_payload->ssid.data) {
-        ESP_LOGE(TAG, "Failed to allocate memory for SSID");
-        goto err;
+    wifi_country__init(resp_payload->ap_records->country);
+
+    resp_payload->ap_records->he_ap = (WifiHeApInfo *)calloc(1, sizeof(WifiHeApInfo));
+    if (!resp_payload->ap_records->he_ap) {
+        ESP_LOGE(TAG,"Failed to allocate memory");
+        return ESP_ERR_NO_MEM;
+    }
+    wifi_he_ap_info__init(resp_payload->ap_records->he_ap);
+
+    resp_payload->ap_records->ssid.len = strnlen((char *)ap_info.ssid, SSID_LENGTH);
+    resp_payload->ap_records->ssid.data = (uint8_t *)strndup((char *)ap_info.ssid, SSID_LENGTH);
+    if (!resp_payload->ap_records->ssid.data) {
+        ESP_LOGE(TAG,"Failed to allocate memory for scan result entry SSID");
+        return ESP_ERR_NO_MEM;
     }
 
-    resp_payload->bssid.len = strnlen((char *)credentials.bssid,
-            sizeof(credentials.bssid));
-    if (!resp_payload->bssid.len) {
-        ESP_LOGE(TAG, "Invalid BSSID length");
-        goto err;
+    resp_payload->ap_records->bssid.data = calloc(1, MAC_LEN);
+    if (!resp_payload->ap_records->bssid.data) {
+        ESP_LOGE(TAG,"Failed to allocate memory for scan result entry BSSID");
+        return ESP_ERR_NO_MEM;
     }
-    resp_payload->bssid.data = (uint8_t *)strndup((char *)credentials.bssid,
-            BSSID_LENGTH);
-    if (!resp_payload->bssid.data) {
-        ESP_LOGE(TAG, "Failed to allocate memory for BSSID");
-        goto err;
-    }
+    memcpy(resp_payload->ap_records->bssid.data, ap_info.bssid, MAC_LEN);
+    resp_payload->ap_records->bssid.len = MAC_LEN;
 
-    resp_payload->rssi = credentials.rssi;
-    resp_payload->chnl = credentials.chnl;
-    resp_payload->sec_prot = credentials.ecn;
-#if WIFI_DUALBAND_SUPPORT
-    // get current band_mode
-    ret = esp_wifi_get_band_mode(&band_mode);
-    if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "failed to get band mode, defaulting to AUTO");
-        band_mode = WIFI_BAND_MODE_AUTO;
+    resp_payload->ap_records->primary = ap_info.primary;
+    resp_payload->ap_records->second = ap_info.second;
+    resp_payload->ap_records->rssi = ap_info.rssi;
+    resp_payload->ap_records->authmode = ap_info.authmode;
+    resp_payload->ap_records->pairwise_cipher = ap_info.pairwise_cipher;
+    resp_payload->ap_records->group_cipher = ap_info.group_cipher;
+    resp_payload->ap_records->ant = ap_info.ant;
+
+    /*Bitmask*/
+    if (ap_info.phy_11b)
+        H_SET_BIT(WIFI_SCAN_AP_REC_phy_11b_BIT, resp_payload->ap_records->bitmask);
+
+    if (ap_info.phy_11g)
+        H_SET_BIT(WIFI_SCAN_AP_REC_phy_11g_BIT, resp_payload->ap_records->bitmask);
+
+    if (ap_info.phy_11n)
+        H_SET_BIT(WIFI_SCAN_AP_REC_phy_11n_BIT, resp_payload->ap_records->bitmask);
+
+    if (ap_info.phy_lr)
+        H_SET_BIT(WIFI_SCAN_AP_REC_phy_lr_BIT, resp_payload->ap_records->bitmask);
+
+    if (ap_info.phy_11ax)
+        H_SET_BIT(WIFI_SCAN_AP_REC_phy_11ax_BIT, resp_payload->ap_records->bitmask);
+
+    if (ap_info.wps)
+        H_SET_BIT(WIFI_SCAN_AP_REC_wps_BIT, resp_payload->ap_records->bitmask);
+
+    if (ap_info.ftm_responder)
+        H_SET_BIT(WIFI_SCAN_AP_REC_ftm_responder_BIT, resp_payload->ap_records->bitmask);
+
+    if (ap_info.ftm_initiator)
+        H_SET_BIT(WIFI_SCAN_AP_REC_ftm_initiator_BIT, resp_payload->ap_records->bitmask);
+
+    WIFI_SCAN_AP_SET_RESERVED_VAL(ap_info.reserved,  resp_payload->ap_records->bitmask);
+
+    /* country */
+    resp_payload->ap_records->country->cc.data = calloc(3, sizeof(char));
+    if (!resp_payload->ap_records->country->cc.data) {
+        ESP_LOGE(TAG,"Failed to allocate memory for scan result entry country");
+        return ESP_ERR_NO_MEM;
     }
-    resp_payload->band_mode = band_mode;
-#endif
+    memcpy(resp_payload->ap_records->country->cc.data, ap_info.country.cc, 3);
+    resp_payload->ap_records->country->schan = ap_info.country.schan;
+    resp_payload->ap_records->country->nchan = ap_info.country.nchan;
+    resp_payload->ap_records->country->max_tx_power = ap_info.country.max_tx_power;
+    resp_payload->ap_records->country->policy = ap_info.country.policy;
+
+    /* he_ap */
+    // bss_color uses six bits
+    resp_payload->ap_records->he_ap->bitmask = (ap_info.he_ap.bss_color & WIFI_HE_AP_INFO_BSS_COLOR_BITS);
+
+    if (ap_info.he_ap.partial_bss_color)
+        H_SET_BIT(WIFI_HE_AP_INFO_partial_bss_color_BIT, resp_payload->ap_records->he_ap->bitmask);
+
+    if (ap_info.he_ap.bss_color_disabled)
+        H_SET_BIT(WIFI_HE_AP_INFO_bss_color_disabled_BIT, resp_payload->ap_records->he_ap->bitmask);
+
+    resp_payload->ap_records->he_ap->bssid_index = ap_info.he_ap.bssid_index;
+
     resp_payload->resp = SUCCESS;
 
-err:
-    mem_free(ap_info);
     return ESP_OK;
 }
 
@@ -1000,8 +1002,7 @@ static esp_err_t req_start_softap_handler (CtrlMsg *req,
         ESP_LOGE(TAG, "SoftAP SSID length is more than 32 Bytes");
         goto err;
     }
-    if ((req->req_start_softap->sec_prot != CTRL__WIFI_SEC_PROT__Open)
-            && (strlen(req->req_start_softap->pwd) > PASSWORD_LENGTH)) {
+    if (strlen(req->req_start_softap->pwd) > PASSWORD_LENGTH) {
         ESP_LOGE(TAG, "PASSWORD Length is more than 64 Bytes");
         goto err;
     }
@@ -1138,6 +1139,70 @@ err:
     return ESP_OK;
 }
 
+static const char *auth_mode_to_str(int authmode)
+{
+    switch (authmode)
+    {
+        case WIFI_AUTH_OPEN: return "OPEN";
+        case WIFI_AUTH_OWE: return "OWE";
+        case WIFI_AUTH_WEP: return "WEP";
+        case WIFI_AUTH_WPA_PSK: return "WPA_PSK";
+        case WIFI_AUTH_WPA2_PSK: return "WPA2_PSK";
+        case WIFI_AUTH_WPA_WPA2_PSK: return "WPA_WPA2_PSK";
+        case WIFI_AUTH_ENTERPRISE: return "ENTERPRISE";
+        case WIFI_AUTH_WPA3_PSK: return "WPA3_PSK";
+        case WIFI_AUTH_WPA2_WPA3_PSK: return "WPA2_WPA3_PSK";
+        case WIFI_AUTH_WPA3_ENT_192: return "WPA3_ENT_192";
+        default: return "UNKNOWN";
+    }
+}
+
+/* estimate the maximum rate for ap
+ *  MIMO    Channel Width   Protocol        rate
+ *  -           22MHz       802.11b         11Mbps
+ *  -           20MHz       802.11g         54 Mbps
+ *  1x1         20MHz       802.11n         72Mbps
+ *  1x1         40MHz       802.11n         150Mbps
+ *  2x2         20MHz       802.11n         144Mbps
+ *  2x2         40MHz       802.11n         300Mbps
+*/
+int estimate_ap_max_rate(wifi_ap_record_t *ap_info)
+{
+    int max_rate = 0;
+
+    /* Check whether 802.11n (Wi-Fi 4) is supported */
+    if (ap_info->phy_11n)
+    {
+        /* Since esp32 does not provide an API to obtain AP MIMO information, 
+         * and esp32 only does not support MIMO,
+         * our evaluated rate is also based on 1x1.
+         */
+
+        /* 20 MHz */
+        if (ap_info->second == WIFI_SECOND_CHAN_NONE)
+        {
+            max_rate = 72;
+        }
+        /* 40 MHz */
+        else if (ap_info->second == WIFI_SECOND_CHAN_ABOVE || ap_info->second == WIFI_SECOND_CHAN_BELOW)
+        {
+            max_rate = 150;
+        }
+    }
+    /* Check whether 802.11g is supported */
+    else if (ap_info->phy_11g)
+    {
+        max_rate = 54;
+    }
+    /* Check whether 802.11b is supported */
+    else if (ap_info->phy_11b)
+    {
+        max_rate = 11;
+    }
+
+    return max_rate;
+}
+
 /* Function sends scanned list of available APs */
 static esp_err_t req_get_ap_scan_list_handler (CtrlMsg *req,
         CtrlMsg *resp, void *priv_data)
@@ -1145,9 +1210,8 @@ static esp_err_t req_get_ap_scan_list_handler (CtrlMsg *req,
     esp_err_t ret = ESP_OK;
     wifi_mode_t mode = 0;
     uint16_t ap_count = 0;
-    credentials_t credentials = {0};
     wifi_ap_record_t *ap_info = NULL;
-    ScanResult **results = NULL;
+    WifiApRecord **results = NULL;
     CtrlMsgRespScanResult *resp_payload = NULL;
     wifi_scan_config_t scanConf = {
         .show_hidden = true
@@ -1236,10 +1300,7 @@ static esp_err_t req_get_ap_scan_list_handler (CtrlMsg *req,
         goto err;
     }
 
-    credentials.count = ap_count;
-
-    results = (ScanResult **)
-        calloc(credentials.count, sizeof(ScanResult));
+    results = (WifiApRecord **)calloc(ap_count, sizeof(WifiApRecord));
     if (!results) {
         ESP_LOGE(TAG,"Failed To allocate memory");
         goto err;
@@ -1247,95 +1308,121 @@ static esp_err_t req_get_ap_scan_list_handler (CtrlMsg *req,
 
     resp_payload->entries = results;
     ESP_LOGI(TAG,"Total APs scanned = %u",ap_count);
-    for (int i = 0; i < credentials.count; i++ ) {
-        results[i] = (ScanResult *)calloc(1,sizeof(ScanResult));
+    printf("             SSID                      MAC            security    rssi chn Mbps\n");
+    printf("------------------------------- -----------------  -------------- ---- --- ----\n");
+    for (int i = 0; i < ap_count; i++ )
+    {
+        results[i] = (WifiApRecord *)calloc(1, sizeof(WifiApRecord));
         if (!results[i]) {
             ESP_LOGE(TAG,"Failed to allocate memory");
             goto err;
         }
-        scan_result__init(results[i]);
+        wifi_ap_record__init(results[i]);
 
-        ESP_LOGI(TAG,"Details of AP no %d",i);
+        results[i]->country = (WifiCountry *)calloc(1, sizeof(WifiCountry));
+        if (!results[i]->country) {
+            ESP_LOGE(TAG,"Failed to allocate memory");
+            goto err;
+        }
+        wifi_country__init(results[i]->country);
+
+        results[i]->he_ap = (WifiHeApInfo *)calloc(1, sizeof(WifiHeApInfo));
+        if (!results[i]->he_ap) {
+            ESP_LOGE(TAG,"Failed to allocate memory");
+            goto err;
+        }
+        wifi_he_ap_info__init(results[i]->he_ap);
 
         results[i]->ssid.len = strnlen((char *)ap_info[i].ssid, SSID_LENGTH);
-
-
-        results[i]->ssid.data = (uint8_t *)strndup((char *)ap_info[i].ssid,
-                SSID_LENGTH);
+        results[i]->ssid.data = (uint8_t *)strndup((char *)ap_info[i].ssid, SSID_LENGTH);
         if (!results[i]->ssid.data) {
             ESP_LOGE(TAG,"Failed to allocate memory for scan result entry SSID");
             mem_free(results[i]);
             goto err;
         }
 
-        credentials.chnl = ap_info[i].primary;
-        results[i]->chnl = credentials.chnl;
-        credentials.rssi = ap_info[i].rssi;
-        results[i]->rssi = credentials.rssi;
-
-        /* bandwidth */
-        {
-            /* Since esp32 does not provide an API to obtain AP MIMO information, 
-            * and esp32 only does not support MIMO,
-            * our evaluated rate is also based on 1x1.
-            */
-
-            /* HT20 */
-            if (ap_info[i].second == WIFI_SECOND_CHAN_NONE)
-            {
-                credentials.bw = CTRL__WIFI_BW__HT20;
-            }
-            /* HT40 */
-            else if (ap_info[i].second == WIFI_SECOND_CHAN_ABOVE || ap_info[i].second == WIFI_SECOND_CHAN_BELOW)
-            {
-                credentials.bw = CTRL__WIFI_BW__HT40;
-            }
-        }
-        results[i]->bw = credentials.bw;
-
-        /* supports */
-        {
-            results[i]->support.phy_11b = ap_info[i].phy_11b;
-            results[i]->support.phy_11g = ap_info[i].phy_11g;
-            results[i]->support.phy_11n = ap_info[i].phy_11n;
-            results[i]->support.phy_lr = ap_info[i].phy_lr;
-            results[i]->support.phy_11a = ap_info[i].phy_11a;
-            results[i]->support.phy_11ac = ap_info[i].phy_11ac;
-            results[i]->support.phy_11ax = ap_info[i].phy_11ax;
-            results[i]->support.wps = ap_info[i].wps;
-            results[i]->support.ftm_responder = ap_info[i].ftm_responder;
-            results[i]->support.ftm_initiator = ap_info[i].ftm_initiator;
-            results[i]->support.reserved = ap_info[i].reserved;
-        }
-
-        snprintf((char *)credentials.bssid, BSSID_LENGTH,
-                MACSTR, MAC2STR(ap_info[i].bssid));
-        results[i]->bssid.len = strnlen((char *)credentials.bssid, BSSID_LENGTH);
-        if (!results[i]->bssid.len) {
-            ESP_LOGE(TAG, "Invalid BSSID length");
-            mem_free(results[i]);
-            goto err;
-        }
-        results[i]->bssid.data = (uint8_t *)strndup((char *)credentials.bssid,
-                BSSID_LENGTH);
+        results[i]->bssid.data = calloc(1, MAC_LEN);
         if (!results[i]->bssid.data) {
-            ESP_LOGE(TAG, "Failed to allocate memory for scan result entry BSSID");
+            ESP_LOGE(TAG,"Failed to allocate memory for scan result entry BSSID");
             mem_free(results[i]);
             goto err;
         }
+        memcpy(results[i]->bssid.data, ap_info[i].bssid, MAC_LEN);
+        results[i]->bssid.len = MAC_LEN;
 
-        credentials.ecn = ap_info[i].authmode;
-        results[i]->sec_prot = credentials.ecn;
-        uint32_t support;
-        memcpy(&support, &results[i]->support, sizeof(results[i]->support));
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        ESP_LOGI(TAG, "SSID      \t\t%s\nRSSI      \t\t%ld\nChannel   \t\t%lu\nBSSID     \t\t%s\nAuth mode \t\t%d\nbandwidth\t\t%d\nsupport\t\t\t%08lx\n",
-#else
-        ESP_LOGI(TAG,"\nSSID      \t\t%s\nRSSI      \t\t%d\nChannel   \t\t%d\nBSSID     \t\t%s\nAuth mode \t\t%d\nbandwidth\t\t%d\nsupport\t\t\t%08lx\n",
-#endif
-                results[i]->ssid.data, results[i]->rssi, results[i]->chnl,
-                results[i]->bssid.data, results[i]->sec_prot, results[i]->bw, support);
-        vTaskDelay(1);
+        results[i]->primary = ap_info[i].primary;
+		results[i]->second = ap_info[i].second;
+		results[i]->rssi = ap_info[i].rssi;
+		results[i]->authmode = ap_info[i].authmode;
+		results[i]->pairwise_cipher = ap_info[i].pairwise_cipher;
+		results[i]->group_cipher = ap_info[i].group_cipher;
+		results[i]->ant = ap_info[i].ant;
+
+        /*Bitmask*/
+		if (ap_info[i].phy_11b)
+			H_SET_BIT(WIFI_SCAN_AP_REC_phy_11b_BIT, results[i]->bitmask);
+
+		if (ap_info[i].phy_11g)
+			H_SET_BIT(WIFI_SCAN_AP_REC_phy_11g_BIT, results[i]->bitmask);
+
+		if (ap_info[i].phy_11n)
+			H_SET_BIT(WIFI_SCAN_AP_REC_phy_11n_BIT, results[i]->bitmask);
+
+		if (ap_info[i].phy_lr)
+			H_SET_BIT(WIFI_SCAN_AP_REC_phy_lr_BIT, results[i]->bitmask);
+
+		if (ap_info[i].phy_11ax)
+			H_SET_BIT(WIFI_SCAN_AP_REC_phy_11ax_BIT, results[i]->bitmask);
+
+		if (ap_info[i].wps)
+			H_SET_BIT(WIFI_SCAN_AP_REC_wps_BIT, results[i]->bitmask);
+
+		if (ap_info[i].ftm_responder)
+			H_SET_BIT(WIFI_SCAN_AP_REC_ftm_responder_BIT, results[i]->bitmask);
+
+		if (ap_info[i].ftm_initiator)
+			H_SET_BIT(WIFI_SCAN_AP_REC_ftm_initiator_BIT, results[i]->bitmask);
+
+		WIFI_SCAN_AP_SET_RESERVED_VAL(ap_info[i].reserved,  results[i]->bitmask);
+
+		/* country */
+        results[i]->country->cc.data = calloc(3, sizeof(char));
+        if (!results[i]->country->cc.data) {
+            ESP_LOGE(TAG,"Failed to allocate memory for scan result entry country");
+            mem_free(results[i]);
+            goto err;
+        }
+        memcpy(results[i]->country->cc.data, ap_info[i].country.cc, 3);
+		results[i]->country->schan = ap_info[i].country.schan;
+		results[i]->country->nchan = ap_info[i].country.nchan;
+		results[i]->country->max_tx_power = ap_info[i].country.max_tx_power;
+		results[i]->country->policy = ap_info[i].country.policy;
+
+        /* he_ap */
+		// bss_color uses six bits
+		results[i]->he_ap->bitmask = (ap_info[i].he_ap.bss_color & WIFI_HE_AP_INFO_BSS_COLOR_BITS);
+
+		if (ap_info[i].he_ap.partial_bss_color)
+			H_SET_BIT(WIFI_HE_AP_INFO_partial_bss_color_BIT, results[i]->he_ap->bitmask);
+
+		if (ap_info[i].he_ap.bss_color_disabled)
+			H_SET_BIT(WIFI_HE_AP_INFO_bss_color_disabled_BIT, results[i]->he_ap->bitmask);
+
+		results[i]->he_ap->bssid_index = ap_info[i].he_ap.bssid_index;
+
+        printf("%-32.32s", ap_info[i].ssid);
+        printf("%02x:%02x:%02x:%02x:%02x:%02x  ",
+                ap_info[i].bssid[0],
+                ap_info[i].bssid[1],
+                ap_info[i].bssid[2],
+                ap_info[i].bssid[3],
+                ap_info[i].bssid[4],
+                ap_info[i].bssid[5]
+                );
+        printf("%-14.14s ", auth_mode_to_str(ap_info[i].authmode));
+        printf("%-4d ", ap_info[i].rssi);
+        printf("%3d ", ap_info[i].primary);
+        printf("%4d\n", estimate_ap_max_rate(&ap_info[i]));
 
         resp_payload->n_entries++;
         resp_payload->count++;
@@ -2356,14 +2443,24 @@ static void esp_ctrl_msg_cleanup(CtrlMsg *resp)
             break;
         } case (CTRL_MSG_ID__Resp_GetAPConfig ) : {
             if (resp->resp_get_ap_config) {
-                mem_free(resp->resp_get_ap_config->ssid.data);
-                mem_free(resp->resp_get_ap_config->bssid.data);
+                if (resp->resp_get_ap_config->ap_records->ssid.data)
+                    mem_free(resp->resp_get_ap_config->ap_records->ssid.data);
+                if (resp->resp_get_ap_config->ap_records->bssid.data)
+                    mem_free(resp->resp_get_ap_config->ap_records->bssid.data);
+                if (resp->resp_get_ap_config->ap_records->country) {
+                    if (resp->resp_get_ap_config->ap_records->country->cc.data)
+                        mem_free(resp->resp_get_ap_config->ap_records->country->cc.data);
+                    mem_free(resp->resp_get_ap_config->ap_records->country);
+                }
+                if (resp->resp_get_ap_config->ap_records->he_ap)
+                    mem_free(resp->resp_get_ap_config->ap_records->he_ap);
+                if (resp->resp_get_ap_config->ap_records)
+                    mem_free(resp->resp_get_ap_config->ap_records);
                 mem_free(resp->resp_get_ap_config);
             }
             break;
         } case (CTRL_MSG_ID__Resp_ConnectAP ) : {
             if (resp->resp_connect_ap) {
-                mem_free(resp->resp_connect_ap->mac.data);
                 mem_free(resp->resp_connect_ap);
             }
             break;
@@ -2396,6 +2493,14 @@ static void esp_ctrl_msg_cleanup(CtrlMsg *resp)
                             }
                             if (resp->resp_scan_ap_list->entries[i]->bssid.data) {
                                 mem_free(resp->resp_scan_ap_list->entries[i]->bssid.data);
+                            }
+                            if (resp->resp_scan_ap_list->entries[i]->country) {
+                                if (resp->resp_scan_ap_list->entries[i]->country->cc.data)
+                                    mem_free(resp->resp_scan_ap_list->entries[i]->country->cc.data);
+                                mem_free(resp->resp_scan_ap_list->entries[i]->country);
+                            }
+                            if (resp->resp_scan_ap_list->entries[i]->he_ap) {
+                                mem_free(resp->resp_scan_ap_list->entries[i]->he_ap);
                             }
                             mem_free(resp->resp_scan_ap_list->entries[i]);
                         }

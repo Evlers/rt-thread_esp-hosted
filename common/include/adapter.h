@@ -4,6 +4,74 @@
 #ifndef __ESP_NETWORK_ADAPTER__H
 #define __ESP_NETWORK_ADAPTER__H
 
+/* Station config bitmasks */
+#define WIFI_CONFIG_STA_RESERVED_BITMASK          0xFFC0
+#define WIFI_CONFIG_STA_GET_RESERVED_VAL(num)                                   \
+    ((num&WIFI_CONFIG_STA_RESERVED_BITMASK)>>STA_MAX_USED_BIT)
+#define WIFI_CONFIG_STA_SET_RESERVED_VAL(reserved_in,num_out)                   \
+    (num_out|=(reserved_in <<  STA_MAX_USED_BIT));
+
+enum {
+	STA_RM_ENABLED_BIT         = 0,
+	STA_BTM_ENABLED_BIT        = 1,
+	STA_MBO_ENABLED_BIT        = 2,
+	STA_FT_ENABLED_BIT         = 3,
+	STA_OWE_ENABLED_BIT        = 4,
+	STA_TRASITION_DISABLED_BIT = 5,
+	STA_MAX_USED_BIT           = 6,
+};
+
+/* bit mask in the ap record */
+#define H_SET_BIT(pos, val)             (val|=(1<<pos))
+#define H_GET_BIT(pos, val)             (val&(1<<pos)? 1: 0)
+#define WIFI_SCAN_AP_RESERVED_BITMASK             0xFF00
+#define WIFI_SCAN_AP_GET_RESERVED_VAL(num)                                      \
+    ((num&WIFI_SCAN_AP_RESERVED_BITMASK)>>WIFI_SCAN_AP_REC_MAX_USED_BIT)
+#define WIFI_SCAN_AP_SET_RESERVED_VAL(reserved_in,num_out)                      \
+    (num_out|=(reserved_in <<  WIFI_SCAN_AP_REC_MAX_USED_BIT));
+
+enum {
+	WIFI_SCAN_AP_REC_phy_11b_BIT       = 0,
+	WIFI_SCAN_AP_REC_phy_11g_BIT       = 1,
+	WIFI_SCAN_AP_REC_phy_11n_BIT       = 2,
+	WIFI_SCAN_AP_REC_phy_lr_BIT        = 3,
+	WIFI_SCAN_AP_REC_phy_11ax_BIT      = 4,
+	WIFI_SCAN_AP_REC_wps_BIT           = 5,
+	WIFI_SCAN_AP_REC_ftm_responder_BIT = 6,
+	WIFI_SCAN_AP_REC_ftm_initiator_BIT = 7,
+	WIFI_SCAN_AP_REC_MAX_USED_BIT      = 8,
+};
+
+/* WIFI HE AP Info bitmasks */
+#define WIFI_HE_AP_INFO_BSS_COLOR_BITS  0x3F
+enum {
+	// WIFI_HE_AP_INFO_BSS_COLOR is six bits wide
+	WIFI_HE_AP_INFO_partial_bss_color_BIT  = 6,
+	WIFI_HE_AP_INFO_bss_color_disabled_BIT = 7,
+	WIFI_HE_AP_INFO_MAX_USED_BIT           = 8,
+};
+
+/* WIFI HE Station Config bitmasks */
+#define WIFI_HE_STA_CONFIG_BITS 0xFC00
+#define WIFI_HE_STA_GET_RESERVED_VAL(num)                                      \
+    ((num&WIFI_HE_STA_CONFIG_BITS)>>WIFI_HE_STA_CONFIG_MAX_USED_BIT)
+#define WIFI_HE_STA_SET_RESERVED_VAL(reserved_in,num_out)                      \
+    (num_out|=(reserved_in <<  WIFI_HE_STA_CONFIG_MAX_USED_BIT));
+
+enum {
+	WIFI_HE_STA_CONFIG_he_dcm_set_BIT                                     = 0,
+	// WIFI_HE_STA_CONFIG_he_dcm_max_constellation_tx is two bits wide
+	WIFI_HE_STA_CONFIG_he_dcm_max_constellation_tx_BITS                   = 1,
+	// WIFI_HE_STA_CONFIG_he_dcm_max_constellation_rx is two bits wide
+	WIFI_HE_STA_CONFIG_he_dcm_max_constellation_rx_BITS                   = 3,
+	WIFI_HE_STA_CONFIG_he_mcs9_enabled_BIT                                = 5,
+	WIFI_HE_STA_CONFIG_he_su_beamformee_disabled_BIT                      = 6,
+	WIFI_HE_STA_CONFIG_he_trig_su_bmforming_feedback_disabled_BIT         = 7,
+	WIFI_HE_STA_CONFIG_he_trig_mu_bmforming_partial_feedback_disabled_BIT = 8,
+	WIFI_HE_STA_CONFIG_he_trig_cqi_feedback_disabled_BIT                  = 9,
+	WIFI_HE_STA_CONFIG_MAX_USED_BIT                                       = 10,
+};
+
 #define PRIO_Q_SERIAL                             0
 #define PRIO_Q_BT                                 1
 #define PRIO_Q_OTHERS                             2

@@ -53,12 +53,6 @@ int control_path_platform_init(void)
     readSemaphore = rt_sem_create("esp_rx", 0, RT_IPC_FLAG_PRIO);
     assert(readSemaphore);
 
-    /* grab the semaphore, so that task will be mandated to wait on semaphore */
-    // if (rt_sem_take(readSemaphore , RT_WAITING_FOREVER) != RT_EOK) {
-    //  LOG_E("could not obtain readSemaphore");
-    //  return ESP_FAIL;
-    // }
-
     serial_ll_if_g = serial_ll_init(control_path_rx_indication);
     if (!serial_ll_if_g) {
         LOG_E("Serial interface creation failed");

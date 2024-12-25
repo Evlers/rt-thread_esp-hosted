@@ -182,7 +182,7 @@ void transport_init_internal(void)
     }
 
     /* spi transter semaphore */
-    trans_semaphore = rt_sem_create("esp_trans", 0, RT_IPC_FLAG_PRIO);
+    trans_semaphore = rt_sem_create("esp_trans", 1, RT_IPC_FLAG_PRIO);
     assert(trans_semaphore);
 
     /* Queue - tx */
@@ -216,12 +216,12 @@ void transport_init_internal(void)
     }
 
     /* Thread - SPI transaction (full duplex) */
-    transaction_thread_id = rt_thread_create("esp_spi_tx", transaction_thread, &esp_spi_device, ESP_HOSTED_SPI_THREAD_STACK_SIZE, ESP_HOSTED_SPI_THREAD_PRIORITY, 2);
+    transaction_thread_id = rt_thread_create("esp_spi_tx", transaction_thread, &esp_spi_device, ESP_HOSTED_SPI_THREAD_STACK_SIZE, ESP_HOSTED_SPI_THREAD_PRIORITY, 10);
     assert(transaction_thread_id);
     rt_thread_startup(transaction_thread_id);
 
     /* Thread - RX processing */
-    process_rx_thread_id = rt_thread_create("esp_spi_rx", process_rx_thread, NULL, ESP_HOSTED_SPI_THREAD_STACK_SIZE, ESP_HOSTED_SPI_THREAD_PRIORITY, 2);
+    process_rx_thread_id = rt_thread_create("esp_spi_rx", process_rx_thread, NULL, ESP_HOSTED_SPI_THREAD_STACK_SIZE, ESP_HOSTED_SPI_THREAD_PRIORITY, 10);
     assert(process_rx_thread_id);
     rt_thread_startup(process_rx_thread_id);
 
@@ -474,7 +474,6 @@ static void transaction_thread(void *parameter)
 static void process_rx_thread(void *parameter)
 {
     interface_buffer_handle_t buf_handle = {0};
-    uint8_t *payload = NULL;
     struct pbuf *buffer = NULL;
     struct esp_priv_event *event = NULL;
     struct esp_private *priv = NULL;
@@ -488,9 +487,6 @@ static void process_rx_thread(void *parameter)
             LOG_E("Failed to receive rx buffer in the queue");
             continue;
         }
-
-        /* point to payload */
-        payload = buf_handle.payload;
 
         /* process received buffer for all possible interface types */
         if (buf_handle.if_type == ESP_SERIAL_IF)
