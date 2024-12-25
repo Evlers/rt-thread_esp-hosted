@@ -117,28 +117,38 @@ static int esp_ctrl_event_callback (ctrl_cmd_t * event)
     switch(event->msg_id)
     {
         case CTRL_EVENT_ESP_INIT:
-            LOG_D("App EVENT: ESP INIT");
+            LOG_D("CTRL EVENT: ESP INIT");
             rt_sem_release(sem_esp_init);
             break;
 
         case CTRL_EVENT_HEARTBEAT:
-            LOG_D("App EVENT: Heartbeat event [%lu]", event->u.e_heartbeat.hb_num);
+            LOG_D("CTRL EVENT: Heartbeat event [%lu]", event->u.e_heartbeat.hb_num);
             break;
 
         case CTRL_EVENT_STATION_DISCONNECT_FROM_AP:
-            LOG_D("App EVENT: Station mode: Disconnect Reason[%u]", event->resp_event_status);
+            LOG_D("CTRL EVENT: Station mode: Disconnect Reason[%u]", event->resp_event_status);
             rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_DISCONNECT, RT_NULL);
             break;
 
-        case CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP:
-            LOG_D("App EVENT: SoftAP mode: Disconnect MAC[%02x:%02x:%02x:%02x:%02x:%02x]",
-                    event->u.e_sta_disconn.bssid[0],
-                    event->u.e_sta_disconn.bssid[1],
-                    event->u.e_sta_disconn.bssid[2],
-                    event->u.e_sta_disconn.bssid[3],
-                    event->u.e_sta_disconn.bssid[4],
-                    event->u.e_sta_disconn.bssid[5]);
+        case CTRL_EVENT_STATION_CONNECTED_TO_ESP_SOFTAP:
+        {
+            struct rt_wlan_info info;
+            struct rt_wlan_buff buff = { .data = &info, .len = sizeof(struct rt_wlan_info) };
+            LOG_D("CTRL EVENT: SoftAP mode: Connected MAC[%s]", event->u.e_softap_sta_conn.mac);
+            convert_mac_to_bytes(info.bssid, (const char *)event->u.e_softap_sta_conn.mac);
+            rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_ASSOCIATED, &buff);
             break;
+        }
+
+        case CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP:
+        {
+            struct rt_wlan_info info;
+            struct rt_wlan_buff buff = { .data = &info, .len = sizeof(struct rt_wlan_info) };
+            LOG_D("CTRL EVENT: SoftAP mode: Disconnect MAC[%s]", event->u.e_softap_sta_disconn.mac);
+            convert_mac_to_bytes(info.bssid, (const char *)event->u.e_softap_sta_disconn.mac);
+            rt_wlan_dev_indicate_event_handle(wifi_ap.wlan, RT_WLAN_DEV_EVT_AP_DISASSOCIATED, &buff);
+            break;
+        }
 
         default:
             LOG_W("Invalid event[%u] to parse", event->msg_id);
@@ -161,6 +171,7 @@ static int register_esp_event_callbacks(void)
         { CTRL_EVENT_ESP_INIT,                           esp_ctrl_event_callback },
         { CTRL_EVENT_HEARTBEAT,                          esp_ctrl_event_callback },
         { CTRL_EVENT_STATION_DISCONNECT_FROM_AP,         esp_ctrl_event_callback },
+        { CTRL_EVENT_STATION_CONNECTED_TO_ESP_SOFTAP,    esp_ctrl_event_callback },
         { CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP, esp_ctrl_event_callback },
     };
 
