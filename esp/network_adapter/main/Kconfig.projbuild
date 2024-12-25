@@ -1,4 +1,4 @@
-menu "Example Configuration"
+menu "ESP-Hosted Configuration"
 
 	choice ESP_HOST_INTERFACE
 		bool "Transport layer"
@@ -193,6 +193,12 @@ menu "Example Configuration"
 			default 0
 			help
 				Enable/disable debug prints in Bluetooth driver data path
+
+		config ESP_MEM_DUMP
+			bool "Enable Dump memory usage"
+			default 0
+			help
+				Enable/disable memory usage dump
 
 	endmenu
 

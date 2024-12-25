@@ -804,4 +804,15 @@ void app_main()
     ESP_LOGI(TAG,"Initial set up done");
 
     send_event_to_host(CTRL_MSG_ID__Event_ESPInit);
+
+#ifdef CONFIG_ESP_MEM_DUMP
+    while(1)
+    {
+        printf("%s free:%lu min-free:%lu lfb-def:%u lfb-8bit:%u\n", "mem_dump",
+                  esp_get_free_heap_size(), esp_get_minimum_free_heap_size(),
+                  heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT),
+                  heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        sleep(10);
+    }
+#endif
 }
