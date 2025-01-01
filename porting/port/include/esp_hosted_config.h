@@ -24,28 +24,17 @@
 #define CONFIG_LOG_DEFAULT_LEVEL  ESP_LOG_INFO
 #define CONFIG_LOG_MAXIMUM_LEVEL  ESP_LOG_INFO
 
-#define H_TRANSPORT_NONE 0
-#define H_TRANSPORT_SDIO 1
-#define H_TRANSPORT_SPI_HD 2
-#define H_TRANSPORT_SPI 3
-#define H_TRANSPORT_UART 4
-
-#ifdef CONFIG_ESP_SDIO_HOST_INTERFACE
-#include "driver/sdmmc_host.h"
-#endif
+#define H_TRANSPORT_NONE      0
+#define H_TRANSPORT_SDIO      1
+#define H_TRANSPORT_SPI_HD    2
+#define H_TRANSPORT_SPI       3
+#define H_TRANSPORT_UART      4
 
 #undef H_TRANSPORT_IN_USE
 
 #if CONFIG_ESP_SPI_HOST_INTERFACE
 #define H_TRANSPORT_IN_USE H_TRANSPORT_SPI
 /*  -------------------------- SPI Master Config start ----------------------  */
-/*
-Pins in use. The SPI Master can use the GPIO mux,
-so feel free to change these if needed.
-*/
-
-
-/* SPI config */
 
 #ifdef CONFIG_HS_ACTIVE_LOW
   #define H_HANDSHAKE_ACTIVE_HIGH 0
@@ -106,184 +95,6 @@ so feel free to change these if needed.
 /*  -------------------------- SPI Master Config end ------------------------  */
 #endif
 
-#ifdef CONFIG_ESP_SDIO_HOST_INTERFACE
-#define H_TRANSPORT_IN_USE H_TRANSPORT_SDIO
-/*  -------------------------- SDIO Host Config start -----------------------  */
-
-#ifdef CONFIG_SOC_SDMMC_USE_GPIO_MATRIX
-#define H_SDIO_SOC_USE_GPIO_MATRIX
-#endif
-
-#define H_SDIO_CLOCK_FREQ_KHZ                        CONFIG_ESP_SDIO_CLOCK_FREQ_KHZ
-#define H_SDIO_BUS_WIDTH                             CONFIG_ESP_SDIO_BUS_WIDTH
-#define H_SDMMC_HOST_SLOT                            SDMMC_HOST_SLOT_1
-
-#ifdef H_SDIO_SOC_USE_GPIO_MATRIX
-  #define H_SDIO_PIN_CLK                             CONFIG_ESP_SDIO_PIN_CLK
-  #define H_SDIO_PIN_CMD                             CONFIG_ESP_SDIO_PIN_CMD
-  #define H_SDIO_PIN_D0                              CONFIG_ESP_SDIO_PIN_D0
-  #define H_SDIO_PIN_D1                              CONFIG_ESP_SDIO_PIN_D1
-  #if (H_SDIO_BUS_WIDTH == 4)
-    #define H_SDIO_PIN_D2                            CONFIG_ESP_SDIO_PIN_D2
-    #define H_SDIO_PIN_D3                            CONFIG_ESP_SDIO_PIN_D3
-  #else
-    #define H_SDIO_PIN_D2                            -1
-    #define H_SDIO_PIN_D3                            -1
-  #endif
-#else
-  #define H_SDIO_PIN_CLK                             -1
-  #define H_SDIO_PIN_CMD                             -1
-  #define H_SDIO_PIN_D0                              -1
-  #define H_SDIO_PIN_D1                              -1
-  #if (H_SDIO_BUS_WIDTH == 4)
-    #define H_SDIO_PIN_D2                            -1
-    #define H_SDIO_PIN_D3                            -1
-  #else
-    #define H_SDIO_PIN_D2                            -1
-    #define H_SDIO_PIN_D3                            -1
-  #endif
-#endif
-
-#define H_SDIO_HOST_STREAMING_MODE 1
-#define H_SDIO_ALWAYS_HOST_RX_MAX_TRANSPORT_SIZE 2
-#define H_SDIO_OPTIMIZATION_RX_NONE 3
-
-#ifdef CONFIG_ESP_SDIO_OPTIMIZATION_RX_STREAMING_MODE
-  #define H_SDIO_HOST_RX_MODE H_SDIO_HOST_STREAMING_MODE
-#elif defined(CONFIG_ESP_SDIO_OPTIMIZATION_RX_MAX_SIZE)
-  #define H_SDIO_HOST_RX_MODE H_SDIO_ALWAYS_HOST_RX_MAX_TRANSPORT_SIZE
-#else
-  /* Use this if unsure */
-  #define H_SDIO_HOST_RX_MODE H_SDIO_OPTIMIZATION_RX_NONE
-#endif
-
-// Pad transfer len for host operation
-#define H_SDIO_TX_LEN_TO_TRANSFER(x) ((x + 3) & (~3))
-#define H_SDIO_RX_LEN_TO_TRANSFER(x) ((x + 3) & (~3))
-
-/* Do Block Mode only transfers
- *
- * When enabled, SDIO only uses block mode transfers for higher
- * throughput. Data lengths are padded to multiples of ESP_BLOCK_SIZE.
- *
- * This is safe for the SDIO slave:
- * - for Host Tx: slave will ignore extra data sent by Host
- * - for Host Rx: slave will send extra 0 data, ignored by Host
- */
-#define H_SDIO_TX_BLOCK_ONLY_XFER (1)
-#define H_SDIO_RX_BLOCK_ONLY_XFER (1)
-
-// workarounds for some SDIO transfer errors that may occur
-#if 0
-/* Below workarounds could be enabled for non-ESP MCUs to test first
- * Once everything is stable, can disable workarounds and test again
- * */
-#define H_SDIO_TX_LIMIT_XFER_SIZE_WORKAROUND // limit transfer to one ESP_BLOCK_SIZE at a time
-#define H_SDIO_RX_LIMIT_XFER_SIZE_WORKDAROUND // limit transfer to one ESP_BLOCK_SIZE at a time
-#endif
-
-#if defined(H_SDIO_TX_LIMIT_XFER_SIZE_WORKAROUND)
-#define H_SDIO_TX_BLOCKS_TO_TRANSFER(x) (1)
-#else
-#define H_SDIO_TX_BLOCKS_TO_TRANSFER(x) (x / ESP_BLOCK_SIZE)
-#endif
-
-#if defined(H_SDIO_RX_LIMIT_XFER_SIZE_WORKDAROUND)
-#define H_SDIO_RX_BLOCKS_TO_TRANSFER(x) (1)
-#else
-#define H_SDIO_RX_BLOCKS_TO_TRANSFER(x) (x / ESP_BLOCK_SIZE)
-#endif
-
-/*  -------------------------- SDIO Host Config end -------------------------  */
-#endif
-
-#ifdef CONFIG_ESP_SPI_HD_HOST_INTERFACE
-#define H_TRANSPORT_IN_USE H_TRANSPORT_SPI_HD
-/*  -------------------------- SPI_HD Host Config start -----------------------  */
-
-#define H_SPI_HD_HOST_INTERFACE 1
-
-enum {
-  H_SPI_HD_CONFIG_2_DATA_LINES,
-  H_SPI_HD_CONFIG_4_DATA_LINES,
-};
-
-#if CONFIG_SPI_HD_DR_ACTIVE_HIGH
-  #define H_SPI_HD_DATAREADY_ACTIVE_HIGH 1
-#else
-  #define H_SPI_HD_DATAREADY_ACTIVE_HIGH 0
-#endif
-
-#if H_SPI_HD_DATAREADY_ACTIVE_HIGH
-  #define H_SPI_HD_DR_VAL_ACTIVE                     H_GPIO_HIGH
-  #define H_SPI_HD_DR_VAL_INACTIVE                   H_GPIO_LOW
-  #define H_SPI_HD_DR_INTR_EDGE                      H_GPIO_INTR_POSEDGE
-#else
-  #define H_SPI_HD_DR_VAL_ACTIVE                     H_GPIO_LOW
-  #define H_SPI_HD_DR_VAL_INACTIVE                   H_GPIO_HIGH
-  #define H_SPI_HD_DR_INTR_EDGE                      H_GPIO_INTR_NEGEDGE
-#endif
-
-#define H_SPI_HD_HOST_NUM_DATA_LINES                 CONFIG_ESP_SPI_HD_INTERFACE_NUM_DATA_LINES
-
-#define H_SPI_HD_PIN_D0                              CONFIG_ESP_SPI_HD_GPIO_D0
-#define H_SPI_HD_PIN_D1                              CONFIG_ESP_SPI_HD_GPIO_D1
-#if (CONFIG_ESP_SPI_HD_INTERFACE_NUM_DATA_LINES == 4)
-#define H_SPI_HD_PIN_D2                              CONFIG_ESP_SPI_HD_GPIO_D2
-#define H_SPI_HD_PIN_D3                              CONFIG_ESP_SPI_HD_GPIO_D3
-#else
-#define H_SPI_HD_PIN_D2                              -1
-#define H_SPI_HD_PIN_D3                              -1
-#endif
-#define H_SPI_HD_PIN_CS                              CONFIG_ESP_SPI_HD_GPIO_CS
-#define H_SPI_HD_PIN_CLK                             CONFIG_ESP_SPI_HD_GPIO_CLK
-#define H_SPI_HD_GPIO_DATA_READY_Port                NULL
-#define H_SPI_HD_PIN_DATA_READY                      CONFIG_ESP_SPI_HD_GPIO_DATA_READY
-
-#define H_SPI_HD_CLK_MHZ                             CONFIG_ESP_SPI_HD_CLK_FREQ
-#define H_SPI_HD_MODE                                CONFIG_ESP_SPI_HD_MODE
-#define H_SPI_HD_TX_QUEUE_SIZE                       CONFIG_ESP_SPI_HD_TX_Q_SIZE
-#define H_SPI_HD_RX_QUEUE_SIZE                       CONFIG_ESP_SPI_HD_RX_Q_SIZE
-
-#define H_SPI_HD_CHECKSUM                            CONFIG_ESP_SPI_HD_CHECKSUM
-
-#define H_SPI_HD_NUM_COMMAND_BITS                    8
-#define H_SPI_HD_NUM_ADDRESS_BITS                    8
-#define H_SPI_HD_NUM_DUMMY_BITS                      8
-
-/*  -------------------------- SPI_HD Host Config end -------------------------  */
-#else
-#define H_SPI_HD_HOST_INTERFACE 0
-#endif
-
-#ifdef CONFIG_ESP_UART_HOST_INTERFACE
-#define H_TRANSPORT_IN_USE H_TRANSPORT_UART
-/*  -------------------------- UART Host Config start -------------------------  */
-
-#define H_UART_HOST_TRANSPORT 1
-
-#define H_UART_PORT                                  CONFIG_ESP_UART_PORT
-#define H_UART_NUM_DATA_BITS                         CONFIG_ESP_UART_NUM_DATA_BITS
-#define H_UART_PARITY                                CONFIG_ESP_UART_PARITY
-#define H_UART_START_BITS                            1
-#define H_UART_STOP_BITS                             CONFIG_ESP_UART_STOP_BITS
-#define H_UART_FLOWCTRL                              UART_HW_FLOWCTRL_DISABLE
-#define H_UART_CLK_SRC                               UART_SCLK_DEFAULT
-
-#define H_UART_EVENT_QUEUE_SIZE                      100
-
-#define H_UART_CHECKSUM                              CONFIG_ESP_UART_CHECKSUM
-#define H_UART_BAUD_RATE                             CONFIG_ESP_UART_BAUDRATE
-#define H_UART_TX_PIN                                CONFIG_ESP_UART_PIN_TX
-#define H_UART_RX_PIN                                CONFIG_ESP_UART_PIN_RX
-#define H_UART_TX_QUEUE_SIZE                         CONFIG_ESP_UART_TX_Q_SIZE
-#define H_UART_RX_QUEUE_SIZE                         CONFIG_ESP_UART_RX_Q_SIZE
-
-/*  -------------------------- UART Host Config end -------------------------  */
-#else
-#define H_UART_HOST_TRANSPORT 0
-#endif
-
 /* Generic reset pin config */
 #define H_GPIO_PIN_RESET_Port                         NULL
 #define H_GPIO_PIN_RESET_Pin                          ESP_HOSTED_RESET_PIN
@@ -304,14 +115,8 @@ enum {
   #define H_RESET_VAL_INACTIVE                        H_GPIO_HIGH
 #endif
 
-
-#define TIMEOUT_PSERIAL_RESP                          30
-
-
 #define PRE_FORMAT_NEWLINE_CHAR                       ""
 #define POST_FORMAT_NEWLINE_CHAR                      ""
-
-#define USE_STD_C_LIB_MALLOC                          0
 
 /* At slave, if Wi-Fi tx is failing (maybe due to unstable wifi connection),
  * as preventive measure, host can start dropping the packets, depending upon slave load

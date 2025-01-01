@@ -9,7 +9,6 @@ extern "C" {
 #endif
 
 /** Includes **/
-#include "esp_hosted_transport_config.h"
 #include "esp_wifi_remote.h"
 #include "esp_hosted_wifi_config.h"
 #include "esp_hosted_api.h"

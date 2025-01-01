@@ -20,10 +20,6 @@
 #include "hosted_os_adapter.h"
 #include "esp_wifi_types.h"
 #include "esp_netif_types.h"
-
-
-#define MCU_SYS                                      1
-
 #include "common.h"
 
 #define MAX_PAYLOAD_SIZE 							(MAX_TRANSPORT_BUFFER_SIZE-H_ESP_PAYLOAD_HEADER_OFFSET)
@@ -49,11 +45,9 @@
 #define unlikely(x) 								__builtin_expect(!!(x), 0)
 #endif
 
-#define FAST_RAM_ATTR                                
-/* this is needed when there is no gpio port being used */
-#define H_GPIO_PORT_DEFAULT                         PIN_NONE
+#define FAST_RAM_ATTR
 
-#define gpio_pin_state_t                            rt_uint8_t
+#define gpio_pin_state_t                            rt_base_t
 
 #define RPC_TASK_STACK_SIZE                         ESP_HOSTED_RPC_THREAD_STACK_SIZE
 #define RPC_TASK_PRIO                               ESP_HOSTED_RPC_THREAD_PRIORITY
@@ -83,32 +77,7 @@
 #define RET_FAIL_TIMEOUT                            -5
 
 
-//TODO: redesign common code over
-
-
-
-
-#define MILLISEC_TO_SEC			1000
-#define TICKS_PER_SEC(x) 		(1000*(x) / portTICK_PERIOD_MS)
-#define SEC_TO_MILLISEC(x) 		(1000*(x))
-#define SEC_TO_MICROSEC(x) 		(1000*1000*(x))
-
 #define MEM_DUMP(s)
-// #define MEM_DUMP(s) \
-// 	printf("%s free:%lu min-free:%lu lfb-def:%u lfb-8bit:%u\n\n", s,	\
-// 			(unsigned long int)esp_get_free_heap_size(), (unsigned long int)esp_get_minimum_free_heap_size(), \
-// 			heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT),		\
-// 			heap_caps_get_largest_free_block(MALLOC_CAP_8BIT))
-
-#if 0
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
-  #define ESP_MUTEX_INIT(mUtEx) portMUX_INITIALIZE(&(mUtEx));
-#else
-  #define ESP_MUTEX_INIT(mUtEx) vPortCPUInitializeMutex(&(mUtEx));
-#endif
-#endif
-
-
 
 
 /* -------- Create handle ------- */
@@ -137,10 +106,5 @@
 		goto gotosym;                                             \
 	}                                                             \
 } while(0);
-
-/* Driver Handle */
-struct serial_drv_handle_t;
-
-extern struct mempool * nw_mp_g;
 
 #endif /*__OS_WRAPPER_H*/
