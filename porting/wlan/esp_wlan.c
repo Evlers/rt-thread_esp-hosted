@@ -856,6 +856,13 @@ static void rt_hw_esp_wlan_init (void *parameter)
 
 #ifndef ESP_HOSTED_RAW_THROUGHPUT_TRANSPORT
 
+    /* set the wifi mode */
+    if (esp_wifi_set_mode(WIFI_MODE_STA) != ESP_OK)
+    {
+        LOG_E("esp wifi set mode failed!");
+        return ;
+    }
+
     /* set the wifi storage mode */
     if (esp_wifi_set_storage(WIFI_STORAGE_RAM) != ESP_OK)
     {
