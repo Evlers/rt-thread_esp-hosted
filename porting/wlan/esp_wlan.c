@@ -301,11 +301,15 @@ int hosted_wifi_event_post(int32_t event_id, void* event_data, size_t event_data
         case WIFI_EVENT_SCAN_DONE:
         {
             wifi_event_sta_scan_done_t *info = (wifi_event_sta_scan_done_t *)event_data;
-            if (info != NULL)
+            if (info != NULL && info->number > 0)
             {
                 /* create a thread to send scan result to wlan device */
                 rt_thread_startup(rt_thread_create("esp_wlan_scan", send_ap_record_to_wlan, info,
                                     ESP_HOSTED_RPC_THREAD_STACK_SIZE, ESP_HOSTED_RPC_THREAD_PRIORITY, 20));
+            }
+            else
+            {
+                rt_wlan_dev_indicate_event_handle(wifi_sta.wlan, RT_WLAN_DEV_EVT_SCAN_DONE, RT_NULL);
             }
             break;
         }
