@@ -107,7 +107,6 @@ static void FAST_RAM_ATTR gpio_hs_isr_handler(void* arg)
 	lasthandshaketime_us = currtime_us;
 #endif
 	g_h.funcs->_h_post_semaphore_from_isr(spi_trans_ready_sem);
-	ESP_EARLY_LOGV(TAG, "%s", __func__);
 }
 
 /*
@@ -116,7 +115,6 @@ This ISR is called when the handshake or data_ready line goes high.
 static void FAST_RAM_ATTR gpio_dr_isr_handler(void* arg)
 {
 	g_h.funcs->_h_post_semaphore_from_isr(spi_trans_ready_sem);
-	ESP_EARLY_LOGV(TAG, "%s", __func__);
 }
 
 void transport_deinit_internal(void)
@@ -160,7 +158,7 @@ void transport_init_internal(void)
 
 	spi_handle = g_h.funcs->_h_bus_init();
 	if (!spi_handle) {
-		ESP_LOGE(TAG, "could not create spi handle, exiting\n");
+		ESP_LOGE(TAG, "could not create spi handle, exiting");
 		assert(spi_handle);
 	}
 
@@ -216,7 +214,7 @@ static int process_spi_rx_buf(uint8_t * rxbuff)
 
 	if ((len > MAX_PAYLOAD_SIZE) ||
 		(offset != sizeof(struct esp_payload_header))) {
-		ESP_LOGI(TAG, "rx packet ignored: len [%u], rcvd_offset[%u], exp_offset[%u]\n",
+		ESP_LOGI(TAG, "rx packet ignored: len [%u], rcvd_offset[%u], exp_offset[%u]",
 				len, offset, sizeof(struct esp_payload_header));
 
 		/* 1. no payload to process
@@ -264,7 +262,7 @@ static int process_spi_rx_buf(uint8_t * rxbuff)
 			g_h.funcs->_h_post_semaphore(sem_from_slave_queue);
 
 		} else {
-			ESP_LOGI(TAG, "rcvd_crc[%u] != exp_crc[%u], drop pkt\n",checksum, rx_checksum);
+			ESP_LOGI(TAG, "rcvd_crc[%u] != exp_crc[%u], drop pkt",checksum, rx_checksum);
 			ret = -4;
 			goto done;
 		}
@@ -336,7 +334,7 @@ static int check_and_execute_spi_transaction(void)
 				ESP_HEXLOGV("h_spi_tx", txbuff, 16);
 			}
 
-			ESP_LOGV(TAG, "dr %u tx_valid %u\n", gpio_rx_data_ready, is_valid_tx_buf);
+			ESP_LOGV(TAG, "dr %u tx_valid %u", gpio_rx_data_ready, is_valid_tx_buf);
 			/* Allocate rx buffer */
 			rxbuff = spi_buffer_alloc(MEMSET_REQUIRED);
 			assert(rxbuff);
