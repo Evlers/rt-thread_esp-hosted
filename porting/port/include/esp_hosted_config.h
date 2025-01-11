@@ -35,6 +35,9 @@
 #if CONFIG_ESP_SPI_HOST_INTERFACE
 #define H_TRANSPORT_IN_USE H_TRANSPORT_SPI
 /*  -------------------------- SPI Master Config start ----------------------  */
+extern rt_base_t esp_hosted_pin_cs;
+extern rt_base_t esp_hosted_pin_data_ready;
+extern rt_base_t esp_hosted_pin_handshake;
 
 #ifdef CONFIG_HS_ACTIVE_LOW
   #define H_HANDSHAKE_ACTIVE_HIGH 0
@@ -71,20 +74,12 @@
 #endif
 
 #define H_GPIO_HANDSHAKE_Port                        NULL
-#define H_GPIO_HANDSHAKE_Pin                         ESP_HOSTED_HANDSHAKE_PIN
+#define H_GPIO_HANDSHAKE_Pin                         esp_hosted_pin_handshake
 #define H_GPIO_DATA_READY_Port                       NULL
-#define H_GPIO_DATA_READY_Pin                        ESP_HOSTED_DATA_READY_PIN
+#define H_GPIO_DATA_READY_Pin                        esp_hosted_pin_data_ready
 
-
-
-#define H_GPIO_MOSI_Port                             NULL
-#define H_GPIO_MOSI_Pin                              -1
-#define H_GPIO_MISO_Port                             NULL
-#define H_GPIO_MISO_Pin                              -1
-#define H_GPIO_SCLK_Port                             NULL
-#define H_GPIO_SCLK_Pin                              -1
 #define H_GPIO_CS_Port                               NULL
-#define H_GPIO_CS_Pin                                ESP_HOSTED_SPI_CS_PIN
+#define H_GPIO_CS_Pin                                esp_hosted_pin_cs
 
 #define H_SPI_TX_Q                                   1
 #define H_SPI_RX_Q                                   1
@@ -96,8 +91,9 @@
 #endif
 
 /* Generic reset pin config */
+extern rt_base_t esp_hosted_pin_reset;
 #define H_GPIO_PIN_RESET_Port                         NULL
-#define H_GPIO_PIN_RESET_Pin                          ESP_HOSTED_RESET_PIN
+#define H_GPIO_PIN_RESET_Pin                          esp_hosted_pin_reset
 
 /* If Reset pin is Enable, it is Active High.
  * If it is RST, active low */
