@@ -352,7 +352,9 @@ void print_capabilities(uint32_t cap)
 {
 	ESP_LOGI(TAG, "Features supported are:");
 	if (cap & ESP_WLAN_SDIO_SUPPORT)
-		ESP_LOGI(TAG, "\t * WLAN");
+		ESP_LOGI(TAG, "\t   - WLAN over SDIO");
+	if (cap & ESP_WLAN_SPI_SUPPORT)
+		ESP_LOGI(TAG, "\t   - WLAN over SPI");
 	if (cap & ESP_BT_UART_SUPPORT)
 		ESP_LOGI(TAG, "\t   - HCI over UART");
 	if (cap & ESP_BT_SDIO_SUPPORT)
