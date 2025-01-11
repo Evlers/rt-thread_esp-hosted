@@ -155,6 +155,7 @@ extern rt_base_t esp_hosted_pin_reset;
 #define H_MAX_SIMULTANEOUS_SYNC_RPC_REQUESTS           ESP_HOSTED_MAX_SIMULTANEOUS_SYNC_RPC_REQUESTS
 #define H_MAX_SIMULTANEOUS_ASYNC_RPC_REQUESTS          ESP_HOSTED_MAX_SIMULTANEOUS_ASYNC_RPC_REQUESTS
 
+#define H_LOG_FORMAT(letter, format)                   PRE_FORMAT_NEWLINE_CHAR format POST_FORMAT_NEWLINE_CHAR
 #define H_ERROR_CHECK(x) do {                                                                                           \
                                 int err_rc_ = (x);                                                                      \
                                 if (unlikely(err_rc_ != 0)) {                                                           \

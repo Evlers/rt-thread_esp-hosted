@@ -71,7 +71,6 @@ typedef enum {
 #define DEBUG_HEX_STREAM_PRINT            1
 
 
-//void esp_log_write(esp_log_level_t level, const char* tag, const char* format, ...);
 void esp_log_buffer_hexdump_internal(const char *tag, const void *buffer, uint16_t buff_len, esp_log_level_t log_level);
 
 
@@ -88,10 +87,14 @@ void esp_log_buffer_hexdump_internal(const char *tag, const void *buffer, uint16
 	printf("Aborting at: %s:%u\n", __FILE__, __LINE__); while(1);}} while (0);
 #endif
 
+#ifndef H_LOG_FORMAT
 #if CONFIG_LOG_COLORS
-#define LOG_FORMAT(letter, format)   LOG_COLOR_ ## letter  PRE_FORMAT_NEWLINE_CHAR #letter " " format LOG_RESET_COLOR POST_FORMAT_NEWLINE_CHAR
+#define LOG_FORMAT(letter, format)      LOG_COLOR_ ## letter  PRE_FORMAT_NEWLINE_CHAR #letter " " format LOG_RESET_COLOR POST_FORMAT_NEWLINE_CHAR
 #else
-#define LOG_FORMAT(letter, format) PRE_FORMAT_NEWLINE_CHAR #letter "  " format POST_FORMAT_NEWLINE_CHAR
+#define LOG_FORMAT(letter, format)      PRE_FORMAT_NEWLINE_CHAR #letter "  " format POST_FORMAT_NEWLINE_CHAR
+#endif
+#else
+#define LOG_FORMAT                      H_LOG_FORMAT
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >  201703L)
