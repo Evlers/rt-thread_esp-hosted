@@ -102,7 +102,7 @@ static esp_err_t esp_hosted_ota_local (char* image_path)
 	}
 
 	rt_kprintf("esp-hosted ota update started\n");
-	rt_kprintf("network adapter is erasing the flash area..\n");
+	rt_kprintf("erasing the ota partition..\n");
 
 	if (rpc_ota_begin() != ESP_OK)
 	{
@@ -175,7 +175,7 @@ static esp_err_t esp_hosted_ota_http (char *url)
     }
 
 	rt_kprintf("esp-hosted ota update started\n");
-	rt_kprintf("network adapter is erasing the flash area..\n");
+	rt_kprintf("erasing the ota partition..\n");
 
 	if (rpc_ota_begin() != ESP_OK)
 	{
@@ -224,8 +224,8 @@ static esp_err_t esp_hosted_ota_http (char *url)
                 break;
             }
         }
+		print_progress(write_total, session->content_length);
     }
-	print_progress(write_total, session->content_length);
 	rt_kprintf("\nfirmware write success!!\n");
 
 	__error:
@@ -239,7 +239,7 @@ static esp_err_t esp_hosted_ota_http (char *url)
 	}
 	else
 	{
-        rt_kprintf("Data receiving incomplete, need to receive length: %u, actual receiving: %u\n", session->content_length, write_total);
+        rt_kprintf("data receiving incomplete, need to receive length: %u, actual receiving: %u\n", session->content_length, write_total);
 	}
 
 	__free:
@@ -257,7 +257,7 @@ static int esp_ota (int argc, char **argv)
 {
 	if (argc < 2)
     {
-        rt_kprintf("Usage: esp_ota <file path / url>\n");
+        rt_kprintf("usage: esp_ota <file path / url>\n");
         return 0;
     }
 
