@@ -10,33 +10,60 @@
 #include "hci_drv.h"
 
 #if H_BT_HOST_ESP_NIMBLE
+#include <sysinit/sysinit.h>
+#include <syscfg/syscfg.h>
 #include "host/ble_hs_mbuf.h"
 #include "os/os_mbuf.h"
 #include "nimble/transport.h"
 #include "nimble/transport/hci_h4.h"
-#include "nimble/hci_common.h"
 #endif
 
 #include "esp_hosted_log.h"
 static const char TAG[] = "vhci_drv";
+
+#if H_BT_HOST_ESP_NIMBLE
+struct hci_h4_sm hci_h4sm;
+
+static int hci_uart_frame_cb(uint8_t pkt_type, void *data)
+{
+    switch (pkt_type) {
+    case HCI_H4_EVT:
+        return ble_transport_to_hs_evt(data);
+    case HCI_H4_ACL:
+        return ble_transport_to_hs_acl(data);
+    default:
+        assert(0);
+        break;
+    }
+    return -1;
+}
+#endif /* H_BT_HOST_ESP_NIMBLE */
 
 /**
  * HCI_H4_xxx is the first byte of the received data
  */
 int hci_rx_handler(interface_buffer_handle_t *buf_handle)
 {
+#if H_BT_HOST_ESP_NIMBLE
+	hci_h4_sm_rx(&hci_h4sm, buf_handle->payload, buf_handle->payload_len);
+#endif /* H_BT_HOST_ESP_NIMBLE */
 	return ESP_OK;
 }
 
 void hci_drv_init(void)
 {
-	// do nothing for VHCI: underlying transport should be ready
+#if H_BT_HOST_ESP_NIMBLE
+	hci_h4_sm_init(&hci_h4sm, &hci_h4_allocs_from_ll, hci_uart_frame_cb);
+#endif /* H_BT_HOST_ESP_NIMBLE */
 }
 
 void hci_drv_show_configuration(void)
 {
+#if H_BT_HOST_ESP_NIMBLE
 	ESP_LOGI(TAG, "Host BT Support: Enabled");
 	ESP_LOGI(TAG, "\tBT Transport Type: VHCI");
+	ESP_LOGI(TAG, "\tBT Stack Type: NimBLE");
+#endif /* H_BT_HOST_ESP_NIMBLE */
 }
 
 #if H_BT_HOST_ESP_NIMBLE
@@ -69,7 +96,7 @@ int ble_transport_to_ll_acl_impl(struct os_mbuf *om)
 	uint8_t * data = NULL;
 	int res;
 
-	data = MEM_ALLOC(data_len);
+	data = g_h.funcs->_h_malloc(data_len);
 	if (!data) {
 		ESP_LOGE(TAG, "Tx %s: malloc failed", __func__);
 		res = ESP_FAIL;
@@ -83,6 +110,8 @@ int ble_transport_to_ll_acl_impl(struct os_mbuf *om)
 		res = ESP_FAIL;
 		goto exit;
 	}
+
+	ESP_LOG_BUFFER_HEXDUMP(TAG, data, data_len, ESP_LOG_DEBUG);
 
 	res = esp_hosted_tx(ESP_HCI_IF, 0, data, data_len, H_BUFF_NO_ZEROCOPY, H_DEFLT_FREE_FUNC);
 
@@ -102,7 +131,7 @@ int ble_transport_to_ll_cmd_impl(void *buf)
 	uint8_t * data = NULL;
 	int res;
 
-	data = MEM_ALLOC(buf_len);
+	data = g_h.funcs->_h_malloc(buf_len);
 	if (!data) {
 		ESP_LOGE(TAG, "Tx %s: malloc failed", __func__);
 		res =  ESP_FAIL;
@@ -111,6 +140,8 @@ int ble_transport_to_ll_cmd_impl(void *buf)
 
 	data[0] = HCI_H4_CMD;
 	memcpy(&data[1], buf, buf_len - 1);
+
+	ESP_LOG_BUFFER_HEXDUMP(TAG, data, buf_len, ESP_LOG_DEBUG);
 
 	res = esp_hosted_tx(ESP_HCI_IF, 0, data, buf_len, H_BUFF_NO_ZEROCOPY, H_DEFLT_FREE_FUNC);
 

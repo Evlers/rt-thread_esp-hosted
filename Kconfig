@@ -15,9 +15,9 @@ menuconfig RT_USING_ESP_HOSTED
 
                     config ESP_HOSTED_SPI_HOST_INTERFACE
                         bool "SPI"
-                    
-                    config ESP_HOSTED_SDIO_HOST_INTERFACE
-                        bool "SDIO"
+
+                    # config ESP_HOSTED_SDIO_HOST_INTERFACE
+                    #     bool "SDIO"
             endchoice
 
             choice
@@ -156,10 +156,12 @@ menuconfig RT_USING_ESP_HOSTED
                 config ESP_HOSTED_DATA_READY_PIN_NAME
                     string "Set the data ready pin name"
                     default "PA.0"
+                    depends on ESP_HOSTED_SPI_HOST_INTERFACE
 
                 config ESP_HOSTED_HANDSHAKE_PIN_NAME
                     string "Set the handshake pin name"
                     default "PA.0"
+                    depends on ESP_HOSTED_SPI_HOST_INTERFACE
 
                 config ESP_HOSTED_RESET_PIN_NAME
                     string "Set the reset pin name"
@@ -201,6 +203,20 @@ menuconfig RT_USING_ESP_HOSTED
                     default 20
             endif
         endmenu # ESP-Hosted Configure
+
+        menuconfig ESP_HOSTED_BT_ENABLED
+            bool "Enable Bluetooth"
+            default n
+
+            if ESP_HOSTED_BT_ENABLED
+                choice
+                    prompt "Select the stack type"
+                    default ESP_HOSTED_BT_NIMBLE_STACK
+
+                    config ESP_HOSTED_BT_NIMBLE_STACK
+                        bool "NimBLE"
+                endchoice
+            endif
 
         menu "Wi-Fi Configure"
 

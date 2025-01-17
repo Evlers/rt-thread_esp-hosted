@@ -7,6 +7,9 @@
 static const char TAG[] = "hci_stub_drv";
 
 #if H_BT_HOST_ESP_NIMBLE
+#include <sysinit/sysinit.h>
+#include <syscfg/syscfg.h>
+#include "os/os_mbuf.h"
 #include "host/ble_hs_mbuf.h"
 #include "nimble/transport.h"
 #endif
