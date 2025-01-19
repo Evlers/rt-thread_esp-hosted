@@ -61,6 +61,10 @@ path += [cwd + '/esp-hosted/host/utils']
 src += Glob('porting/port/source/*.c')
 path += [cwd + '/porting/port/include']
 
+# add ota source and header files
+src += Glob('porting/ota/*.c')
+path += [cwd + '/porting/ota']
+
 # add host wlan source files
 src += Glob('porting/wlan/*.c')
 

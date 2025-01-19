@@ -233,7 +233,7 @@ static esp_err_t esp_hosted_ota_http (char *url)
 	{
 		rt_kprintf("ota end failed!!\n");
 	}
-	else if (write_total == session->content_length)
+	else if (write_total == session->content_length || session->content_length < 0)
 	{
 		rt_kprintf("slave will restart after 5 sec\n");
 	}
