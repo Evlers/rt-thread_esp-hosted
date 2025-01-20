@@ -24,14 +24,14 @@ src += Glob('esp-hosted/host/api/src/*.c')
 path += [cwd + '/esp-hosted/host/api/include']
 
 # add components source and header files
-src += Glob('esp-hosted/host/components/log/*.c')
-src += Glob('esp-hosted/host/components/utils/*.c')
-src += Glob('esp-hosted/host/components/esp_wifi/*.c')
-src += Glob('esp-hosted/host/components/esp_wifi_remote/*.c')
-path += [cwd + '/esp-hosted/host/components/log']
-path += [cwd + '/esp-hosted/host/components/utils']
-path += [cwd + '/esp-hosted/host/components/esp_wifi/include']
-path += [cwd + '/esp-hosted/host/components/esp_netif/include']
+src += Glob('porting/components/log/*.c')
+src += Glob('porting/components/utils/*.c')
+src += Glob('porting/components/esp_wifi/*.c')
+src += Glob('porting/components/esp_wifi_remote/*.c')
+path += [cwd + '/porting/components/log']
+path += [cwd + '/porting/components/utils']
+path += [cwd + '/porting/components/esp_wifi/include']
+path += [cwd + '/porting/components/esp_netif/include']
 
 # add host drivers source and header files
 src += Glob('esp-hosted/host/drivers/mempool/*.c')
@@ -66,13 +66,13 @@ path += [cwd + '/porting/ota']
 # add bt source and header files
 if GetDepend(['ESP_HOSTED_BT_USING_VHCI_DEVICE_DRIVER']):
     # add vhci device driver source and header files
-    src += Glob('porting/bt/*.c')
+    src += Glob('porting/bt/vhci_dev.c')
     src += Glob('porting/bt/vhci/*.c')
     path += [cwd + '/porting/bt/vhci']
 
 if GetDepend(['ESP_HOSTED_BT_USING_NIMBLE_STACK']):
     # add nimble hci driver source and header files
-    src += Glob('esp-hosted/host/drivers/bt/*.c')
+    src += Glob('porting/bt/vhci_drv.c')
 path += [cwd + '/esp-hosted/host/drivers/bt']
 
 # add host wlan source files

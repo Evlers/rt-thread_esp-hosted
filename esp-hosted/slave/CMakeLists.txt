@@ -17,10 +17,10 @@ if(EXISTS "${PROJECT_DIR}/main/coprocessor_fw_version.txt")
 		COMMAND ${CMAKE_COMMAND} -P "${PROJECT_DIR}/ExtractVersion.cmake"
 		DEPENDS "${PROJECT_DIR}/main/coprocessor_fw_version.txt"
 		VERBATIM)
-elseif(EXISTS "${PROJECT_DIR}/idf_component.yml")
+elseif(EXISTS "${PROJECT_DIR}/../idf_component.yml")
 	add_custom_command(OUTPUT "${PROJECT_DIR}/main/coprocessor_fw_version.h"
 		COMMAND ${CMAKE_COMMAND} -P "${PROJECT_DIR}/ExtractVersion.cmake"
-		DEPENDS "${PROJECT_DIR}/idf_component.yml"
+		DEPENDS "${PROJECT_DIR}/../idf_component.yml"
 		VERBATIM)
 else()
 	message(FATAL_ERROR "***** coprocessor_fw_version.txt and idf_component.yml NOT found.\nUnable to generate comprocessor fw version info to build")

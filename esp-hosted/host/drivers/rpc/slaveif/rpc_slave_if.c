@@ -358,6 +358,12 @@ ctrl_cmd_t * wifi_sta_get_aid(ctrl_cmd_t *req)
 	RPC_DECODE_RSP_IF_NOT_ASYNC();
 }
 
+ctrl_cmd_t * wifi_set_protocols(ctrl_cmd_t *req)
+{
+	RPC_SEND_REQ(RPC_ID__Req_WifiSetProtocols);
+	RPC_DECODE_RSP_IF_NOT_ASYNC();
+}
+
 ctrl_cmd_t * get_coprocessor_fwversion(ctrl_cmd_t *req)
 {
 	RPC_SEND_REQ(RPC_ID__Req_GetCoprocessorFwVersion);
@@ -365,12 +371,6 @@ ctrl_cmd_t * get_coprocessor_fwversion(ctrl_cmd_t *req)
 }
 
 #if H_WIFI_DUALBAND_SUPPORT
-ctrl_cmd_t * wifi_set_protocols(ctrl_cmd_t *req)
-{
-	RPC_SEND_REQ(RPC_ID__Req_WifiSetProtocols);
-	RPC_DECODE_RSP_IF_NOT_ASYNC();
-}
-
 ctrl_cmd_t * wifi_get_protocols(ctrl_cmd_t *req)
 {
 	RPC_SEND_REQ(RPC_ID__Req_WifiGetProtocols);

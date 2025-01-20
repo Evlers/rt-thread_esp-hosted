@@ -16,13 +16,13 @@
 #include "mempool.h"
 #include "esp_hosted_config.h"
 #include "stats.h"
-#include "esp_hosted_log.h"
+#include "esp_log.h"
 #define MEMPOOL_DEBUG 1
 
 
 static char * MEM_TAG = "mpool";
 #if H_MEM_STATS
-#include "esp_hosted_log.h"
+#include "esp_log.h"
 
 
 #endif

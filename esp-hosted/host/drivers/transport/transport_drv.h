@@ -43,7 +43,7 @@ extern "C" {
 #define ESP_PRIV_FIRMWARE_CHIP_ESP32C5      (0x17)
 
 
-#ifdef ESP_HOSTED_SPI_HOST_INTERFACE
+#if CONFIG_ESP_SPI_HOST_INTERFACE
 #include "spi_wrapper.h"
 #define SPI_MODE0                           (0)
 #define SPI_MODE1                           (1)

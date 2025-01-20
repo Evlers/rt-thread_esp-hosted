@@ -594,13 +594,13 @@ menu "ESP-Hosted Configuration"
 			int "Tx Queue Size"
 			default 5
 			help
-				Very small RX queue will lower ESP -- UART --> Host data rate
+				UART rates are low, so large queue sizes are not required
 
 		config ESP_UART_RX_Q_SIZE
 			int "Rx Queue Size"
 			default 5
 			help
-				Very small RX queue will lower ESP <-- UART -- Host data rate
+				UART rates are low, so large queue sizes are not required
 
 		config ESP_UART_CHECKSUM
 			bool "UART checksum ENABLE/DISABLE"

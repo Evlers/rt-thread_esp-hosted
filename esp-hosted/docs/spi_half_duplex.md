@@ -332,9 +332,9 @@ sequenceDiagram
 
 ### 5.4 Code Reference
 
-- [`slave/main/spi_hd_slave_api.c`](https://github.com/espressif/esp-hosted/blob/feature/esp_as_mcu_host/slave/main/spi_hd_slave_api.c) implements the code to run the SPI HD driver on the co-processor
-- [`host/drivers/transport/spi_hd/spi_hd_drv.c`](https://github.com/espressif/esp-hosted/blob/feature/esp_as_mcu_host/host/drivers/transport/spi_hd/spi_hd_drv.c) implements the generic code to run the SPI HD driver on the host
-- [`host/port/spi_hd_wrapper.c`](https://github.com/espressif/esp-hosted/blob/feature/esp_as_mcu_host/host/port/spi_hd_wrapper.c) implements the ESP-IDF specific code used by the generic SPI HD driver on the host
+- [`slave/main/spi_hd_slave_api.c`](https://github.com/espressif/esp-hosted-mcu/blob/main/slave/main/spi_hd_slave_api.c) implements the code to run the SPI HD driver on the co-processor
+- [`host/drivers/transport/spi_hd/spi_hd_drv.c`](https://github.com/espressif/esp-hosted-mcu/blob/main/host/drivers/transport/spi_hd/spi_hd_drv.c) implements the generic code to run the SPI HD driver on the host
+- [`host/port/spi_hd_wrapper.c`](https://github.com/espressif/esp-hosted-mcu/blob/main/host/port/spi_hd_wrapper.c) implements the ESP-IDF specific code used by the generic SPI HD driver on the host
 
 ## 6 Hardware Considerations
 

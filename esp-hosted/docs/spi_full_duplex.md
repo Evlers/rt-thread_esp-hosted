@@ -121,11 +121,11 @@ The SPI used is full duplex. Handshake, Data Ready and Reset are additional GPIO
 For a detailed implementation of SPI full duplex communication using the ESP-Hosted framework, refer to the following code files in the ESP-Hosted repository:
 
 - **Master SPI Communication Code**:
-  - [spi_drv.c](https://github.com/espressif/esp-hosted/blob/feature/esp_as_mcu_host/host/drivers/transport/spi/spi_drv.c): Contains the implementation for configuring and handling SPI transactions on the master side.
-  - [spi_wrapper.c](https://github.com/espressif/esp-hosted/blob/feature/esp_as_mcu_host/host/port/esp_idf/spi_wrapper.c): Provides an OS abstraction layer for SPI operations, making it easier to handle SPI communication in a platform-independent manner.
+  - [spi_drv.c](https://github.com/espressif/esp-hosted-mcu/blob/main/host/drivers/transport/spi/spi_drv.c): Contains the implementation for configuring and handling SPI transactions on the master side.
+  - [spi_wrapper.c](https://github.com/espressif/esp-hosted-mcu/blob/main/host/port/spi_wrapper.c): Provides an OS abstraction layer for SPI operations, making it easier to handle SPI communication in a platform-independent manner.
 
 - **Co-processor SPI Communication Code**:
-  - [spi_slave_apis.c](https://github.com/espressif/esp-hosted/blob/feature/esp_as_mcu_host/firmware/components/esp_slave/spi_slave_apis.c): Includes the setup and transaction handling for the SPI co-processor, detailing how the co-processor should configure its SPI interface and handle incoming and outgoing data.
+  - [spi_slave_api.c](https://github.com/espressif/esp-hosted-mcu/blob/main/slave/main/spi_slave_api.c): Includes the setup and transaction handling for the SPI co-processor, detailing how the co-processor should configure its SPI interface and handle incoming and outgoing data.
 
 ## 4 Hardware Considerations
 
@@ -306,11 +306,10 @@ idf.py -p <co-processor_serial_port> flash
 ```
 
 > [!NOTE]
->
 > If you are not able to flash the co-processor, there might be a chance that host is not allowing to to do so.
-> 
+>
 > Put host in bootloader mode using following command and then retry flashing the co-processor
-> 
+>
 > ```bash
 > esptool.py -p <host_serial_port> --before default_reset --after no_reset run
 > ```
@@ -403,10 +402,9 @@ Now that ESP-IDF is set up, follow these steps to prepare the host:
    This step is necessary because esp-extconn and esp-hosted cannot work together.
 
 ###### 4. Disable native Wi-Fi if available
-   If your host ESP chip already has native Wi-Fi support, disable it by editing the `components/soc/<soc>/include/soc/Kconfig.soc_caps.in` file and changing all `WIFI` related configs to `n`.
-     
-    If you happen to have both, host and co-processor as same ESP chipset type (for example two ESP32-C2), note an [additional step](docs/troubleshooting/#1-esp-host-to-evaluate-already-has-native-wi-fi)
-    
+If your host ESP chip already has native Wi-Fi support, disable it by editing the `components/soc/<soc>/include/soc/Kconfig.soc_caps.in` file and changing all `WIFI` related configs to `n`.
+
+If you happen to have both, host and co-processor as same ESP chipset type (for example two ESP32-C2), note an [additional step](docs/troubleshooting/#1-esp-host-to-evaluate-already-has-native-wi-fi)
 
 ### 8.3 Menuconfig, Build and Flash Host
 
@@ -457,7 +455,6 @@ Now that ESP-IDF is set up, follow these steps to prepare the host:
    - SPI Checksum Enable/Disable (Checksum is recommended to be enabled as spi hardware doesn't have any error detection)
 
 > [!NOTE]
-> 
 > The actual clock frequency used is determined by the hardware. Use an oscilloscope or logic analyzer to check the clock frequency.
 
 ###### 4. Build the project:
@@ -491,7 +488,7 @@ After flashing both the co-processor and host devices, follow these steps to con
 3. Verify the connection:
    - Check the serial output of both devices for successful initialization messages.
    - Look for messages indicating that the SPI Full Duplex transport layer has been established
-   
+
 4. Logs at both sides:
    - Host:
 
@@ -560,7 +557,7 @@ After flashing both the co-processor and host devices, follow these steps to con
 9. Monitoring and debugging:
    - Use the serial monitor on both devices to observe the communication between the host and co-processor.
    - For more detailed debugging, consider using a logic analyzer to examine the SPI signals.
-   
+
 ## 10 References
 - [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
 - [ESP32 Hardware Design Guidelines](https://www.espressif.com/en/products/hardware/esp32/resources)

@@ -99,7 +99,6 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		RPC_ERR_IN_RESP(resp_ota_begin);
 		if (rpc_msg->resp_ota_begin->resp) {
 			ESP_LOGE(TAG, "OTA Begin Failed");
-			app_resp->resp_event_status = rpc_msg->resp_ota_begin->resp;
 			goto fail_parse_rpc_msg;
 		}
 		break;
@@ -108,7 +107,6 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		RPC_ERR_IN_RESP(resp_ota_write);
 		if (rpc_msg->resp_ota_write->resp) {
 			ESP_LOGE(TAG, "OTA write failed");
-			app_resp->resp_event_status = rpc_msg->resp_ota_write->resp;
 			goto fail_parse_rpc_msg;
 		}
 		break;
@@ -116,7 +114,6 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		RPC_FAIL_ON_NULL(resp_ota_end);
 		if (rpc_msg->resp_ota_end->resp) {
 			ESP_LOGE(TAG, "OTA end failed");
-			app_resp->resp_event_status = rpc_msg->resp_ota_end->resp;
 			goto fail_parse_rpc_msg;
 		}
 		break;

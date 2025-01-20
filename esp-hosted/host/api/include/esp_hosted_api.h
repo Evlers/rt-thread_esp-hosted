@@ -20,7 +20,6 @@ extern "C" {
 #include "esp_hosted_config.h"
 #include "esp_hosted_wifi_config.h"
 #include "esp_hosted_api_types.h"
-#include "rpc_wrap.h"
 
 /** Exported variables **/
 #define ESP_HOSTED_CHANNEL_CONFIG_DEFAULT()  { \

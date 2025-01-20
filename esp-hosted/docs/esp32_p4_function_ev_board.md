@@ -370,8 +370,11 @@ Use GPIOs 36 or lower on the P4 DevKit to avoid LDO power issues with high numbe
 | CLK        | 26   |
 | CS         | 6    |
 | Handshake  | 20   |
-| Data Ready | 36   |
+| Data Ready | 32   |
 | Reset      | 2    |
+
+> [!NOTE]
+> Avoid using GPIO 35 and 36 as they affect the ESP32-P4 Bootloader Mode. See [ESP32-P4 Boot Mode Selection](https://docs.espressif.com/projects/esptool/en/latest/esp32p4/advanced-topics/boot-mode-selection.html#select-bootloader-mode) for more information.
 
 ## 9. References
 

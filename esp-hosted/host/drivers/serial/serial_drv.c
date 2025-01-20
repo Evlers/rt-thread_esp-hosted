@@ -175,7 +175,7 @@ uint8_t * serial_drv_read(struct serial_drv_handle_t *serial_drv_handle,
 	}
 
 	if (rx_buf_len > (init_read_len + buf_len)) {
-		ESP_LOGE(TAG,"Buf read on serial iface is bigger than expected len\n");
+		ESP_LOGE(TAG,"Buf read on serial iface is smaller than expected len\n");
 	}
 
 	HOSTED_FREE(buf);
@@ -212,8 +212,8 @@ int serial_drv_close(struct serial_drv_handle_t** serial_drv_handle)
 int rpc_platform_init(void)
 {
 	/* rpc semaphore */
-	readSemaphore = g_h.funcs->_h_create_semaphore(ESP_HOSTED_MAX_SIMULTANEOUS_SYNC_RPC_REQUESTS +
-			ESP_HOSTED_MAX_SIMULTANEOUS_ASYNC_RPC_REQUESTS);
+	readSemaphore = g_h.funcs->_h_create_semaphore(CONFIG_ESP_MAX_SIMULTANEOUS_SYNC_RPC_REQUESTS +
+			CONFIG_ESP_MAX_SIMULTANEOUS_ASYNC_RPC_REQUESTS);
 	assert(readSemaphore);
 
 	/* grab the semaphore, so that task will be mandated to wait on semaphore */

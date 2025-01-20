@@ -30,7 +30,7 @@
 DEFINE_LOG_TAG(spi);
 
 void * spi_handle = NULL;
-static void * spi_trans_ready_sem;
+semaphore_handle_t spi_trans_ready_sem;
 
 #if DEBUG_HOST_TX_SEMAPHORE
 #define H_DEBUG_GPIO_PIN_Host_Tx_Port NULL
@@ -51,10 +51,10 @@ static struct mempool * buf_mp_g;
 static void * spi_bus_lock;
 
 /* Queue declaration */
-static void * to_slave_queue[MAX_PRIORITY_QUEUES];
-static void * sem_to_slave_queue;
-static void * from_slave_queue[MAX_PRIORITY_QUEUES];
-static void * sem_from_slave_queue;
+static queue_handle_t to_slave_queue[MAX_PRIORITY_QUEUES];
+semaphore_handle_t sem_to_slave_queue;
+static queue_handle_t from_slave_queue[MAX_PRIORITY_QUEUES];
+semaphore_handle_t sem_from_slave_queue;
 
 static void * spi_rx_thread;
 

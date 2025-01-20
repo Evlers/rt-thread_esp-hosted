@@ -40,7 +40,9 @@ DEFINE_LOG_TAG(rpc_wrap);
 #define VENDOR_OUI_1                                      2
 #define VENDOR_OUI_2                                      3
 #define VENDOR_OUI_TYPE                                   22
+#define CHUNK_SIZE                                        1400
 #define OTA_BEGIN_RSP_TIMEOUT_SEC                         15
+#define OTA_FROM_WEB_URL                                  0
 
 
 
@@ -123,10 +125,10 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 	switch(app_event->msg_id) {
 
 		case RPC_ID__Event_ESPInit: {
-			ESP_LOGI(TAG, "Received Slave ESP Init");
+			ESP_LOGD(TAG, "Received Slave ESP Init");
 			break;
 		} case RPC_ID__Event_Heartbeat: {
-			ESP_LOGV(TAG, "%s App EVENT: Heartbeat event [%lu]",
+			ESP_LOGV(TAG, "%s ESP EVENT: Heartbeat event [%lu]",
 				rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE),
 					(long unsigned int)app_event->u.e_heartbeat.hb_num);
 			break;
@@ -134,7 +136,7 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 			wifi_event_ap_staconnected_t *p_e = &app_event->u.e_wifi_ap_staconnected;
 
 			if (strlen((char*)p_e->mac)) {
-				ESP_LOGV(TAG, "%s App EVENT: SoftAP mode: connected station",
+				ESP_LOGV(TAG, "%s ESP EVENT: SoftAP mode: connected station",
 					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
 				g_h.funcs->_h_event_wifi_post(WIFI_EVENT_AP_STACONNECTED,
 					p_e, sizeof(wifi_event_ap_staconnected_t), HOSTED_BLOCK_MAX);
@@ -143,21 +145,21 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 		} case RPC_ID__Event_AP_StaDisconnected: {
 			wifi_event_ap_stadisconnected_t *p_e = &app_event->u.e_wifi_ap_stadisconnected;
 			if (strlen((char*)p_e->mac)) {
-				ESP_LOGV(TAG, "%s App EVENT: SoftAP mode: disconnected MAC",
+				ESP_LOGV(TAG, "%s ESP EVENT: SoftAP mode: disconnected MAC",
 					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
 				g_h.funcs->_h_event_wifi_post(WIFI_EVENT_AP_STADISCONNECTED,
 					p_e, sizeof(wifi_event_ap_stadisconnected_t), HOSTED_BLOCK_MAX);
 			}
 			break;
 		} case RPC_ID__Event_StaConnected: {
-			ESP_LOGV(TAG, "%s App EVENT: Station mode: Connected",
+			ESP_LOGV(TAG, "%s ESP EVENT: Station mode: Connected",
 				rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
 			wifi_event_sta_connected_t *p_e = &app_event->u.e_wifi_sta_connected;
 			g_h.funcs->_h_event_wifi_post(WIFI_EVENT_STA_CONNECTED,
 				p_e, sizeof(wifi_event_sta_connected_t), HOSTED_BLOCK_MAX);
 			break;
 		} case RPC_ID__Event_StaDisconnected: {
-			ESP_LOGV(TAG, "%s App EVENT: Station mode: Disconnected",
+			ESP_LOGV(TAG, "%s ESP EVENT: Station mode: Disconnected",
 				rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
 			wifi_event_sta_disconnected_t *p_e = &app_event->u.e_wifi_sta_disconnected;
 			g_h.funcs->_h_event_wifi_post(WIFI_EVENT_STA_DISCONNECTED,
@@ -169,24 +171,24 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 			switch (wifi_event_id) {
 
 			case WIFI_EVENT_STA_START:
-				ESP_LOGV(TAG, "%s App EVENT: WiFi Event[%s]",
+				ESP_LOGV(TAG, "%s ESP EVENT: WiFi Event[%s]",
 					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE), "WIFI_EVENT_STA_START");
 				break;
 			case WIFI_EVENT_STA_STOP:
-				ESP_LOGV(TAG, "%s App EVENT: WiFi Event[%s]",
+				ESP_LOGV(TAG, "%s ESP EVENT: WiFi Event[%s]",
 					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE), "WIFI_EVENT_STA_STOP");
 				break;
 
 			case WIFI_EVENT_AP_START:
-				ESP_LOGI(TAG,"App Event: softap started");
+				ESP_LOGD(TAG,"ESP EVENT: softap started");
 				break;
 
 			case WIFI_EVENT_AP_STOP:
-				ESP_LOGI(TAG,"App Event: softap stopped");
+				ESP_LOGD(TAG,"ESP EVENT: softap stopped");
 				break;
 
 			default:
-				ESP_LOGV(TAG, "%s App EVENT: WiFi Event[%x]",
+				ESP_LOGV(TAG, "%s ESP EVENT: WiFi Event[%x]",
 					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE), wifi_event_id);
 				break;
 			} /* inner switch case */
@@ -195,14 +197,14 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 			break;
 		} case RPC_ID__Event_StaScanDone: {
 			wifi_event_sta_scan_done_t *p_e = &app_event->u.e_wifi_sta_scan_done;
-			ESP_LOGV(TAG, "%s App EVENT: StaScanDone",
+			ESP_LOGV(TAG, "%s ESP EVENT: StaScanDone",
 					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
 			ESP_LOGV(TAG, "scan: status: %lu number:%u scan_id:%u", p_e->status, p_e->number, p_e->scan_id);
 			g_h.funcs->_h_event_wifi_post(WIFI_EVENT_SCAN_DONE,
 				p_e, sizeof(wifi_event_sta_scan_done_t), HOSTED_BLOCK_MAX);
 			break;
 		} default: {
-			ESP_LOGW(TAG, "%s Invalid event[0x%x] to parse\n\r",
+			ESP_LOGW(TAG, "%s Invalid event[0x%x] to parse",
 				rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE), app_event->msg_id);
 			break;
 		}
@@ -313,7 +315,7 @@ int rpc_register_event_callbacks(void)
 
 	for (evt=0; evt<sizeof(events)/sizeof(event_callback_table_t); evt++) {
 		if (CALLBACK_SET_SUCCESS != set_event_callback(events[evt].event, events[evt].fun) ) {
-			ESP_LOGE(TAG, "event callback register failed for event[%u]\n\r", events[evt].event);
+			ESP_LOGE(TAG, "event callback register failed for event[%u]", events[evt].event);
 			ret = FAILURE;
 			break;
 		}

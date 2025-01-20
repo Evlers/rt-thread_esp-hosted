@@ -7,16 +7,17 @@
 static const char TAG[] = "hci_stub_drv";
 
 #if H_BT_HOST_ESP_NIMBLE
-#include <sysinit/sysinit.h>
-#include <syscfg/syscfg.h>
-#include "os/os_mbuf.h"
 #include "host/ble_hs_mbuf.h"
 #include "nimble/transport.h"
 #endif
 
+#if H_BT_HOST_ESP_BLUEDROID
+#include "esp_hosted_bt.h"
+#endif
+
 #define WEAK __attribute__((weak))
 
-WEAK int hci_rx_handler(interface_buffer_handle_t *buf_handle)
+int hci_rx_handler(interface_buffer_handle_t *buf_handle)
 {
 	/* Hosted transport received BT packets, but Hosted was not
 	 * configured to handle BT packets. Drop them.
@@ -24,11 +25,11 @@ WEAK int hci_rx_handler(interface_buffer_handle_t *buf_handle)
 	return ESP_OK;
 }
 
-WEAK void hci_drv_init(void)
+void hci_drv_init(void)
 {
 }
 
-WEAK void hci_drv_show_configuration(void)
+void hci_drv_show_configuration(void)
 {
 	ESP_LOGI(TAG, "Host BT Support: Disabled");
 }
@@ -66,3 +67,27 @@ WEAK int ble_transport_to_ll_cmd_impl(void *buf)
 	return ESP_FAIL;
 }
 #endif // H_BT_HOST_ESP_NIMBLE
+
+#if H_BT_HOST_ESP_BLUEDROID
+WEAK void hosted_hci_bluedroid_open(void)
+{
+}
+
+WEAK void hosted_hci_bluedroid_close(void)
+{
+}
+
+WEAK void hosted_hci_bluedroid_send(uint8_t *data, uint16_t len)
+{
+}
+
+WEAK bool hosted_hci_bluedroid_check_send_available(void)
+{
+	return false;
+}
+
+WEAK esp_err_t hosted_hci_bluedroid_register_host_callback(const esp_bluedroid_hci_driver_callbacks_t *callback)
+{
+	return ESP_FAIL;
+}
+#endif // H_BT_HOST_ESP_BLUEDROID

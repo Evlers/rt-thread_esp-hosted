@@ -5,9 +5,6 @@
 #ifndef __HOSTED_OS_ADAPTER_H__
 #define __HOSTED_OS_ADAPTER_H__
 
-#include <stdint.h>
-#include <stddef.h>
-
 #include "esp_hosted_config.h"
 
 typedef struct {
@@ -103,9 +100,8 @@ typedef struct {
 
 #ifdef CONFIG_ESP_UART_HOST_INTERFACE
           /* Transport - UART */
-/* 51 */ int (*_h_uart_read)(uint8_t *data, uint16_t size);
-/* 52 */ int (*_h_uart_write)(uint8_t *data, uint16_t size);
-/* 53 */ int (*_h_uart_wait_rx_data)(uint32_t ticks_to_wait);
+/* 57 */ int (*_h_uart_read)(void *ctx, uint8_t *data, uint16_t size);
+/* 58 */ int (*_h_uart_write)(void *ctx, uint8_t *data, uint16_t size);
 #endif
 } hosted_osi_funcs_t;
 
