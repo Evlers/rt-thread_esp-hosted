@@ -77,7 +77,8 @@
 
 /* BT Configuration */
 #ifdef ESP_HOSTED_BT_ENABLED
-#ifdef ESP_HOSTED_BT_NIMBLE_STACK
+#define CONFIG_ESP_ENABLE_BT 1
+#ifdef ESP_HOSTED_BT_USING_NIMBLE_STACK
 #define CONFIG_BT_NIMBLE_ENABLED 1
 #endif
 #endif

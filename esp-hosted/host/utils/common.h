@@ -105,7 +105,11 @@ uint32_t hton_long (uint32_t x);
 typedef unsigned char   u_char;
 typedef unsigned long   u_long;
 
+
+#ifndef min
 int min(int x, int y);
+#endif
+
 #if 0
 void hard_delay(int x);
 int get_num_from_string(int *val, char *arg);

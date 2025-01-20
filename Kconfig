@@ -210,12 +210,21 @@ menuconfig RT_USING_ESP_HOSTED
 
             if ESP_HOSTED_BT_ENABLED
                 choice
-                    prompt "Select the stack type"
-                    default ESP_HOSTED_BT_NIMBLE_STACK
+                    prompt "Select hci interface"
+                    default ESP_HOSTED_BT_USING_VHCI_DEVICE_DRIVER
 
-                    config ESP_HOSTED_BT_NIMBLE_STACK
-                        bool "NimBLE"
+                    config ESP_HOSTED_BT_USING_VHCI_DEVICE_DRIVER
+                        bool "Using vhci device drivers"
+
+                    config ESP_HOSTED_BT_USING_NIMBLE_STACK
+                        bool "Using NimBLE hci drivers"
                 endchoice
+
+                if ESP_HOSTED_BT_USING_VHCI_DEVICE_DRIVER
+                    config ESP_HOSTED_VHCI_DEVICE_NAME
+                        string "The vhci device name"
+                        default "vhci"
+                endif
             endif
 
         menu "Wi-Fi Configure"

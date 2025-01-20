@@ -19,7 +19,8 @@
 #endif
 
 #include "esp_hosted_log.h"
-static const char TAG[] = "vhci_drv";
+
+#define TAG "vhci_drv"
 
 #if H_BT_HOST_ESP_NIMBLE
 struct hci_h4_sm hci_h4sm;
@@ -44,6 +45,7 @@ static int hci_uart_frame_cb(uint8_t pkt_type, void *data)
  */
 int hci_rx_handler(interface_buffer_handle_t *buf_handle)
 {
+	ESP_LOG_BUFFER_HEXDUMP(TAG " rx", buf_handle->payload, buf_handle->payload_len, ESP_LOG_DEBUG);
 #if H_BT_HOST_ESP_NIMBLE
 	hci_h4_sm_rx(&hci_h4sm, buf_handle->payload, buf_handle->payload_len);
 #endif /* H_BT_HOST_ESP_NIMBLE */
@@ -88,33 +90,35 @@ void ble_transport_ll_init(void)
 
 int ble_transport_to_ll_acl_impl(struct os_mbuf *om)
 {
-	// TODO: zerocopy version
-
-	// calculate data length from the incoming data
-	int data_len = OS_MBUF_PKTLEN(om) + 1;
-
-	uint8_t * data = NULL;
 	int res;
+	struct os_mbuf *x = om;
 
-	data = g_h.funcs->_h_malloc(data_len);
-	if (!data) {
-		ESP_LOGE(TAG, "Tx %s: malloc failed", __func__);
-		res = ESP_FAIL;
-		goto exit;
+    while (x != NULL)
+    {
+		uint8_t *data = NULL;
+		int data_len = OS_MBUF_PKTLEN(x) + 1;
+
+		data = g_h.funcs->_h_malloc(data_len);
+		if (!data) {
+			ESP_LOGE(TAG, "Tx %s: malloc failed", __func__);
+			res = ESP_FAIL;
+			goto exit;
+		}
+
+		data[0] = HCI_H4_ACL;
+		res = ble_hs_mbuf_to_flat(x, &data[1], OS_MBUF_PKTLEN(x), NULL);
+		if (res) {
+			ESP_LOGE(TAG, "Tx: Error copying HCI_H4_ACL data %d", res);
+			res = ESP_FAIL;
+			goto exit;
+		}
+
+		ESP_LOG_BUFFER_HEXDUMP(TAG " tx", data, data_len, ESP_LOG_DEBUG);
+
+		res = esp_hosted_tx(ESP_HCI_IF, 0, data, data_len, H_BUFF_NO_ZEROCOPY, H_DEFLT_FREE_FUNC);
+
+		x = SLIST_NEXT(x, om_next);
 	}
-
-	data[0] = HCI_H4_ACL;
-	res = ble_hs_mbuf_to_flat(om, &data[1], OS_MBUF_PKTLEN(om), NULL);
-	if (res) {
-		ESP_LOGE(TAG, "Tx: Error copying HCI_H4_ACL data %d", res);
-		res = ESP_FAIL;
-		goto exit;
-	}
-
-	ESP_LOG_BUFFER_HEXDUMP(TAG, data, data_len, ESP_LOG_DEBUG);
-
-	res = esp_hosted_tx(ESP_HCI_IF, 0, data, data_len, H_BUFF_NO_ZEROCOPY, H_DEFLT_FREE_FUNC);
-
  exit:
 	os_mbuf_free_chain(om);
 
@@ -141,7 +145,7 @@ int ble_transport_to_ll_cmd_impl(void *buf)
 	data[0] = HCI_H4_CMD;
 	memcpy(&data[1], buf, buf_len - 1);
 
-	ESP_LOG_BUFFER_HEXDUMP(TAG, data, buf_len, ESP_LOG_DEBUG);
+	ESP_LOG_BUFFER_HEXDUMP(TAG " tx", data, buf_len, ESP_LOG_DEBUG);
 
 	res = esp_hosted_tx(ESP_HCI_IF, 0, data, buf_len, H_BUFF_NO_ZEROCOPY, H_DEFLT_FREE_FUNC);
 
