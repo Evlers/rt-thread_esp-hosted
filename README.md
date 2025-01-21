@@ -1,18 +1,18 @@
 ## RT-Thread ESP-Hosted
 
 ## Overview
-The repository has adapted `ESP-Hosted-FG` to the RT-Thread system, currently only supports the SPI bus protocol, and uses the rt_spi_device of RT-Thread for SPI bus operations.<br>
+The repository has adapted `ESP-Hosted-MCU` to the RT-Thread system, currently only supports the SPI bus protocol, and uses the rt_spi_device of RT-Thread for SPI bus operations.<br>
 
 This version of ESP-Hosted provides:
 * A standard 802.3 network interface for transmitting and receiving 802.3 frames
 * A standard HCI interface over which Bluetooth/BLE is supported
 * A control interface to configure and control Wi-Fi on ESP board
 
-ESP-Hosted-FG solution makes use of host's existing `TCP/IP and/or Bluetooth/BLE software stack` and `hardware peripheral like SPI/SDIO/UART` to connect to ESP firmware with very thin layer of software.
+ESP-Hosted-MCU solution makes use of host's existing `TCP/IP and/or Bluetooth/BLE software stack` and `hardware peripheral like SPI/SDIO/UART` to connect to ESP firmware with very thin layer of software.
 
-Although the project doesn't provide a standard 802.11 interface to the host, it provides a easy way, *i.e.* [control path](docs/common/contrl_path.md), to configure Wi-Fi. For the control path between the host and ESP board, ESP-Hosted-FG makes use of [Protobuf](https://developers.google.com/protocol-buffers), which is a language independent data serialization mechanism.
+Although the project doesn't provide a standard 802.11 interface to the host, it provides a easy way, *i.e.* [control path](docs/common/contrl_path.md), to configure Wi-Fi. For the control path between the host and ESP board, ESP-Hosted-MCU makes use of [Protobuf](https://developers.google.com/protocol-buffers), which is a language independent data serialization mechanism.
 
-Details about ESP-Hosted-FG can be found in the [ESP-Hosted README](./docs/README.md).<br>
+Details about ESP-Hosted-MCU can be found in the [ESP-Hosted README](./esp-hosted/README.md).<br>
 
 ## Using
 

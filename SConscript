@@ -9,44 +9,74 @@ src = Split("""
 """)
 
 # add esp-hosted common source and header files
-src += Glob('common/*.c')
-src += Glob('host/common/*.c')
-path = [cwd + '/host']
-path += [cwd + '/common/include']
+src += Glob('esp-hosted/common/proto/*.c')
+src += Glob('esp-hosted/host/common/*.c')
+path = [cwd + '/esp-hosted/host']
+path += [cwd + '/esp-hosted/common/proto']
+path += [cwd + '/esp-hosted/common/include']
 
 # add protobuf source and header files
-src += Glob('common/protobuf-c/protobuf-c/*.c')
-path += [cwd + '/common/protobuf-c']
+src += Glob('esp-hosted/common/protobuf-c/protobuf-c/*.c')
+path += [cwd + '/esp-hosted/common/protobuf-c']
 
-# add host components source and header files
-src += Glob('host/components/src/*.c')
-path += [cwd + '/host/components/include']
+# add host api source and header files
+src += Glob('esp-hosted/host/api/src/*.c')
+path += [cwd + '/esp-hosted/host/api/include']
 
-# add host control_lib source and header files
-src += Glob('host/control_lib/src/*.c')
-path += [cwd + '/host/control_lib/include']
-path += [cwd + '/host/control_lib/src/include']
+# add components source and header files
+src += Glob('porting/components/log/*.c')
+src += Glob('porting/components/utils/*.c')
+src += Glob('porting/components/esp_wifi/*.c')
+src += Glob('porting/components/esp_wifi_remote/*.c')
+path += [cwd + '/porting/components/log']
+path += [cwd + '/porting/components/utils']
+path += [cwd + '/porting/components/esp_wifi/include']
+path += [cwd + '/porting/components/esp_netif/include']
 
-# add virtual_serial_if source and header files
-src += Glob('host/virtual_serial_if/src/*.c')
-path += [cwd + '/host/virtual_serial_if/include']
+# add host drivers source and header files
+src += Glob('esp-hosted/host/drivers/mempool/*.c')
+src += Glob('esp-hosted/host/drivers/rpc/core/*.c')
+src += Glob('esp-hosted/host/drivers/rpc/slaveif/*.c')
+src += Glob('esp-hosted/host/drivers/rpc/wrap/*.c')
+src += Glob('esp-hosted/host/drivers/serial/*.c')
+src += Glob('esp-hosted/host/drivers/transport/*.c')
+src += Glob('esp-hosted/host/drivers/transport/spi/*.c')
+src += Glob('esp-hosted/host/drivers/virtual_serial_if/*.c')
+path += [cwd + '/esp-hosted/host/drivers/mempool']
+path += [cwd + '/esp-hosted/host/drivers/rpc/core']
+path += [cwd + '/esp-hosted/host/drivers/rpc/slaveif']
+path += [cwd + '/esp-hosted/host/drivers/rpc/wrap']
+path += [cwd + '/esp-hosted/host/drivers/serial']
+path += [cwd + '/esp-hosted/host/drivers/transport']
+path += [cwd + '/esp-hosted/host/drivers//transport/spi']
+path += [cwd + '/esp-hosted/host/drivers/virtual_serial_if']
 
-# add driver source and header files
-src += Glob('host/driver/*/*.c')
-src += Glob('host/driver/transport/spi/*.c')
-path += [cwd + '/host/driver/transport/spi']
-path += [cwd + '/host/driver/netif']
-path += [cwd + '/host/driver/network']
-path += [cwd + '/host/driver/serial']
-path += [cwd + '/host/driver/transport']
+# add host utils source and header files
+src += Glob('esp-hosted/host/utils/*.c')
+path += [cwd + '/esp-hosted/host/utils']
 
-# add port source and header files
-src += Glob('host/port/src/*.c')
-path += [cwd + '/host/port/include']
+# add host port source and header files
+src += Glob('porting/port/source/*.c')
+path += [cwd + '/porting/port/include']
 
-# add wlan source and header files
-src += Glob('host/wlan/*.c')
-path += [cwd + '/host/wlan']
+# add ota source and header files
+src += Glob('porting/ota/*.c')
+path += [cwd + '/porting/ota']
+
+# add bt source and header files
+if GetDepend(['ESP_HOSTED_BT_USING_VHCI_DEVICE_DRIVER']):
+    # add vhci device driver source and header files
+    src += Glob('porting/bt/vhci_dev.c')
+    src += Glob('porting/bt/vhci/*.c')
+    path += [cwd + '/porting/bt/vhci']
+
+if GetDepend(['ESP_HOSTED_BT_USING_NIMBLE_STACK']):
+    # add nimble hci driver source and header files
+    src += Glob('porting/bt/vhci_drv.c')
+path += [cwd + '/esp-hosted/host/drivers/bt']
+
+# add host wlan source files
+src += Glob('porting/wlan/*.c')
 
 CPPDEFINES = ['']
 
