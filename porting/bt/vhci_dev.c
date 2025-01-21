@@ -21,6 +21,11 @@ static const char TAG[] = "vhci.dev";
 
 static struct rt_ringbuffer *vhci_rx_buffer = RT_NULL;
 
+void hci_drv_init(void)
+{
+    /* do nothing for VHCI: underlying transport should be ready */
+}
+
 void hci_drv_show_configuration(void)
 {
 	ESP_LOGI(TAG, "Host BT Support: Enabled");
@@ -114,8 +119,10 @@ static rt_vhci_dev_t vhci_dev =
     .ops = &vhci_ops
 };
 
-void hci_drv_init(void)
+static int rt_vhci_dev_init(void)
 {
     /* register virtual hci device */
     rt_device_vhci_register(&vhci_dev, ESP_HOSTED_VHCI_DEVICE_NAME, RT_DEVICE_FLAG_RDWR, NULL);
+    return RT_EOK;
 }
+INIT_DEVICE_EXPORT(rt_vhci_dev_init);

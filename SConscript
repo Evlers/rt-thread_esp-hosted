@@ -69,9 +69,11 @@ if GetDepend(['ESP_HOSTED_BT_USING_VHCI_DEVICE_DRIVER']):
     src += Glob('porting/bt/vhci_dev.c')
     src += Glob('porting/bt/vhci/*.c')
     path += [cwd + '/porting/bt/vhci']
-
-if GetDepend(['ESP_HOSTED_BT_USING_NIMBLE_STACK']):
+elif GetDepend(['ESP_HOSTED_BT_USING_NIMBLE_STACK']):
     # add nimble hci driver source and header files
+    src += Glob('porting/bt/vhci_drv.c')
+else:
+    # empty implementation
     src += Glob('porting/bt/vhci_drv.c')
 path += [cwd + '/esp-hosted/host/drivers/bt']
 
