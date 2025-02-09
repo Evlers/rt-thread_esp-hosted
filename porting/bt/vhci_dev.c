@@ -19,28 +19,6 @@
 
 static const char TAG[] = "vhci.dev";
 
-static struct rt_ringbuffer *vhci_rx_buffer = RT_NULL;
-
-void hci_drv_init(void)
-{
-    /* do nothing for VHCI: underlying transport should be ready */
-}
-
-void hci_drv_show_configuration(void)
-{
-	ESP_LOGI(TAG, "Host BT Support: Enabled");
-	ESP_LOGI(TAG, "BT Transport Type: vhci devices");
-}
-
-int hci_rx_handler(interface_buffer_handle_t *buf_handle)
-{
-    if (rt_ringbuffer_put(vhci_rx_buffer, buf_handle->payload, buf_handle->payload_len) != buf_handle->payload_len)
-    {
-        ESP_LOGE(TAG, "vhci_rx_buffer put failed");
-        return ESP_ERR_NO_MEM;
-    }
-	return ESP_OK;
-}
 
 static rt_err_t rt_vhci_init(void)
 {
@@ -49,10 +27,10 @@ static rt_err_t rt_vhci_init(void)
 
 static rt_err_t rt_vhci_open(rt_device_t dev, rt_uint16_t oflag)
 {
-    vhci_rx_buffer = rt_ringbuffer_create(1024);
-    if (vhci_rx_buffer == RT_NULL)
+    ((rt_vhci_dev_t *)dev)->rb = rt_ringbuffer_create(1024);
+    if (((rt_vhci_dev_t *)dev)->rb == RT_NULL)
     {
-        ESP_LOGE(TAG, "vhci_rx_buffer create failed");
+        ESP_LOGE(TAG, "vhci ringbuffer create failed");
         return -RT_ERROR;
     }
     return RT_EOK;
@@ -69,20 +47,20 @@ static rt_ssize_t rt_vhci_read(rt_device_t dev, rt_off_t pos, void *buffer, rt_s
     rt_uint8_t *data = (rt_uint8_t *)buffer;
     rt_size_t data_len = 0;
 
-    if (vhci_rx_buffer == RT_NULL)
+    if (((rt_vhci_dev_t *)dev)->rb == RT_NULL)
     {
-        ESP_LOGE(TAG, "vhci_rx_buffer is null");
+        ESP_LOGE(TAG, "vhci ringbuffer is null");
         return -RT_ERROR;
     }
 
-    read_size = rt_ringbuffer_data_len(vhci_rx_buffer);
+    read_size = rt_ringbuffer_data_len(((rt_vhci_dev_t *)dev)->rb);
     if (read_size == 0)
     {
         return 0;
     }
 
     data_len = read_size > size ? size : read_size;
-    rt_ringbuffer_get(vhci_rx_buffer, data, data_len);
+    rt_ringbuffer_get(((rt_vhci_dev_t *)dev)->rb, data, data_len);
     return data_len;
 }
 
@@ -126,3 +104,41 @@ static int rt_vhci_dev_init(void)
     return RT_EOK;
 }
 INIT_DEVICE_EXPORT(rt_vhci_dev_init);
+
+
+/* ESP-Hosted HCI interface */
+
+void hci_drv_init(void)
+{
+    /* do nothing for VHCI: underlying transport should be ready */
+}
+
+void hci_drv_show_configuration(void)
+{
+	ESP_LOGI(TAG, "Host BT Support: Enabled");
+	ESP_LOGI(TAG, "BT Transport Type: vhci devices");
+}
+
+int hci_rx_handler(interface_buffer_handle_t *buf_handle)
+{
+    rt_size_t rx_length = 0;
+
+    if (rt_ringbuffer_put(vhci_dev.rb, buf_handle->payload, buf_handle->payload_len) != buf_handle->payload_len)
+    {
+        ESP_LOGE(TAG, "vhci ringbuffer put failed");
+        return ESP_ERR_NO_MEM;
+    }
+
+    /* get the length of the data from the ringbuffer */
+    rx_length = rt_ringbuffer_data_len(vhci_dev.rb);
+    if (rx_length)
+    {
+        /* trigger the receiving completion callback */
+        if (vhci_dev.parent.rx_indicate != RT_NULL)
+        {
+            vhci_dev.parent.rx_indicate(&(vhci_dev.parent), rx_length);
+        }
+    }
+
+	return ESP_OK;
+}

@@ -12,6 +12,7 @@
 #define _VHCI_H_
 
 #include <rtdef.h>
+#include <ipc/ringbuffer.h>
 
 struct rt_vhci_ops
 {
@@ -27,6 +28,7 @@ typedef struct rt_vhci_device
     struct rt_device parent;
     const struct rt_vhci_ops *ops;
     rt_mutex_t lock;
+    struct rt_ringbuffer *rb;
 } rt_vhci_dev_t;
 
 rt_err_t rt_device_vhci_register(rt_vhci_dev_t *vhci, const char *name, rt_uint32_t flag, void *user_data);
