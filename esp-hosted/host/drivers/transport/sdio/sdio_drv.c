@@ -415,8 +415,9 @@ static void sdio_write_task(void const* pvParameters)
 				// copy first byte of payload into header
 				payload_header->hci_pkt_type = buf_handle.payload[0];
 				// adjust actual payload len
-				payload_header->len = htole16(len - 1);
-				g_h.funcs->_h_memcpy(payload, &buf_handle.payload[1], len - 1);
+				len -= 1;
+				payload_header->len = htole16(len);
+				g_h.funcs->_h_memcpy(payload, &buf_handle.payload[1], len);
 			}
 		} else
 		if (!buf_handle.payload_zcopy)

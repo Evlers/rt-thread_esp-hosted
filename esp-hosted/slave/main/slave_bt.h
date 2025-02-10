@@ -51,19 +51,8 @@
     #define BLUETOOTH_UART   CONFIG_BTDM_CTRL_HCI_UART_NO
   #endif
 
-#elif (defined(CONFIG_IDF_TARGET_ESP32C2) || defined(CONFIG_IDF_TARGET_ESP32C6))
-
-  #define BLUETOOTH_BLE      1
-
-  #if defined(CONFIG_BT_LE_HCI_INTERFACE_USE_RAM)
-    #define BLUETOOTH_HCI    4
-  #elif defined(CONFIG_BT_LE_HCI_INTERFACE_USE_UART)
-    #define BLUETOOTH_UART   CONFIG_BT_LE_HCI_UART_PORT
-  #endif
-
 #elif BT_OVER_C3_S3
 
-   /* only BLE for chipsets other than ESP32 */
   #define BLUETOOTH_BLE      1
 
   #if defined(CONFIG_BT_CTRL_HCI_MODE_VHCI)
@@ -72,6 +61,16 @@
     #define BLUETOOTH_UART   1
   #endif
 
+#else
+  /* only BLE for chipsets other than ESP32 */
+
+  #define BLUETOOTH_BLE      1
+
+  #if defined(CONFIG_BT_LE_HCI_INTERFACE_USE_RAM)
+    #define BLUETOOTH_HCI    4
+  #elif defined(CONFIG_BT_LE_HCI_INTERFACE_USE_UART)
+    #define BLUETOOTH_UART   CONFIG_BT_LE_HCI_UART_PORT
+  #endif
 
 #endif
 
