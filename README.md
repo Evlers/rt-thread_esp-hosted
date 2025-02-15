@@ -11,6 +11,7 @@ This version of ESP-Hosted provides:
 * A standard 802.3 network interface for transmitting and receiving 802.3 frames
 * A standard HCI interface over which Bluetooth/BLE is supported
 * A control interface to configure and control Wi-Fi on ESP chips
+* A OTA interface for upgrading ESP firmware
 
 ESP-Hosted-MCU solution makes use of host's existing `TCP/IP and/or Bluetooth/BLE software stack` and `hardware peripheral like SPI/SDIO/UART` to connect to ESP firmware with very thin layer of software.
 
@@ -85,18 +86,25 @@ endmenu
         (7) Maximum espnow encrypt peers number
         [ ] Enable 802.11R (Fast Transition) Support
 ```
+`ESP-Hosted Configure` menu is used to configure the `transport interface`, `slave chipset` and `transport interface` related pins.<br>
 
-## Hardware connections for ESP32
-| Function  | ESP32 Pin | ESP32-S2/S3 | ESP32-C2/C3/C5/C6   |
-|-----------|-----------|-------------|---------------------|
-| MISO      | IO19      | IO13        | IO2                 |
-| CLK       | IO18      | IO12        | IO6                 |
-| MOSI      | IO23      | IO11        | IO7                 |
-| CS        | IO5       | IO10        | IO10                |
-| GND       | GND       | GND         | GND                 |
-| Handshake | IO2       | IO2         | IO3                 |
-| Data Ready| IO4       | IO4         | IO4                 |
-| Reset ESP | EN        | RST         | RST                 |
+`Select hci interface` option is used to select the `vhci device driver` or `NimBLE hci driver` for HCI interface.<br>
+Selecting `vhci device driver` will create a `character device` which will emulate the HCI interface.<br>
+Selecting `NimBLE hci driver` will directly connect to `NimBLE` stack.<br>
+
+`Wi-Fi Configure` menu is used to configure the `ESP32` `Wi-Fi` parameters.<br>
+`WiFi AMPDU TX` and `WiFi AMPDU RX` options are recommended to be disabled, as it is found that enabling them will cause Wi-Fi to drop packets, possibly due to the router not following the standard protocol.
+
+## Hardware connections
+| Signal      | ESP32 | ESP32-C2/C3/C5/C6 | ESP32-S2/S3 |
+|-------------|-------|-------------------|-------------|
+| CLK         | 14    | 6                 | 12          |
+| MOSI        | 13    | 7                 | 11          |
+| MISO        | 12    | 2                 | 13          |
+| CS          | 15    | 10                | 10          |
+| Handshake   | 26    | 3                 | 17          |
+| Data Ready  | 4     | 4                 | 5           |
+| Reset In    | EN    | EN/RST            | EN/RST      |
 
 If you are familiar with esp-idf, you can also try to modify the pins
 

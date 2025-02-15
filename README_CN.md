@@ -11,6 +11,7 @@
 * 一个标准的802.3网络接口，用于发送和接收802.3帧
 * 支持蓝牙/BLE的标准HCI接口
 * ESP32芯片配置和控制Wi-Fi的控制接口
+* 用于升级ESP固件的OTA接口
 
 ESP-Hosted-MCU解决方案利用主机现有的`TCP/IP 和 蓝牙/BLE 协议栈` 和 `SPI/SDIO/UART等硬件外设`连接到ESP固件，软件层非常薄。
 
@@ -40,63 +41,70 @@ endmenu
 - 进入`Using esp-hosted for espressif`菜单，配置esp-hosted：
 ```
 --- Using esp-hosted for espressif
-    ESP-Hosted Configure  --->
-        Select the transport interface (SPI)  --->
-        Slave chipset to be used (Slave as ESP32C6)  --->
-        [ ] Enable raw throughput transport  ----
-        [ ] Enable Transport level packet statistics
-        (8) The maximum number of simultaneous sync rpc requests
-        (8) The maximum number of simultaneous async rpc requests
-        (20) The priority of the esp-hosted rpc thread
-        (5120) The stack size of the esp-hosted rpc thread
-        (20) The priority of the esp-hosted transport thread
-        (1024) The stack size of the esp-hosted SPI thread
-        (8) The number for esp-hosted SPI queue
-        (esp-hosted) Set the spi device name
-        (spi1) Set the spi bus name
-        (30000000) Set the maximum spi frequency(Hz)
-            Select the pin name or number (Name)  --->
-        (PE.7) Set the SPI CS pin name
-        (PE.5) Set the data ready pin name
-        (PE.6) Set the handshake pin name
-        (PE.4) Set the reset pin name
-        [*] Use thread initialization
-        (2048) The stack size of the init thread
-        (20)  The priority of the init thread
-    [*] Enable Bluetooth  --->
-        Select hci interface (Using vhci device drivers)  --->
-        (vhci) The vhci device name
-    Wi-Fi Configure  --->
-        (40) Max number of WiFi static RX buffers
-        (60) Max number of WiFi dynamic RX buffers
-        Type of WiFi TX buffers (Dynamic)  --->
-        (16) Max number of WiFi cache TX buffers
-        (40) Max number of WiFi dynamic TX buffers
-        [ ] WiFi CSI(Channel State Information)
-        [ ] WiFi AMPDU TX
-        [ ] WiFi AMPDU RX
-        (752) Max length of WiFi SoftAP Beacon
-        (32) WiFi mgmt short buffer number
-        [*] Enable WPA3-Personal
-        [ ] WiFi FTM
-        [*] Power Management for station at disconnected
-        [ ] WiFi GCMP Support(GCMP128 and GCMP256)
-        [ ] WiFi GMAC Support(GMAC128 and GMAC256)
-        (7) Maximum espnow encrypt peers number
-        [ ] Enable 802.11R (Fast Transition) Support
+    ESP-Hosted Configure  --->                                      # ESP-Hosted 配置
+        Select the transport interface (SPI)  --->                  # 选择传输接口
+        Slave chipset to be used (Slave as ESP32C6)  --->           # 选择从机芯片
+        [ ] Enable raw throughput transport  ----                   # 启用原始吞吐量传输
+        [ ] Enable Transport level packet statistics                # 启用传输级别数据包统计
+        (8) The maximum number of simultaneous sync rpc requests    # 同步RPC请求的最大数量
+        (8) The maximum number of simultaneous async rpc requests   # 异步RPC请求的最大数量
+        (20) The priority of the esp-hosted rpc thread              # RPC线程的优先级
+        (5120) The stack size of the esp-hosted rpc thread          # RPC线程的堆栈大小
+        (20) The priority of the esp-hosted transport thread        # 传输线程的优先级
+        (1024) The stack size of the esp-hosted SPI thread          # SPI线程的堆栈大小
+        (8) The number for esp-hosted SPI queue                     # SPI传输队列的数量
+        (esp-hosted) Set the spi device name                        # SPI设备名称
+        (spi1) Set the spi bus name                                 # SPI总线名称
+        (30000000) Set the maximum spi frequency(Hz)                # SPI传输的最大频率
+            Select the pin name or number (Name)  --->              # 选择引脚名称或编号
+        (PE.7) Set the SPI CS pin name                              # SPI CS引脚名称
+        (PE.5) Set the data ready pin name                          # 数据就绪引脚名称
+        (PE.6) Set the handshake pin name                           # 握手引脚名称
+        (PE.4) Set the reset pin name                               # 复位引脚名称
+        [*] Use thread initialization                               # 使用线程初始化
+        (2048) The stack size of the init thread                    # 初始化线程的堆栈大小
+        (20)  The priority of the init thread                       # 初始化线程的优先级
+    [*] Enable Bluetooth  --->                                      # 启用蓝牙/BLE HCI接口
+        Select hci interface (Using vhci device drivers)  --->      # 选择HCI接口
+        (vhci) The vhci device name                                 # vhci设备名称
+    Wi-Fi Configure  --->                                           # Wi-Fi 配置
+        (40) Max number of WiFi static RX buffers                   # 静态RX缓冲区最大数量
+        (60) Max number of WiFi dynamic RX buffers                  # 动态RX缓冲区最大数量
+        Type of WiFi TX buffers (Dynamic)  --->                     # WiFi TX缓冲区类型
+        (16) Max number of WiFi cache TX buffers                    # WiFi TX缓存最大数量
+        (40) Max number of WiFi dynamic TX buffers                  # TX动态缓冲区最大数量
+        [ ] WiFi CSI(Channel State Information)                     # Wi-Fi CSI
+        [ ] WiFi AMPDU TX                                           # AMPDU TX(数据聚合)
+        [ ] WiFi AMPDU RX                                           # AMPDU RX(数据聚合)
+        (752) Max length of WiFi SoftAP Beacon                      # SoftAP Beacon最大长度
+        (32) WiFi mgmt short buffer number                          # WiFi mgmt short buffer数量
+        [*] Enable WPA3-Personal                                    # WPA3-Personal
+        [ ] WiFi FTM                                                # WiFi FTM
+        [*] Power Management for station at disconnected            # Wi-Fi PM
+        [ ] WiFi GCMP Support(GCMP128 and GCMP256)                  # Wi-Fi GCMP
+        [ ] WiFi GMAC Support(GMAC128 and GMAC256)                  # Wi-Fi GMAC
+        (7) Maximum espnow encrypt peers number                     # espnow加密对等数量
+        [ ] Enable 802.11R (Fast Transition) Support                # 802.11R
 ```
+`ESP-Hosted Configure`菜单中，主要是`传输接口`，`从机芯片`以及`传输以为的引脚`配置，其他的默认即可。<br>
 
-## ESP32的硬件连接
-| Function  | ESP32 Pin | ESP32-S2/S3 | ESP32-C2/C3/C5/C6   |
-|-----------|-----------|-------------|---------------------|
-| MISO      | IO19      | IO13        | IO2                 |
-| CLK       | IO18      | IO12        | IO6                 |
-| MOSI      | IO23      | IO11        | IO7                 |
-| CS        | IO5       | IO10        | IO10                |
-| GND       | GND       | GND         | GND                 |
-| Handshake | IO2       | IO2         | IO3                 |
-| Data Ready| IO4       | IO4         | IO4                 |
-| Reset ESP | EN        | RST         | RST                 |
+`Select hci interface`选项用于选择使用`vhci设备驱动`或者`NimBLE hci 驱动`的HCI接口。<br>
+选择`vhci设备驱动`将创建一个`字符类型`设备，该设备将模拟蓝牙HCI接口。<br>
+选择`NimBLE hci 驱动`将直接接入`NimBLE`协议栈。<br>
+
+`Wi-Fi Configure`菜单中，主要是关于`ESP32`的`WiFi`参数配置。<br>
+`WiFi AMPDU TX`和`WiFi AMPDU RX`选项建议关闭，在测试中发现开启后，Wi-Fi容易丢包，可能是由于路由器不遵循标准协议导致。
+
+## 硬件连接
+| Signal      | ESP32 | ESP32-C2/C3/C5/C6 | ESP32-S2/S3 |
+|-------------|-------|-------------------|-------------|
+| CLK         | 14    | 6                 | 12          |
+| MOSI        | 13    | 7                 | 11          |
+| MISO        | 12    | 2                 | 13          |
+| CS          | 15    | 10                | 10          |
+| Handshake   | 26    | 3                 | 17          |
+| Data Ready  | 4     | 4                 | 5           |
+| Reset In    | EN    | EN/RST            | EN/RST      |
 
 如果您熟悉esp-idf，您也可以尝试修改引脚
 
