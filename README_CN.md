@@ -1,43 +1,43 @@
 ## RT-Thread ESP-Hosted
 
-[中文](./README_CN.md) | English
+中文 | [English](./README.md)
 
-The project is licensed under the `MIT license` as a whole, but contains third-party code under other licenses. Please read carefully the following descriptions of the different license codes.
+该项目在`MIT license`下作为一个整体，但包含第三方代码在其他许可下。请仔细阅读以下不同许可代码的说明。
 
-## Overview
-The repository has adapted `ESP-Hosted-MCU` to the `RT-Thread` system, currently only supports the SPI bus protocol, and uses the `SPI Device` of `RT-Thread` for SPI bus operations.<br>
+## 概述
+该存储库已将`ESP-Hosted-MCU`适配于`RT-Thread`系统，目前仅支持SPI总线协议，并使用`RT-Thread`的`SPI Device`进行SPI总线操作。<br>
 
-This version of ESP-Hosted provides:
-* A standard 802.3 network interface for transmitting and receiving 802.3 frames
-* A standard HCI interface over which Bluetooth/BLE is supported
-* A control interface to configure and control Wi-Fi on ESP chips
+这个版本的ESP-Hosted提供:
+* 一个标准的802.3网络接口，用于发送和接收802.3帧
+* 支持蓝牙/BLE的标准HCI接口
+* ESP32芯片配置和控制Wi-Fi的控制接口
 
-ESP-Hosted-MCU solution makes use of host's existing `TCP/IP and/or Bluetooth/BLE software stack` and `hardware peripheral like SPI/SDIO/UART` to connect to ESP firmware with very thin layer of software.
+ESP-Hosted-MCU解决方案利用主机现有的`TCP/IP 和 蓝牙/BLE 协议栈` 和 `SPI/SDIO/UART等硬件外设`连接到ESP固件，软件层非常薄。
 
-Although the project doesn't provide a standard 802.11 interface to the host, it provides a easy way, *i.e.* Remote Procedure Calls (RPCs), to configure Wi-Fi. For the RPC between the host and ESP board, ESP-Hosted-MCU makes use of [Protobuf](https://developers.google.com/protocol-buffers), which is a language independent data serialization mechanism.
+虽然这个项目没有为主机提供标准的802.11接口，但它提供了一种简单的方法，既Remote Procedure Calls(RPCs)用于配置Wi-Fi。对于主机和ESP板之间的RPC， ESP-Hosted-MCU使用了[Protobuf](https://developers.google.com/protocol-buffers)，这是一种独立于语言的数据序列化机制。
 
-Details about ESP-Hosted-MCU can be found in the [ESP-Hosted README](./esp-hosted/README.md).<br>
+关于ESP-Hosted-MCU的详细信息可以在[ESP-Hosted README](./esp-hosted/README.md)中找到。<br>
 
-## Using
+## 使用
 
-### Add this repository
-- Clone the repository to the `packages` or `libraries` directory in the RT-Thread project.
-- In the `libraries` or `packages` folder in the RT-Thread project, include `Kconfig` file for `ESP-Hosted` in its Kconfig files.
-- For example, include `ESP-Hosted` in the `libraries` directory:
+### 添加这个仓库
+- 将存储库克隆到RT-Thread项目中的`packages` or `libraries`目录。
+- 在RT-Thread项目的`libraries`或`packages`文件夹中，在其Kconfig文件中包含用于`ESP-Hosted`的`Kconfig`文件。
+- 例如，将`ESP-Hosted`包含在`libraries`目录中：
 ```Kconfig
 menu "External Libraries"
     source "$RTT_DIR/../libraries/rt-thread_esp-hosted/Kconfig"
 endmenu
 ```
 
-### Configure ESP-Hosted
-- Use the `menuconfig` command in the env window
-- Select the `Using esp-hosted for espressif` 
+### 配置 ESP-Hosted
+- 在env窗口中使用`menuconfig`命令
+- 选中 `Using esp-hosted for espressif` 
 ```
 → External Libraries
      [*] Using esp-hosted for espressif  --->
 ```
-- Enter `Using esp-hosted for espressif` menu to configure the ESP-Hoseted:
+- 进入`Using esp-hosted for espressif`菜单，配置esp-hosted：
 ```
 --- Using esp-hosted for espressif
     ESP-Hosted Configure  --->
@@ -86,7 +86,7 @@ endmenu
         [ ] Enable 802.11R (Fast Transition) Support
 ```
 
-## Hardware connections for ESP32
+## ESP32的硬件连接
 | Function  | ESP32 Pin | ESP32-S2/S3 | ESP32-C2/C3/C5/C6   |
 |-----------|-----------|-------------|---------------------|
 | MISO      | IO19      | IO13        | IO2                 |
@@ -98,37 +98,37 @@ endmenu
 | Data Ready| IO4       | IO4         | IO4                 |
 | Reset ESP | EN        | RST         | RST                 |
 
-If you are familiar with esp-idf, you can also try to modify the pins
+如果您熟悉esp-idf，您也可以尝试修改引脚
 
-## Build ESP32 firmware
+## 构建ESP32固件
 ```
 $ cd esp-hosted/slave
 $ rm -rf sdkconfig build
 $ idf.py set-target <esp_chipset>
 ```
-where <esp_chipset> could be one from "esp32", "esp32s2", "esp32s3", "esp32c2", "esp32c3", "esp32c5", "esp32c6"
+其中 <esp_chipset> 可以是 "esp32", "esp32s2", "esp32s3", "esp32c2", "esp32c3", "esp32c5", "esp32c6"
 
-- Execute following command to configure the project
+- 执行以下命令配置项目
 ```sh
 $ idf.py menuconfig
 ```
-- This will open project configuration window. To select SPI transport interface, navigate to `ESP-Hosted Configuration ->  Transport layer -> SPI interface -> select` and exit from menuconfig.
+- 这将打开项目配置窗口。 要选择SPI传输接口，导航到 `ESP-Hosted Configuration ->  Transport layer -> SPI interface -> select` 然后退出菜单配置。
 
-- To build and flash the app on ESP peripheral, run
+- 要构建并烧录应用程序到ESP设备，请运行
 ```sh
 $ idf.py -p <serial_port> build flash
 ```
 
-- Collect the firmware log using
+- 收集ESP固件日志使用
 ```sh
 $ idf.py -p <serial_port> monitor
 ```
 
-## Checking the Setup
+## 检查启动
 
-#### Slave log
+#### 从机日志
 
-On successful flashing, you should see following entry in ESP log:
+在成功烧录后，您应该在ESP日志中看到以下信息:
 ```
 I (412) NETWORK_ADAPTER: *********************************************************************
 I (422) NETWORK_ADAPTER:                 ESP-Hosted-MCU Slave FW version :: 1.0.0
@@ -136,9 +136,9 @@ I (432) NETWORK_ADAPTER:                 Transport used :: SPI only
 I (442) NETWORK_ADAPTER: *********************************************************************
 ```
 
-#### Host log
+#### 主机日志
 
-you should see following entry in host log:
+您应该在主机日志中看到以下信息:
 ```shell
  \ | /
 - RT -     Thread Operating System
@@ -170,7 +170,7 @@ found part[0], begin: 2097152, size: 29.738GB
 [10107] I/ntp: Get local time from NTP server: Sat Feb 15 10:34:22 2025
 ```
 
-## Supported Chip
+## 芯片支持
 
 | **CHIP**  |**SDIO**|**SPI**|
 |-----------|--------|-------|
@@ -186,7 +186,7 @@ found part[0], begin: 2097152, size: 29.738GB
 'o' indicates tested and supported<br>
 '*' means theoretically supported, but not tested
 
-## More information
+## 更多信息
 * [esp-hosted](https://github.com/espressif/esp-hosted)
 * [esp-hosted-mcu](https://github.com/espressif/esp-hosted-mcu)
 * [espressif](https://www.espressif.com.cn)
