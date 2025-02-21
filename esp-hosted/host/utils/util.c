@@ -16,7 +16,7 @@
 
 /** Includes **/
 #include "util.h"
-#include "ctype.h"
+#include "posix/ctype.h"
 #include "string.h"
 
 /** Constants/Macros **/

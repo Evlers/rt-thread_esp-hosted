@@ -460,10 +460,10 @@ static rt_err_t drv_wlan_join(struct rt_wlan_device *wlan, struct rt_sta_info *s
         }
     }
 
-    strncpy((char *) wifi_config.sta.ssid, sta_info->ssid.val, sizeof(wifi_config.sta.ssid));
+    strncpy((char *) wifi_config.sta.ssid, (const char *)sta_info->ssid.val, sizeof(wifi_config.sta.ssid));
     if (sta_info->key.len)
     {
-        strncpy((char *) wifi_config.sta.password, sta_info->key.val, sizeof(wifi_config.sta.password));
+        strncpy((char *) wifi_config.sta.password, (const char *)sta_info->key.val, sizeof(wifi_config.sta.password));
     }
 
     if (esp_wifi_set_config(WIFI_IF_STA, &wifi_config) != ESP_OK)
@@ -574,8 +574,8 @@ static rt_err_t drv_wlan_softap(struct rt_wlan_device *wlan, struct rt_ap_info *
         }
     };
 
-    strncpy((char *) wifi_config.ap.ssid, ap_info->ssid.val, min(sizeof(wifi_config.ap.ssid), sizeof(ap_info->ssid.val)));
-    strncpy((char *) wifi_config.ap.password, ap_info->key.val, min(sizeof(wifi_config.ap.password), sizeof(ap_info->key.val)));
+    strncpy((char *) wifi_config.ap.ssid, (const char *)ap_info->ssid.val, min(sizeof(wifi_config.ap.ssid), sizeof(ap_info->ssid.val)));
+    strncpy((char *) wifi_config.ap.password, (const char *)ap_info->key.val, min(sizeof(wifi_config.ap.password), sizeof(ap_info->key.val)));
 
     if (esp_wifi_set_config(WIFI_IF_AP, &wifi_config) != ESP_OK)
     {
@@ -777,7 +777,6 @@ static rt_err_t drv_wlan_get_mac(struct rt_wlan_device *wlan, rt_uint8_t mac[])
 
 static int drv_wlan_send(struct rt_wlan_device *wlan, void *buff, int len)
 {
-    struct pbuf *tx_buffer = NULL;
     struct drv_wifi *drv_wifi = get_drv_wifi(wlan);
 
     if (drv_wifi == &wifi_ap)

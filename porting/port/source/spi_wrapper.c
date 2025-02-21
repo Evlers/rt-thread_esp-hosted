@@ -32,9 +32,7 @@
 #include "transport_drv.h"
 #include "rtdevice.h"
 
-DEFINE_LOG_TAG(spi_wrapper);
-
-extern void * spi_handle;
+extern void *spi_handle;
 
 void *hosted_spi_init(void)
 {

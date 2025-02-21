@@ -170,6 +170,7 @@ static esp_err_t esp_hosted_ota_local (char* image_path)
 #ifdef PKG_USING_WEBCLIENT
 static esp_err_t esp_hosted_ota_http (char *url)
 {
+	esp_err_t ret = ESP_FAIL;
 	int resp_status = 0;
 	size_t write_total = 0, read_len;
 	struct webclient_session* session = RT_NULL;
@@ -244,6 +245,7 @@ static esp_err_t esp_hosted_ota_http (char *url)
         }
 		print_progress(write_total, session->content_length);
     }
+	ret = ESP_OK;
 	rt_kprintf("\nfirmware write success!!\n");
 
 	__error:
@@ -267,6 +269,8 @@ static esp_err_t esp_hosted_ota_http (char *url)
         session = RT_NULL;
     }
 	rt_free(block);
+
+	return ret;
 }
 #endif /* PKG_USING_WEBCLIENT */
 

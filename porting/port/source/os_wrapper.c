@@ -365,6 +365,7 @@ int hosted_timer_stop(void *timer_handle)
 int hosted_config_gpio(void* gpio_port, uint32_t gpio_num, uint32_t mode)
 {
 	rt_pin_mode(gpio_num, mode);
+	return 0;
 }
 
 int hosted_config_gpio_as_interrupt(void* gpio_port, uint32_t gpio_num, uint32_t intr_type, void (*new_gpio_isr_handler)(void* arg))
