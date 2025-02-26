@@ -32,7 +32,6 @@
 #include "esp_hosted_config.h"
 #include "esp_hosted_log.h"
 #include "os_wrapper.h"
-#include "rtdbg.h"
 
 /* Wi-Fi headers are reused at ESP-Hosted */
 #include "esp_wifi_crypto_types.h"
@@ -395,38 +394,33 @@ rt_weak int hosted_wifi_event_post(int32_t event_id, void* event_data, size_t ev
 
 void hosted_log_write(int level, const char *tag, const char *format, ...)
 {
-	va_list args;
+    va_list args;
     rt_size_t length = 0;
     static char rt_log_buf[RT_CONSOLEBUF_SIZE];
 
-	esp_log_level_t level_for_tag = esp_log_level_get(tag);
-	if ((ESP_LOG_NONE != level_for_tag) && (level <= level_for_tag))
-	{
-		va_start(args, format);
-		/* the return value of vsnprintf is the number of bytes that would be
-		* written to buffer had if the size of the buffer been sufficiently
-		* large excluding the terminating null byte. If the output string
-		* would be larger than the rt_log_buf, we have to adjust the output
-		* length. */
-		length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, format, args);
-		if (length > RT_CONSOLEBUF_SIZE - 1)
-		{
-			length = RT_CONSOLEBUF_SIZE - 1;
-		}
+    esp_log_level_t level_for_tag = esp_log_level_get(tag);
+    if ((ESP_LOG_NONE != level_for_tag) && (level <= level_for_tag))
+    {
+        va_start(args, format);
+        length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, format, args);
+        if (length > RT_CONSOLEBUF_SIZE - 1)
+        {
+            length = RT_CONSOLEBUF_SIZE - 1;
+        }
 
-		#undef LOG_TAG
-		#define LOG_TAG tag
-		switch (level)
-		{
-			default: 				LOG_D("%.*s", length, rt_log_buf); break;
-			case ESP_LOG_INFO: 		LOG_I("%.*s", length, rt_log_buf); break;
-			case ESP_LOG_WARN: 		LOG_W("%.*s", length, rt_log_buf); break;
-			case ESP_LOG_ERROR: 	LOG_E("%.*s", length, rt_log_buf); break;
-		}
-		#undef LOG_TAG
+        char level_char;
+        switch (level)
+        {
+            case ESP_LOG_INFO:  level_char = 'I'; break;
+            case ESP_LOG_WARN:  level_char = 'W'; break;
+            case ESP_LOG_ERROR: level_char = 'E'; break;
+            default:            level_char = 'D'; break; // 默认 DEBUG
+        }
 
-		va_end(args);
-	}
+        rt_kprintf("[%c/%s] %.*s\n", level_char, tag, length, rt_log_buf);
+
+        va_end(args);
+    }
 }
 
 /* newlib hooks */
