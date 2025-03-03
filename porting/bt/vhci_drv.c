@@ -45,8 +45,22 @@ static int hci_uart_frame_cb(uint8_t pkt_type, void *data)
  */
 int hci_rx_handler(interface_buffer_handle_t *buf_handle)
 {
-	ESP_LOG_BUFFER_HEXDUMP(TAG " rx", buf_handle->payload, buf_handle->payload_len, ESP_LOG_DEBUG);
 #if H_BT_HOST_ESP_NIMBLE
+#if LOG_LOCAL_LEVEL >= ESP_LOG_DEBUG
+	/* format: TAG rx(<type>) */
+	char head[sizeof(TAG) + sizeof("rx") + sizeof("none") + sizeof("()")];
+	char *type;
+	switch (buf_handle->payload[0])
+	{
+		case HCI_H4_CMD: type = "cmd"; break;
+		case HCI_H4_ACL: type = "acl"; break;
+		case HCI_H4_EVT: type = "evt"; break;
+		case HCI_H4_ISO: type = "iso"; break;
+		default: type = "none"; break;
+	}
+	snprintf(head, sizeof(head), "%s rx(%s)", TAG, type);
+	ESP_LOG_BUFFER_HEXDUMP(head, buf_handle->payload, buf_handle->payload_len, ESP_LOG_DEBUG);
+#endif /* DBG_LVL == DBG_LOG */
 	hci_h4_sm_rx(&hci_h4sm, buf_handle->payload, buf_handle->payload_len);
 #endif /* H_BT_HOST_ESP_NIMBLE */
 	return ESP_OK;
@@ -91,34 +105,29 @@ void ble_transport_ll_init(void)
 int ble_transport_to_ll_acl_impl(struct os_mbuf *om)
 {
 	int res;
-	struct os_mbuf *x = om;
 
-    while (x != NULL)
-    {
 		uint8_t *data = NULL;
-		int data_len = OS_MBUF_PKTLEN(x) + 1;
+		int data_len = OS_MBUF_PKTLEN(om) + 1;
 
 		data = g_h.funcs->_h_malloc(data_len);
 		if (!data) {
-			ESP_LOGE(TAG, "Tx %s: malloc failed", __func__);
+			ESP_LOGE(TAG, "tx(acl) %s: malloc failed", __func__);
 			res = ESP_FAIL;
 			goto exit;
 		}
 
 		data[0] = HCI_H4_ACL;
-		res = ble_hs_mbuf_to_flat(x, &data[1], OS_MBUF_PKTLEN(x), NULL);
+		res = ble_hs_mbuf_to_flat(om, &data[1], OS_MBUF_PKTLEN(om), NULL);
 		if (res) {
 			ESP_LOGE(TAG, "Tx: Error copying HCI_H4_ACL data %d", res);
 			res = ESP_FAIL;
 			goto exit;
 		}
 
-		ESP_LOG_BUFFER_HEXDUMP(TAG " tx", data, data_len, ESP_LOG_DEBUG);
+		ESP_LOG_BUFFER_HEXDUMP(TAG " tx(acl)", data, data_len, ESP_LOG_DEBUG);
 
 		res = esp_hosted_tx(ESP_HCI_IF, 0, data, data_len, H_BUFF_NO_ZEROCOPY, H_DEFLT_FREE_FUNC);
 
-		x = SLIST_NEXT(x, om_next);
-	}
  exit:
 	os_mbuf_free_chain(om);
 
@@ -137,7 +146,7 @@ int ble_transport_to_ll_cmd_impl(void *buf)
 
 	data = g_h.funcs->_h_malloc(buf_len);
 	if (!data) {
-		ESP_LOGE(TAG, "Tx %s: malloc failed", __func__);
+		ESP_LOGE(TAG, "tx(cmd) %s: malloc failed", __func__);
 		res =  ESP_FAIL;
 		goto exit;
 	}
@@ -145,7 +154,7 @@ int ble_transport_to_ll_cmd_impl(void *buf)
 	data[0] = HCI_H4_CMD;
 	memcpy(&data[1], buf, buf_len - 1);
 
-	ESP_LOG_BUFFER_HEXDUMP(TAG " tx", data, buf_len, ESP_LOG_DEBUG);
+	ESP_LOG_BUFFER_HEXDUMP(TAG " tx(cmd)", data, buf_len, ESP_LOG_DEBUG);
 
 	res = esp_hosted_tx(ESP_HCI_IF, 0, data, buf_len, H_BUFF_NO_ZEROCOPY, H_DEFLT_FREE_FUNC);
 

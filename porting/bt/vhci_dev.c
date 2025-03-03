@@ -45,7 +45,7 @@ static rt_err_t rt_vhci_init(void)
 
 static rt_err_t rt_vhci_open(rt_device_t dev, rt_uint16_t oflag)
 {
-    ((rt_vhci_dev_t *)dev)->rb = rt_ringbuffer_create(1024);
+    ((rt_vhci_dev_t *)dev)->rb = rt_ringbuffer_create(ESP_HOSTED_VHCI_DEVICE_BUF_SIZE);
     if (((rt_vhci_dev_t *)dev)->rb == RT_NULL)
     {
         ESP_LOGE(TAG, "vhci ringbuffer create failed");

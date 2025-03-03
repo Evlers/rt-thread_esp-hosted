@@ -224,6 +224,10 @@ menuconfig RT_USING_ESP_HOSTED
                     config ESP_HOSTED_VHCI_DEVICE_NAME
                         string "The vhci device name"
                         default "vhci"
+                    
+                    config ESP_HOSTED_VHCI_DEVICE_BUF_SIZE
+                        int "The vhci device buffer size"
+                        default 512
                 endif
             endif
 
