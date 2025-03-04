@@ -73,6 +73,13 @@ void hci_drv_init(void)
 #endif /* H_BT_HOST_ESP_NIMBLE */
 }
 
+rt_weak void esp_hosted_bt_startup (void)
+{
+    /* The callback indicates that the vhci interface is ready.
+     * The user rewrites this function to initialize or configure the Bluetooth protocol stack.
+     */
+}
+
 void hci_drv_show_configuration(void)
 {
 #if H_BT_HOST_ESP_NIMBLE
@@ -80,6 +87,7 @@ void hci_drv_show_configuration(void)
 	ESP_LOGI(TAG, "\tBT Transport Type: VHCI");
 	ESP_LOGI(TAG, "\tBT Stack Type: NimBLE");
 #endif /* H_BT_HOST_ESP_NIMBLE */
+	esp_hosted_bt_startup();
 }
 
 #if H_BT_HOST_ESP_NIMBLE

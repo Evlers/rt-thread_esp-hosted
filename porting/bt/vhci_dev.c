@@ -131,10 +131,18 @@ void hci_drv_init(void)
     /* do nothing for VHCI: underlying transport should be ready */
 }
 
+rt_weak void esp_hosted_bt_startup (void)
+{
+    /* The callback indicates that the vhci interface is ready.
+     * The user rewrites this function to initialize or configure the Bluetooth protocol stack.
+     */
+}
+
 void hci_drv_show_configuration(void)
 {
 	ESP_LOGI(TAG, "Host BT Support: Enabled");
 	ESP_LOGI(TAG, "BT Transport Type: vhci devices");
+    esp_hosted_bt_startup();
 }
 
 int hci_rx_handler(interface_buffer_handle_t *buf_handle)
