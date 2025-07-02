@@ -22,7 +22,7 @@ ESP-Hosted-MCU解决方案利用主机现有的`TCP/IP 和 蓝牙/BLE 协议栈`
 ## 使用
 
 ### 添加这个仓库
-- 将存储库克隆到RT-Thread项目中的`packages` or `libraries`目录。
+- 将存储库克隆到RT-Thread项目中的 `packages` 或 `libraries`目录。
 - 在RT-Thread项目的`libraries`或`packages`文件夹中，在其Kconfig文件中包含用于`ESP-Hosted`的`Kconfig`文件。
 - 例如，将`ESP-Hosted`包含在`libraries`目录中：
 ```Kconfig
@@ -173,9 +173,6 @@ found part[0], begin: 2097152, size: 29.738GB
 [2424] I/WLAN.lwip: eth device init ok name:w0
 [2426] I/WLAN.dev: wlan init success
 [2444] I/WLAN.lwip: eth device init ok name:w1
-[5954] I/WLAN.mgnt: wifi connect success ssid:EvlersHome
-[6957] I/WLAN.lwip: Got IP address : 192.168.10.163
-[10107] I/ntp: Get local time from NTP server: Sat Feb 15 10:34:22 2025
 ```
 
 ## 芯片支持
@@ -183,16 +180,16 @@ found part[0], begin: 2097152, size: 29.738GB
 | **CHIP**  |**SDIO**|**SPI**|
 |-----------|--------|-------|
 | ESP32     |   x    |   *   |
-| ESP32-C6  |   x    |   *   |
+| ESP32-C6  |   x    |   o   |
 | ESP32-C5  |   x    |   *   |
 | ESP32-C3  |   x    |   o   |
-| ESP32-C2  |   x    |   *   |
+| ESP32-C2  |   x    |   o   |
 | ESP32-S3  |   x    |   *   |
 | ESP32-S2  |   x    |   *   |
 
-'x' indicates no support<br>
-'o' indicates tested and supported<br>
-'*' means theoretically supported, but not tested
+'x' 表示不支持<br>
+'o' 表示已测试和支持<br>
+'*' 表示理论上支持，但未经检验的
 
 ## 更多信息
 * [esp-hosted](https://github.com/espressif/esp-hosted)

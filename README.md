@@ -173,9 +173,6 @@ found part[0], begin: 2097152, size: 29.738GB
 [2424] I/WLAN.lwip: eth device init ok name:w0
 [2426] I/WLAN.dev: wlan init success
 [2444] I/WLAN.lwip: eth device init ok name:w1
-[5954] I/WLAN.mgnt: wifi connect success ssid:EvlersHome
-[6957] I/WLAN.lwip: Got IP address : 192.168.10.163
-[10107] I/ntp: Get local time from NTP server: Sat Feb 15 10:34:22 2025
 ```
 
 ## Supported Chip
@@ -183,10 +180,10 @@ found part[0], begin: 2097152, size: 29.738GB
 | **CHIP**  |**SDIO**|**SPI**|
 |-----------|--------|-------|
 | ESP32     |   x    |   *   |
-| ESP32-C6  |   x    |   *   |
+| ESP32-C6  |   x    |   o   |
 | ESP32-C5  |   x    |   *   |
 | ESP32-C3  |   x    |   o   |
-| ESP32-C2  |   x    |   *   |
+| ESP32-C2  |   x    |   o   |
 | ESP32-S3  |   x    |   *   |
 | ESP32-S2  |   x    |   *   |
 
