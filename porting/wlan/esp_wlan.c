@@ -74,7 +74,7 @@ static rt_wlan_security_t security_esp_to_wlan (int encryption_mode)
     }
 }
 
-static int security_wlan_to_esp (rt_wlan_security_t security)
+static wifi_auth_mode_t security_wlan_to_esp (rt_wlan_security_t security)
 {
     switch (security)
     {
@@ -763,14 +763,14 @@ static rt_country_code_t drv_wlan_get_country(struct rt_wlan_device *wlan)
 
 static rt_err_t drv_wlan_set_mac(struct rt_wlan_device *wlan, rt_uint8_t mac[])
 {
-    wifi_interface_t ifx = (wlan == wifi_sta.wlan) ? ESP_IF_WIFI_STA : ESP_IF_WIFI_AP;
+    wifi_interface_t ifx = (wlan == wifi_sta.wlan) ? WIFI_IF_STA : WIFI_IF_AP;
 
-    return esp_wifi_set_mac(ifx, mac);;
+    return esp_wifi_set_mac(ifx, mac);
 }
 
 static rt_err_t drv_wlan_get_mac(struct rt_wlan_device *wlan, rt_uint8_t mac[])
 {
-    wifi_interface_t ifx = (wlan == wifi_sta.wlan) ? ESP_IF_WIFI_STA : ESP_IF_WIFI_AP;
+    wifi_interface_t ifx = (wlan == wifi_sta.wlan) ? WIFI_IF_STA : WIFI_IF_AP;
 
     return esp_wifi_get_mac(ifx, mac);
 }
@@ -781,7 +781,7 @@ static int drv_wlan_send(struct rt_wlan_device *wlan, void *buff, int len)
 
     if (drv_wifi == &wifi_ap)
     {
-        if (esp_wifi_internal_tx(ESP_IF_WIFI_AP, buff, len) != ESP_OK)
+        if (esp_wifi_internal_tx(WIFI_IF_AP, buff, len) != ESP_OK)
         {
             LOG_E("failed to send ap data to wifi drivers");
         }
@@ -789,7 +789,7 @@ static int drv_wlan_send(struct rt_wlan_device *wlan, void *buff, int len)
 
     if (drv_wifi == &wifi_sta)
     {
-        if (esp_wifi_internal_tx(ESP_IF_WIFI_STA, buff, len) != ESP_OK)
+        if (esp_wifi_internal_tx(WIFI_IF_STA, buff, len) != ESP_OK)
         {
             LOG_E("failed to send sta data to wifi drivers");
         }

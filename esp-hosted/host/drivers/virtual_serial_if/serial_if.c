@@ -80,7 +80,7 @@ uint16_t compose_tlv(uint8_t* buf, uint8_t* data, uint16_t data_length)
 	return count;
 }
 
-uint8_t parse_tlv(uint8_t* data, uint32_t* pro_len)
+int8_t parse_tlv(uint8_t* data, uint32_t* pro_len)
 {
 	char* ep_name = RPC_EP_NAME_RSP;
 	char* ep_name2 = RPC_EP_NAME_EVT;

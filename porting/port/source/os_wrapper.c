@@ -386,7 +386,7 @@ int hosted_write_gpio(void* gpio_port, uint32_t gpio_num, uint32_t value)
 	return 0;
 }
 
-rt_weak int hosted_wifi_event_post(int32_t event_id, void* event_data, size_t event_data_size, uint32_t ticks_to_wait)
+rt_weak int hosted_wifi_event_post(int32_t event_id, void* event_data, size_t event_data_size, int32_t ticks_to_wait)
 {
 	ESP_LOGI(TAG, "wifi event: %d", event_id);
 	return 0;

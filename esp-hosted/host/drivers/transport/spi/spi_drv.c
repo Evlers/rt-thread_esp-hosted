@@ -158,6 +158,7 @@ void transport_init_internal(void)
 
 	spi_handle = g_h.funcs->_h_bus_init();
 	if (!spi_handle) {
+		spi_mempool_destroy();
 		ESP_LOGE(TAG, "could not create spi handle, exiting");
 		assert(spi_handle);
 	}

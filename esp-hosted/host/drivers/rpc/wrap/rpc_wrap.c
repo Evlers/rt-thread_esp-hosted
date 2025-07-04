@@ -514,14 +514,14 @@ int rpc_set_wifi_mode_none(void)
 	return rpc_set_wifi_mode(WIFI_MODE_NULL);
 }
 
-int rpc_wifi_get_mac(wifi_interface_t mode, uint8_t out_mac[6])
+int rpc_wifi_get_mac(wifi_interface_t interface, uint8_t out_mac[6])
 {
 	ctrl_cmd_t *resp = NULL;
 
 	/* implemented synchronous */
 	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
 
-	req->u.wifi_mac.mode = mode;
+	req->u.wifi_mac.mode = interface;
 	resp = wifi_get_mac(req);
 
 	if (resp && resp->resp_event_status == SUCCESS) {
@@ -534,16 +534,16 @@ int rpc_wifi_get_mac(wifi_interface_t mode, uint8_t out_mac[6])
 
 int rpc_station_mode_get_mac(uint8_t mac[6])
 {
-	return rpc_wifi_get_mac(WIFI_MODE_STA, mac);
+	return rpc_wifi_get_mac(WIFI_IF_STA, mac);
 }
 
-int rpc_wifi_set_mac(wifi_interface_t mode, const uint8_t mac[6])
+int rpc_wifi_set_mac(wifi_interface_t interface, const uint8_t mac[6])
 {
 	/* implemented synchronous */
 	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
 	ctrl_cmd_t *resp = NULL;
 
-	req->u.wifi_mac.mode = mode;
+	req->u.wifi_mac.mode = interface;
 	g_h.funcs->_h_memcpy(req->u.wifi_mac.mac, mac, BSSID_BYTES_SIZE);
 
 	resp = wifi_set_mac(req);
@@ -553,7 +553,7 @@ int rpc_wifi_set_mac(wifi_interface_t mode, const uint8_t mac[6])
 
 int rpc_softap_mode_get_mac_addr(uint8_t mac[6])
 {
-	return rpc_wifi_get_mac(WIFI_MODE_AP, mac);
+	return rpc_wifi_get_mac(WIFI_IF_AP, mac);
 }
 
 int rpc_ota_begin(void)
@@ -829,7 +829,7 @@ int rpc_wifi_get_mode(wifi_mode_t* mode)
 	resp = wifi_get_mode(req);
 
 	if (resp && resp->resp_event_status == SUCCESS) {
-		*mode = resp->u.wifi_mode.mode;
+		*mode = (wifi_mode_t)resp->u.wifi_mode.mode;
 	}
 
 	return rpc_rsp_callback(resp);
@@ -864,7 +864,6 @@ int rpc_wifi_connect(void)
 
 	resp = wifi_connect(req);
 	return rpc_rsp_callback(resp);
-	return 0;
 #else
 	/* implemented asynchronous */
 	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
@@ -1084,7 +1083,7 @@ int rpc_wifi_get_ps(wifi_ps_type_t *type)
 
 	resp = wifi_get_ps(req);
 
-	*type = resp->u.wifi_ps.ps_mode;
+	*type = (wifi_ps_type_t)resp->u.wifi_ps.ps_mode;
 
 	return rpc_rsp_callback(resp);
 }

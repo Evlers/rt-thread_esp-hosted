@@ -167,7 +167,7 @@ static int process_rpc_tx_msg(ctrl_cmd_t *app_req)
 	/* 1. Protobuf msg init */
 	rpc__init(&req);
 
-	req.msg_id = app_req->msg_id;
+	req.msg_id = (RpcId)app_req->msg_id;
 	req.uid = app_req->uid;
 	ESP_LOGI(TAG, "<-- RPC_Req  [0x%x], uid %ld", app_req->msg_id, app_req->uid);
 	/* payload case is exact match to msg id in esp_hosted_config.pb-c.h */
@@ -608,8 +608,6 @@ static ctrl_cmd_t * get_response(int *read_len, ctrl_cmd_t *app_req)
 		ESP_LOGE(TAG, "rpc Q empty or uninitialised");
 		return NULL;
 	}
-
-	return NULL;
 }
 
 static int clear_async_resp_callback(ctrl_cmd_t *app_resp)

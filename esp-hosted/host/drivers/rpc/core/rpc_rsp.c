@@ -172,7 +172,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 			WifiStaConfig * p_c_sta = rpc_msg->resp_wifi_get_config->cfg->sta;
 			RPC_RSP_COPY_BYTES(p_a_sta->ssid, p_c_sta->ssid);
 			RPC_RSP_COPY_BYTES(p_a_sta->password, p_c_sta->password);
-			p_a_sta->scan_method = p_c_sta->scan_method;
+			p_a_sta->scan_method = (wifi_scan_method_t)p_c_sta->scan_method;
 			p_a_sta->bssid_set = p_c_sta->bssid_set;
 
 			if (p_a_sta->bssid_set)
@@ -180,9 +180,9 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 
 			p_a_sta->channel = p_c_sta->channel;
 			p_a_sta->listen_interval = p_c_sta->listen_interval;
-			p_a_sta->sort_method = p_c_sta->sort_method;
+			p_a_sta->sort_method = (wifi_sort_method_t)p_c_sta->sort_method;
 			p_a_sta->threshold.rssi = p_c_sta->threshold->rssi;
-			p_a_sta->threshold.authmode = p_c_sta->threshold->authmode;
+			p_a_sta->threshold.authmode = (wifi_auth_mode_t)p_c_sta->threshold->authmode;
 			//p_a_sta->ssid_hidden = p_c_sta->ssid_hidden;
 			//p_a_sta->max_connections = p_c_sta->max_connections;
 			p_a_sta->pmf_cfg.capable = p_c_sta->pmf_cfg->capable;
@@ -196,7 +196,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 			p_a_sta->transition_disable = H_GET_BIT(STA_TRASITION_DISABLED_BIT, p_c_sta->bitmask);
 			p_a_sta->reserved = WIFI_CONFIG_STA_GET_RESERVED_VAL(p_c_sta->bitmask);
 
-			p_a_sta->sae_pwe_h2e = p_c_sta->sae_pwe_h2e;
+			p_a_sta->sae_pwe_h2e = (wifi_sae_pwe_method_t)p_c_sta->sae_pwe_h2e;
 			p_a_sta->failure_retry_cnt = p_c_sta->failure_retry_cnt;
 			break;
 		}
@@ -208,11 +208,11 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 			RPC_RSP_COPY_BYTES(p_a_ap->password, p_c_ap->password);
 			p_a_ap->ssid_len = p_c_ap->ssid_len;
 			p_a_ap->channel = p_c_ap->channel;
-			p_a_ap->authmode = p_c_ap->authmode;
+			p_a_ap->authmode = (wifi_auth_mode_t)p_c_ap->authmode;
 			p_a_ap->ssid_hidden = p_c_ap->ssid_hidden;
 			p_a_ap->max_connection = p_c_ap->max_connection;
 			p_a_ap->beacon_interval = p_c_ap->beacon_interval;
-			p_a_ap->pairwise_cipher = p_c_ap->pairwise_cipher;
+			p_a_ap->pairwise_cipher = (wifi_cipher_type_t)p_c_ap->pairwise_cipher;
 			p_a_ap->ftm_responder = p_c_ap->ftm_responder;
 			p_a_ap->pmf_cfg.capable = p_c_ap->pmf_cfg->capable;
 			p_a_ap->pmf_cfg.required = p_c_ap->pmf_cfg->required;
@@ -279,12 +279,12 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 			RPC_RSP_COPY_BYTES(list[i].ssid, p_c_list[i]->ssid);
 			RPC_RSP_COPY_BYTES(list[i].bssid, p_c_list[i]->bssid);
 			list[i].primary = p_c_list[i]->primary;
-			list[i].second = p_c_list[i]->second;
+			list[i].second = (wifi_second_chan_t)p_c_list[i]->second;
 			list[i].rssi = p_c_list[i]->rssi;
-			list[i].authmode = p_c_list[i]->authmode;
-			list[i].pairwise_cipher = p_c_list[i]->pairwise_cipher;
-			list[i].group_cipher = p_c_list[i]->group_cipher;
-			list[i].ant = p_c_list[i]->ant;
+			list[i].authmode = (wifi_auth_mode_t)p_c_list[i]->authmode;
+			list[i].pairwise_cipher = (wifi_cipher_type_t)p_c_list[i]->pairwise_cipher;
+			list[i].group_cipher = (wifi_cipher_type_t)p_c_list[i]->group_cipher;
+			list[i].ant = (wifi_ant_t)p_c_list[i]->ant;
 			list[i].phy_11b       = H_GET_BIT(WIFI_SCAN_AP_REC_phy_11b_BIT, p_c_list[i]->bitmask);
 			list[i].phy_11g       = H_GET_BIT(WIFI_SCAN_AP_REC_phy_11g_BIT, p_c_list[i]->bitmask);
 			list[i].phy_11n       = H_GET_BIT(WIFI_SCAN_AP_REC_phy_11n_BIT, p_c_list[i]->bitmask);
@@ -299,7 +299,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 			p_a_cntry->schan = p_c_cntry->schan;
 			p_a_cntry->nchan = p_c_cntry->nchan;
 			p_a_cntry->max_tx_power = p_c_cntry->max_tx_power;
-			p_a_cntry->policy = p_c_cntry->policy;
+			p_a_cntry->policy = (wifi_country_policy_t)p_c_cntry->policy;
 
 			ESP_LOGD(TAG, "SSID: %s BSSid: " MACSTR, list[i].ssid, MAC2STR(list[i].bssid));
 			ESP_LOGD(TAG, "Primary: %u Second: %u RSSI: %d Authmode: %u",
@@ -330,7 +330,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 			ESP_LOGD(TAG, "HE_AP: bss_color %d, partial_bss_color %d, bss_color_disabled %d",
 					p_a_he_ap->bss_color, p_a_he_ap->bss_color_disabled, p_a_he_ap->bss_color_disabled);
 
-			list[i].bandwidth = p_c_list[i]->bandwidth;
+			list[i].bandwidth = (wifi_bandwidth_t)p_c_list[i]->bandwidth;
 			list[i].vht_ch_freq1 = p_c_list[i]->vht_ch_freq1;
 			list[i].vht_ch_freq2 = p_c_list[i]->vht_ch_freq2;
 
@@ -369,12 +369,12 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		RPC_RSP_COPY_BYTES(ap_info->ssid, p_c->ssid);
 		RPC_RSP_COPY_BYTES(ap_info->bssid, p_c->bssid);
 		ap_info->primary = p_c->primary;
-		ap_info->second = p_c->second;
+		ap_info->second = (wifi_second_chan_t)p_c->second;
 		ap_info->rssi = p_c->rssi;
-		ap_info->authmode = p_c->authmode;
-		ap_info->pairwise_cipher = p_c->pairwise_cipher;
-		ap_info->group_cipher = p_c->group_cipher;
-		ap_info->ant = p_c->ant;
+		ap_info->authmode = (wifi_auth_mode_t)p_c->authmode;
+		ap_info->pairwise_cipher = (wifi_cipher_type_t)p_c->pairwise_cipher;
+		ap_info->group_cipher = (wifi_cipher_type_t)p_c->group_cipher;
+		ap_info->ant = (wifi_ant_t)p_c->ant;
 		ap_info->phy_11b       = H_GET_BIT(WIFI_SCAN_AP_REC_phy_11b_BIT, p_c->bitmask);
 		ap_info->phy_11g       = H_GET_BIT(WIFI_SCAN_AP_REC_phy_11g_BIT, p_c->bitmask);
 		ap_info->phy_11n       = H_GET_BIT(WIFI_SCAN_AP_REC_phy_11n_BIT, p_c->bitmask);
@@ -389,7 +389,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		p_a_cntry->schan = p_c_cntry->schan;
 		p_a_cntry->nchan = p_c_cntry->nchan;
 		p_a_cntry->max_tx_power = p_c_cntry->max_tx_power;
-		p_a_cntry->policy = p_c_cntry->policy;
+		p_a_cntry->policy = (wifi_country_policy_t)p_c_cntry->policy;
 
 		WifiHeApInfo *p_c_he_ap = p_c->he_ap;
 		wifi_he_ap_info_t *p_a_he_ap = &ap_info->he_ap;
@@ -400,7 +400,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		p_a_he_ap->bss_color_disabled = H_GET_BIT(WIFI_HE_AP_INFO_bss_color_disabled_BIT,
 				p_c_he_ap->bitmask);
 
-		ap_info->bandwidth = p_c->bandwidth;
+		ap_info->bandwidth = (wifi_bandwidth_t)p_c->bandwidth;
 		ap_info->vht_ch_freq1 = p_c->vht_ch_freq1;
 		ap_info->vht_ch_freq2 = p_c->vht_ch_freq2;
 
@@ -433,7 +433,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		RPC_FAIL_ON_NULL(resp_wifi_get_bandwidth);
 		RPC_ERR_IN_RESP(resp_wifi_get_bandwidth);
 		app_resp->u.wifi_bandwidth.bw =
-			rpc_msg->resp_wifi_get_bandwidth->bw;
+			(wifi_bandwidth_t)rpc_msg->resp_wifi_get_bandwidth->bw;
 		break;
 	} case RPC_ID__Resp_WifiSetChannel: {
 		RPC_FAIL_ON_NULL(resp_wifi_set_channel);
@@ -445,7 +445,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		app_resp->u.wifi_channel.primary =
 			rpc_msg->resp_wifi_get_channel->primary;
 		app_resp->u.wifi_channel.second =
-			rpc_msg->resp_wifi_get_channel->second;
+			(wifi_second_chan_t)rpc_msg->resp_wifi_get_channel->second;
 		break;
 	} case RPC_ID__Resp_WifiSetCountryCode: {
 		RPC_FAIL_ON_NULL(resp_wifi_set_country_code);
@@ -471,7 +471,7 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 		app_resp->u.wifi_country.schan        = rpc_msg->resp_wifi_get_country->country->schan;
 		app_resp->u.wifi_country.nchan        = rpc_msg->resp_wifi_get_country->country->nchan;
 		app_resp->u.wifi_country.max_tx_power = rpc_msg->resp_wifi_get_country->country->max_tx_power;
-		app_resp->u.wifi_country.policy       = rpc_msg->resp_wifi_get_country->country->policy;
+		app_resp->u.wifi_country.policy       = (wifi_country_policy_t)rpc_msg->resp_wifi_get_country->country->policy;
 		break;
 	} case RPC_ID__Resp_WifiApGetStaList: {
 		RPC_FAIL_ON_NULL(resp_wifi_ap_get_sta_list);
@@ -598,7 +598,6 @@ int rpc_parse_rsp(Rpc *rpc_msg, ctrl_cmd_t *app_resp)
 	} default: {
 		ESP_LOGE(TAG, "Unsupported rpc Resp[%u]", rpc_msg->msg_id);
 		goto fail_parse_rpc_msg;
-		break;
 	}
 
 	}

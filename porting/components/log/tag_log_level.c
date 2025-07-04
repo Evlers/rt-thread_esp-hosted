@@ -11,7 +11,12 @@
 
 #include "log_linked_list.h"
 
-static esp_log_level_t s_master_log_level = CONFIG_LOG_DEFAULT_LEVEL;
+esp_log_level_t s_master_log_level = CONFIG_LOG_DEFAULT_LEVEL;
+
+void esp_log_set_default_level(esp_log_level_t level)
+{
+    s_master_log_level = level;
+}
 
 static inline void log_level_set(const char *tag, esp_log_level_t level)
 {
@@ -37,11 +42,6 @@ static esp_log_level_t log_level_get(const char *tag, bool timeout)
     }
     esp_log_linked_list_get_level(tag, &level_for_tag);
     return level_for_tag;
-}
-
-void esp_log_set_default_level(esp_log_level_t level)
-{
-    s_master_log_level = level;
 }
 
 void esp_log_level_set(const char *tag, esp_log_level_t level)

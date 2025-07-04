@@ -244,14 +244,14 @@ esp_err_t esp_wifi_remote_get_config(wifi_interface_t interface, wifi_config_t *
 	return rpc_wifi_get_config(interface, conf);
 }
 
-esp_err_t esp_wifi_remote_get_mac(wifi_interface_t mode, uint8_t mac[6])
+esp_err_t esp_wifi_remote_get_mac(wifi_interface_t interface, uint8_t mac[6])
 {
-	return rpc_wifi_get_mac(mode, mac);
+	return rpc_wifi_get_mac(interface, mac);
 }
 
-esp_err_t esp_wifi_remote_set_mac(wifi_interface_t mode, const uint8_t mac[6])
+esp_err_t esp_wifi_remote_set_mac(wifi_interface_t interface, const uint8_t mac[6])
 {
-	return rpc_wifi_set_mac(mode, mac);
+	return rpc_wifi_set_mac(interface, mac);
 }
 
 esp_err_t esp_wifi_remote_scan_start(const wifi_scan_config_t *config, bool block)

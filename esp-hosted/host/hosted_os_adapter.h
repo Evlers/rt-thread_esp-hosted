@@ -74,7 +74,7 @@ typedef struct {
 #ifdef CONFIG_ESP_SPI_HOST_INTERFACE
 /* 42 */ int (*_h_do_bus_transfer)(void *transfer_context);
 #endif
-/* 43 */ int (*_h_event_wifi_post)(int32_t event_id, void* event_data, size_t event_data_size, uint32_t ticks_to_wait);
+/* 43 */ int (*_h_event_wifi_post)(int32_t event_id, void* event_data, size_t event_data_size, int32_t ticks_to_wait);
 /* 44 */ void (*_h_printf)(int level, const char *tag, const char *format, ...);
 /* 45 */ void (*_h_hosted_init_hook)(void);
 

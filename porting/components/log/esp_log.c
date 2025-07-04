@@ -23,11 +23,6 @@ uint32_t esp_log_early_timestamp(void)
 	return 0;
 }
 
-__attribute__((always_inline))
-static inline esp_log_level_t esp_log_get_default_level(void)
-{
-    return (esp_log_level_t) CONFIG_LOG_DEFAULT_LEVEL;
-}
 
 void esp_log_buffer_hexdump_internal(const char *tag, const void *buffer, uint16_t buff_len, esp_log_level_t log_level)
 {
@@ -75,7 +70,7 @@ void esp_log_buffer_hexdump_internal(const char *tag, const void *buffer, uint16
         ptr_hd += sprintf(ptr_hd, "|");
 
         ESP_LOG_LEVEL(log_level, tag, "%s", hd_buffer);
-        buffer += bytes_cur_line;
+        buffer = (uint8_t *)buffer + bytes_cur_line;
         buff_len -= bytes_cur_line;
     } while (buff_len);
 }

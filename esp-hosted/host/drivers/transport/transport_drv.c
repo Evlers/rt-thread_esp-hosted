@@ -206,7 +206,7 @@ static void transport_serial_free_cb(void *buf)
 
 static esp_err_t transport_drv_sta_tx(void *h, void *buffer, size_t len)
 {
-	void * copy_buff = NULL;
+	uint8_t * copy_buff = NULL;
 
 	if (!buffer || !len)
 		return ESP_OK;
@@ -236,7 +236,7 @@ static esp_err_t transport_drv_sta_tx(void *h, void *buffer, size_t len)
 
 static esp_err_t transport_drv_ap_tx(void *h, void *buffer, size_t len)
 {
-	void * copy_buff = NULL;
+	uint8_t * copy_buff = NULL;
 
 	if (!buffer || !len)
 		return ESP_OK;

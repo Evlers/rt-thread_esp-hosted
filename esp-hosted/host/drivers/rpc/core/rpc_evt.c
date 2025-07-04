@@ -141,7 +141,7 @@ int rpc_parse_evt(Rpc *rpc_msg, ctrl_cmd_t *app_ntfy)
 			RPC_FAIL_ON_NULL_PRINT(p_c->bssid.data, "NULL BSSID");
 			g_h.funcs->_h_memcpy(p_a->bssid, p_c->bssid.data, p_c->bssid.len);
 			p_a->channel = p_c->channel;
-			p_a->authmode = p_c->authmode;
+			p_a->authmode = (wifi_auth_mode_t)p_c->authmode;
 			p_a->aid = p_c->aid;
 		}
 		break;
@@ -164,7 +164,6 @@ int rpc_parse_evt(Rpc *rpc_msg, ctrl_cmd_t *app_ntfy)
 	} default: {
 		ESP_LOGE(TAG, "Invalid/unsupported event[%u] received",rpc_msg->msg_id);
 		goto fail_parse_rpc_msg;
-		break;
 	}
 
 	}
