@@ -1186,7 +1186,10 @@ int rpc_wifi_scan_start(const wifi_scan_config_t *config, bool block)
 	}
 
 	req->u.wifi_scan_config.block = block;
-
+	if (req->u.wifi_scan_config.block) {
+		// blocking while doing scan may take a long time: increase timeout value
+		req->rsp_timeout_sec = DEFAULT_RPC_RSP_SCAN_TIMEOUT;
+	}
 	resp = wifi_scan_start(req);
 
 	return rpc_rsp_callback(resp);
