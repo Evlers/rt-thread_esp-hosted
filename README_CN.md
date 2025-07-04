@@ -106,7 +106,8 @@ endmenu
 | Data Ready  | 4     | 4                 | 5           |
 | Reset In    | EN    | EN/RST            | EN/RST      |
 
-如果您熟悉esp-idf，您也可以尝试修改引脚
+如果您熟悉esp-idf，您也可以尝试修改引脚<br>
+或者使用 [Flash Download Tool](https://dl.espressif.com/public/flash_download_tool.zip) 烧录 `firmware` 目录中对应芯片的固件。
 
 ## 构建ESP32固件
 ```

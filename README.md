@@ -106,7 +106,8 @@ Selecting `NimBLE hci driver` will directly connect to `NimBLE` stack.<br>
 | Data Ready  | 4     | 4                 | 5           |
 | Reset In    | EN    | EN/RST            | EN/RST      |
 
-If you are familiar with esp-idf, you can also try to modify the pins
+If you are familiar with esp-idf, you can also try to modify the pins<br>
+Or use the [Flash Download Tool](https://dl.espressif.com/public/flash_download_tool.zip) to burn the firmware corresponding to the chip in the `firmware` directory.
 
 ## Build ESP32 firmware
 ```
