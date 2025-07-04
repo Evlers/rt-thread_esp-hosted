@@ -381,40 +381,6 @@ ctrl_cmd_t * wifi_get_mode(ctrl_cmd_t *req);
 /* Set the Wi-Fi mode of ESP32 */
 ctrl_cmd_t * wifi_set_mode(ctrl_cmd_t *req);
 
-/* Set Wi-Fi power save mode of ESP32 */
-ctrl_cmd_t * wifi_set_power_save_mode(ctrl_cmd_t *req);
-
-/* Get the Wi-Fi power save mode of ESP32 */
-ctrl_cmd_t * wifi_get_power_save_mode(ctrl_cmd_t *req);
-
-///* Get list of available neighboring APs of ESP32 */
-//ctrl_cmd_t * wifi_ap_scan_list(ctrl_cmd_t *req);
-//
-///* Get the AP config to which ESP32 station is connected */
-//ctrl_cmd_t * wifi_get_ap_config(ctrl_cmd_t *req);
-//
-///* Set the AP config to which ESP32 station should connect to */
-//ctrl_cmd_t * wifi_connect_ap(ctrl_cmd_t *req);
-//
-///* Disconnect ESP32 station from AP */
-//ctrl_cmd_t * wifi_disconnect_ap(ctrl_cmd_t *req);
-//
-///* Set configuration of ESP32 softAP and start broadcasting */
-//ctrl_cmd_t * wifi_start_softap(ctrl_cmd_t *req);
-//
-///* Get configuration of ESP32 softAP */
-//ctrl_cmd_t * wifi_get_softap_config(ctrl_cmd_t *req);
-//
-///* Stop ESP32 softAP */
-//ctrl_cmd_t * wifi_stop_softap(ctrl_cmd_t *req);
-//
-///* Get list of connected stations to ESP32 softAP */
-//ctrl_cmd_t * wifi_get_softap_connected_station_list(ctrl_cmd_t *req);
-//
-///* Function set 802.11 Vendor-Specific Information Element.
-// * It needs to get called before starting of ESP32 softAP */
-//ctrl_cmd_t * wifi_set_vendor_specific_ie(ctrl_cmd_t *req);
-
 /* Sets maximum WiFi transmitting power at ESP32 */
 ctrl_cmd_t * wifi_set_max_tx_power(ctrl_cmd_t *req);
 
@@ -488,21 +454,6 @@ ctrl_cmd_t * wifi_set_band(ctrl_cmd_t *req);
 ctrl_cmd_t * wifi_get_band(ctrl_cmd_t *req);
 ctrl_cmd_t * wifi_set_band_mode(ctrl_cmd_t *req);
 ctrl_cmd_t * wifi_get_band_mode(ctrl_cmd_t *req);
-
-/* Get the interface up for interface `iface` */
-int interface_up(int sockfd, char* iface);
-
-/* Get the interface down for interface `iface` */
-int interface_down(int sockfd, char* iface);
-
-/* Set ethernet interface MAC address `mac` to interface `iface` */
-int set_hw_addr(int sockfd, char* iface, char* mac);
-
-/* Create an endpoint for communication */
-int create_socket(int domain, int type, int protocol, int *sock);
-
-/* Close an endpoint of the communication */
-int close_socket(int sock);
 
 #ifdef __cplusplus
 }

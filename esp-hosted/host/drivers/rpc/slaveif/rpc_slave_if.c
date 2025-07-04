@@ -76,60 +76,6 @@ ctrl_cmd_t * wifi_get_ps(ctrl_cmd_t *req)
 	RPC_DECODE_RSP_IF_NOT_ASYNC();
 }
 
-//ctrl_cmd_t * wifi_ap_scan_list(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_GetAPScanList);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-//
-//ctrl_cmd_t * wifi_get_ap_config(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_GetAPConfig);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-//
-//ctrl_cmd_t * wifi_connect_ap(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_ConnectAP);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-//
-//ctrl_cmd_t * wifi_disconnect_ap(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_DisconnectAP);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-//
-//ctrl_cmd_t * wifi_start_softap(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_StartSoftAP);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-//
-//ctrl_cmd_t * wifi_get_softap_config(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_GetSoftAPConfig);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-//
-//ctrl_cmd_t * wifi_stop_softap(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_StopSoftAP);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-//
-//ctrl_cmd_t * wifi_get_softap_connected_station_list(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_GetSoftAPConnectedSTAList);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-//
-//ctrl_cmd_t * wifi_set_vendor_specific_ie(ctrl_cmd_t *req)
-//{
-//	RPC_SEND_REQ(RPC_ID__Req_SetSoftAPVendorSpecificIE);
-//	RPC_DECODE_RSP_IF_NOT_ASYNC();
-//}
-
 ctrl_cmd_t * wifi_set_max_tx_power(ctrl_cmd_t *req)
 {
 	RPC_SEND_REQ(RPC_ID__Req_WifiSetMaxTxPower);

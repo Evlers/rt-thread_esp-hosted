@@ -24,7 +24,6 @@
 #include <time.h>
 #include "rpc_slave_if.h"
 #include "string.h"
-#include "adapter.h"
 #include "os_wrapper.h"
 #include "rpc_wrap.h"
 #include "rpc_common.h"
@@ -52,7 +51,7 @@ static ctrl_cmd_t * RPC_DEFAULT_REQ(void)
   assert(new_req);
   new_req->msg_type = RPC_TYPE__Req;
   new_req->rpc_rsp_cb = NULL;
-  new_req->rsp_timeout_sec = DEFAULT_RPC_RSP_TIMEOUT; /* 5 sec */
+  new_req->rsp_timeout_sec = DEFAULT_RPC_RSP_TIMEOUT;
   /* new_req->wait_prev_cmd_completion = WAIT_TIME_B2B_RPC_REQ; */
   return new_req;
 }
@@ -73,7 +72,6 @@ static ctrl_cmd_t * RPC_DEFAULT_REQ(void)
 
 #define YES                                               1
 #define NO                                                0
-#define MIN_TIMESTAMP_STR_SIZE                            30
 #define HEARTBEAT_DURATION_SEC                            20
 
 
@@ -94,21 +92,9 @@ int rpc_deinit(void)
 	return rpc_slaveif_deinit();
 }
 
-static char * rpc_get_timestamp(char *str, uint16_t str_size)
-{
-	if (str && str_size>=MIN_TIMESTAMP_STR_SIZE) {
-		time_t t = time(NULL);
-		struct tm tm = *localtime(&t);
-		sprintf(str, "%d-%02d-%02d %02d:%02d:%02d > ", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-		return str;
-	}
-	return NULL;
-}
 
 static int rpc_event_callback(ctrl_cmd_t * app_event)
 {
-	char ts[MIN_TIMESTAMP_STR_SIZE] = {'\0'};
-
 	ESP_LOGV(TAG, "%u",app_event->msg_id);
 	if (!app_event || (app_event->msg_type != RPC_TYPE__Event)) {
 		if (app_event)
@@ -125,19 +111,17 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 	switch(app_event->msg_id) {
 
 		case RPC_ID__Event_ESPInit: {
-			ESP_LOGD(TAG, "Received Slave ESP Init");
+			ESP_LOGD(TAG, "--- ESP Event: Slave ESP Init ---");
 			break;
 		} case RPC_ID__Event_Heartbeat: {
-			ESP_LOGV(TAG, "%s ESP EVENT: Heartbeat event [%lu]",
-				rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE),
+			ESP_LOGV(TAG, "ESP Event: Heartbeat event [%lu]",
 					(long unsigned int)app_event->u.e_heartbeat.hb_num);
 			break;
 		} case RPC_ID__Event_AP_StaConnected: {
 			wifi_event_ap_staconnected_t *p_e = &app_event->u.e_wifi_ap_staconnected;
 
 			if (strlen((char*)p_e->mac)) {
-				ESP_LOGV(TAG, "%s ESP EVENT: SoftAP mode: connected station",
-					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
+				ESP_LOGV(TAG, "ESP Event: SoftAP mode: connected station");
 				g_h.funcs->_h_event_wifi_post(WIFI_EVENT_AP_STACONNECTED,
 					p_e, sizeof(wifi_event_ap_staconnected_t), HOSTED_BLOCK_MAX);
 			}
@@ -145,22 +129,19 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 		} case RPC_ID__Event_AP_StaDisconnected: {
 			wifi_event_ap_stadisconnected_t *p_e = &app_event->u.e_wifi_ap_stadisconnected;
 			if (strlen((char*)p_e->mac)) {
-				ESP_LOGV(TAG, "%s ESP EVENT: SoftAP mode: disconnected MAC",
-					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
+				ESP_LOGV(TAG, "ESP Event: SoftAP mode: disconnected MAC");
 				g_h.funcs->_h_event_wifi_post(WIFI_EVENT_AP_STADISCONNECTED,
 					p_e, sizeof(wifi_event_ap_stadisconnected_t), HOSTED_BLOCK_MAX);
 			}
 			break;
 		} case RPC_ID__Event_StaConnected: {
-			ESP_LOGV(TAG, "%s ESP EVENT: Station mode: Connected",
-				rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
+			ESP_LOGV(TAG, "ESP Event: Station mode: Connected");
 			wifi_event_sta_connected_t *p_e = &app_event->u.e_wifi_sta_connected;
 			g_h.funcs->_h_event_wifi_post(WIFI_EVENT_STA_CONNECTED,
 				p_e, sizeof(wifi_event_sta_connected_t), HOSTED_BLOCK_MAX);
 			break;
 		} case RPC_ID__Event_StaDisconnected: {
-			ESP_LOGV(TAG, "%s ESP EVENT: Station mode: Disconnected",
-				rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
+			ESP_LOGV(TAG, "ESP Event: Station mode: Disconnected");
 			wifi_event_sta_disconnected_t *p_e = &app_event->u.e_wifi_sta_disconnected;
 			g_h.funcs->_h_event_wifi_post(WIFI_EVENT_STA_DISCONNECTED,
 				p_e, sizeof(wifi_event_sta_disconnected_t), HOSTED_BLOCK_MAX);
@@ -171,25 +152,26 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 			switch (wifi_event_id) {
 
 			case WIFI_EVENT_STA_START:
-				ESP_LOGV(TAG, "%s ESP EVENT: WiFi Event[%s]",
-					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE), "WIFI_EVENT_STA_START");
+				ESP_LOGV(TAG, "ESP Event: wifi station started");
 				break;
 			case WIFI_EVENT_STA_STOP:
-				ESP_LOGV(TAG, "%s ESP EVENT: WiFi Event[%s]",
-					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE), "WIFI_EVENT_STA_STOP");
+				ESP_LOGV(TAG, "ESP Event: wifi station stopped");
 				break;
 
 			case WIFI_EVENT_AP_START:
-				ESP_LOGD(TAG,"ESP EVENT: softap started");
+				ESP_LOGD(TAG,"ESP Event: softap started");
 				break;
 
 			case WIFI_EVENT_AP_STOP:
-				ESP_LOGD(TAG,"ESP EVENT: softap stopped");
+				ESP_LOGD(TAG,"ESP Event: softap stopped");
+				break;
+
+			case WIFI_EVENT_HOME_CHANNEL_CHANGE:
+				ESP_LOGD(TAG,"ESP Event: Home channel changed");
 				break;
 
 			default:
-				ESP_LOGV(TAG, "%s ESP EVENT: WiFi Event[%x]",
-					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE), wifi_event_id);
+				ESP_LOGW(TAG, "ESP Event: Event[%x] - unhandled", wifi_event_id);
 				break;
 			} /* inner switch case */
 			g_h.funcs->_h_event_wifi_post(wifi_event_id, 0, 0, HOSTED_BLOCK_MAX);
@@ -197,15 +179,13 @@ static int rpc_event_callback(ctrl_cmd_t * app_event)
 			break;
 		} case RPC_ID__Event_StaScanDone: {
 			wifi_event_sta_scan_done_t *p_e = &app_event->u.e_wifi_sta_scan_done;
-			ESP_LOGV(TAG, "%s ESP EVENT: StaScanDone",
-					rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE));
+			ESP_LOGV(TAG, "ESP Event: StaScanDone");
 			ESP_LOGV(TAG, "scan: status: %lu number:%u scan_id:%u", p_e->status, p_e->number, p_e->scan_id);
 			g_h.funcs->_h_event_wifi_post(WIFI_EVENT_SCAN_DONE,
 				p_e, sizeof(wifi_event_sta_scan_done_t), HOSTED_BLOCK_MAX);
 			break;
 		} default: {
-			ESP_LOGW(TAG, "%s Invalid event[0x%x] to parse",
-				rpc_get_timestamp(ts, MIN_TIMESTAMP_STR_SIZE), app_event->msg_id);
+			ESP_LOGW(TAG, "Invalid event[0x%x] to parse", app_event->msg_id);
 			break;
 		}
 	}
@@ -274,7 +254,7 @@ static int process_failed_responses(ctrl_cmd_t *app_msg)
 			ESP_LOGE(TAG, "OTA procedure failed");
 			break;
 		} default: {
-			ESP_LOGE(TAG, "Failed Control Response");
+			ESP_LOGD(TAG, "Got Hosted Control Response with resp code %d", result);
 			break;
 		}
 	}
@@ -302,9 +282,7 @@ int rpc_register_event_callbacks(void)
 
 	event_callback_table_t events[] = {
 		{ RPC_ID__Event_ESPInit,                   rpc_event_callback },
-#if 0
 		{ RPC_ID__Event_Heartbeat,                 rpc_event_callback },
-#endif
 		{ RPC_ID__Event_AP_StaConnected,           rpc_event_callback },
 		{ RPC_ID__Event_AP_StaDisconnected,        rpc_event_callback },
 		{ RPC_ID__Event_WifiEventNoArgs,           rpc_event_callback },
@@ -577,235 +555,6 @@ int rpc_softap_mode_get_mac_addr(uint8_t mac[6])
 {
 	return rpc_wifi_get_mac(WIFI_MODE_AP, mac);
 }
-
-//int rpc_async_station_mode_connect(char *ssid, char *pwd, char *bssid,
-//		int is_wpa3_supported, int listen_interval)
-//{
-//	/* implemented Asynchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//
-//	strcpy((char *)&req->u.hosted_ap_config.ssid, ssid);
-//	strcpy((char *)&req->u.hosted_ap_config.pwd, pwd);
-//	strcpy((char *)&req->u.hosted_ap_config.bssid, bssid);
-//	req->u.hosted_ap_config.is_wpa3_supported = is_wpa3_supported;
-//	req->u.hosted_ap_config.listen_interval = listen_interval;
-//
-//	/* register callback for handling reply asynch-ly */
-//	req->rpc_rsp_cb = rpc_rsp_callback;
-//
-//	wifi_connect_ap(req);
-//
-//	return SUCCESS;
-//}
-//
-//int rpc_station_mode_connect(char *ssid, char *pwd, char *bssid,
-//		int is_wpa3_supported, int listen_interval)
-//{
-//	/* implemented Asynchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//
-//	strcpy((char *)&req->u.hosted_ap_config.ssid, ssid);
-//	strcpy((char *)&req->u.hosted_ap_config.pwd, pwd);
-//	strcpy((char *)&req->u.hosted_ap_config.bssid, bssid);
-//	req->u.hosted_ap_config.is_wpa3_supported = is_wpa3_supported;
-//	req->u.hosted_ap_config.listen_interval = listen_interval;
-//
-//	resp = wifi_connect_ap(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-//
-//int rpc_station_mode_get_info(void)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//
-//	resp = wifi_get_ap_config(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-//
-//int rpc_get_available_wifi(void)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	req->rsp_timeout_sec = 300;
-//
-//	ctrl_cmd_t *resp = NULL;
-//
-//	resp = wifi_ap_scan_list(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-//
-//int rpc_station_mode_disconnect(void)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//
-//	resp = wifi_disconnect_ap(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-//
-//int rpc_softap_mode_start(char *ssid, char *pwd, int channel,
-//		int encryption_mode, int max_conn, int ssid_hidden, int bw)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//
-//	strncpy((char *)&req->u.wifi_softap_config.ssid,
-//			ssid, MAX_MAC_STR_LEN-1);
-//	strncpy((char *)&req->u.wifi_softap_config.pwd,
-//			pwd, MAX_MAC_STR_LEN-1);
-//	req->u.wifi_softap_config.channel = channel;
-//	req->u.wifi_softap_config.encryption_mode = encryption_mode;
-//	req->u.wifi_softap_config.max_connections = max_conn;
-//	req->u.wifi_softap_config.ssid_hidden = ssid_hidden;
-//	req->u.wifi_softap_config.bandwidth = bw;
-//
-//	resp = wifi_start_softap(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-//
-//int rpc_softap_mode_get_info(void)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//
-//	resp = wifi_get_softap_config(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-//
-//int rpc_softap_mode_connected_clients_info(void)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//
-//	resp = wifi_get_softap_connected_station_list(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-//
-//int rpc_softap_mode_stop(void)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//
-//	resp = wifi_stop_softap(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-
-int rpc_set_wifi_power_save_mode(int psmode)
-{
-	/* implemented synchronous */
-	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-	ctrl_cmd_t *resp = NULL;
-
-	req->u.wifi_ps.ps_mode = psmode;
-	resp = wifi_set_power_save_mode(req);
-
-	return rpc_rsp_callback(resp);
-}
-
-int rpc_set_wifi_power_save_mode_max(void)
-{
-	return rpc_set_wifi_power_save_mode(WIFI_PS_MAX_MODEM);
-}
-
-int rpc_set_wifi_power_save_mode_min(void)
-{
-	return rpc_set_wifi_power_save_mode(WIFI_PS_MIN_MODEM);
-}
-
-int rpc_get_wifi_power_save_mode(void)
-{
-	/* implemented synchronous */
-	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-	ctrl_cmd_t *resp = NULL;
-
-	resp = wifi_get_power_save_mode(req);
-
-	return rpc_rsp_callback(resp);
-}
-
-//int rpc_reset_vendor_specific_ie(void)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//	char *data = "Example vendor IE data";
-//
-//	char *v_data = (char*)g_h.funcs->_h_calloc(1, strlen(data));
-//	if (!v_data) {
-//		ESP_LOGE(TAG, "Failed to allocate memory \n");
-//		return FAILURE;
-//	}
-//	g_h.funcs->_h_memcpy(v_data, data, strlen(data));
-//
-//	req->u.wifi_softap_vendor_ie.enable = false;
-//	req->u.wifi_softap_vendor_ie.type   = WIFI_VND_IE_TYPE_BEACON;
-//	req->u.wifi_softap_vendor_ie.idx    = WIFI_VND_IE_ID_0;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.element_id = WIFI_VENDOR_IE_ELEMENT_ID;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.length = strlen(data)+OFFSET;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.vendor_oui[0] = VENDOR_OUI_0;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.vendor_oui[1] = VENDOR_OUI_1;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.vendor_oui[2] = VENDOR_OUI_2;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.vendor_oui_type = VENDOR_OUI_TYPE;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.payload = (uint8_t *)v_data;
-//	//req->u.wifi_softap_vendor_ie.vnd_ie.payload_len = strlen(data);
-//
-//	req->app_free_buff_func = g_h.funcs->_h_free;
-//	req->app_free_buff_hdl = v_data;
-//
-//	resp = wifi_set_vendor_specific_ie(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
-//
-//int rpc_set_vendor_specific_ie(void)
-//{
-//	/* implemented synchronous */
-//	ctrl_cmd_t *req = RPC_DEFAULT_REQ();
-//	ctrl_cmd_t *resp = NULL;
-//	char *data = "Example vendor IE data";
-//
-//	char *v_data = (char*)g_h.funcs->_h_calloc(1, strlen(data));
-//	if (!v_data) {
-//		ESP_LOGE(TAG, "Failed to allocate memory \n");
-//		return FAILURE;
-//	}
-//	g_h.funcs->_h_memcpy(v_data, data, strlen(data));
-//
-//	req->u.wifi_softap_vendor_ie.enable = true;
-//	req->u.wifi_softap_vendor_ie.type   = WIFI_VND_IE_TYPE_BEACON;
-//	req->u.wifi_softap_vendor_ie.idx    = WIFI_VND_IE_ID_0;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.element_id = WIFI_VENDOR_IE_ELEMENT_ID;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.length = strlen(data)+OFFSET;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.vendor_oui[0] = VENDOR_OUI_0;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.vendor_oui[1] = VENDOR_OUI_1;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.vendor_oui[2] = VENDOR_OUI_2;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.vendor_oui_type = VENDOR_OUI_TYPE;
-//	req->u.wifi_softap_vendor_ie.vnd_ie.payload = (uint8_t *)v_data;
-//	//req->u.wifi_softap_vendor_ie.vnd_ie.payload_len = strlen(data);
-//
-//	req->app_free_buff_func = g_h.funcs->_h_free;
-//	req->app_free_buff_hdl = v_data;
-//
-//	resp = wifi_set_vendor_specific_ie(req);
-//
-//	return rpc_rsp_callback(resp);
-//}
 
 int rpc_ota_begin(void)
 {
