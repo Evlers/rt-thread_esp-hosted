@@ -10,7 +10,6 @@
 #include "esp_log.h"
 
 #include "log_linked_list.h"
-// #include "sdkconfig.h"
 
 static esp_log_level_t s_master_log_level = CONFIG_LOG_DEFAULT_LEVEL;
 

@@ -49,6 +49,10 @@
  * but most program expect to be plain <endian.h>.
  */
 
+#ifndef	__has_include
+#define	__has_include(x)	0
+#endif
+
 #if __has_include(<machine/endian.h>)
 #include <machine/endian.h>
 #else
@@ -59,30 +63,30 @@
 /* little-endian architecture */
 #define	_BYTE_ORDER	_LITTLE_ENDIAN
 
-static __inline __uint16_t
-__bswap16(__uint16_t _x)
+static __inline uint16_t
+__bswap16(uint16_t _x)
 {
 
-	return ((__uint16_t)((_x >> 8) | ((_x << 8) & 0xff00)));
+	return ((uint16_t)((_x >> 8) | ((_x << 8) & 0xff00)));
 }
 
-static __inline __uint32_t
-__bswap32(__uint32_t _x)
+static __inline uint32_t
+__bswap32(uint32_t _x)
 {
 
-	return ((__uint32_t)((_x >> 24) | ((_x >> 8) & 0xff00) |
+	return ((uint32_t)((_x >> 24) | ((_x >> 8) & 0xff00) |
 	    ((_x << 8) & 0xff0000) | ((_x << 24) & 0xff000000)));
 }
 
-static __inline __uint64_t
-__bswap64(__uint64_t _x)
+static __inline uint64_t
+__bswap64(uint64_t _x)
 {
 
-	return ((__uint64_t)((_x >> 56) | ((_x >> 40) & 0xff00) |
+	return ((uint64_t)((_x >> 56) | ((_x >> 40) & 0xff00) |
 	    ((_x >> 24) & 0xff0000) | ((_x >> 8) & 0xff000000) |
-	    ((_x << 8) & ((__uint64_t)0xff << 32)) |
-	    ((_x << 24) & ((__uint64_t)0xff << 40)) |
-	    ((_x << 40) & ((__uint64_t)0xff << 48)) | ((_x << 56))));
+	    ((_x << 8) & ((uint64_t)0xff << 32)) |
+	    ((_x << 24) & ((uint64_t)0xff << 40)) |
+	    ((_x << 40) & ((uint64_t)0xff << 48)) | ((_x << 56))));
 }
 #endif
 

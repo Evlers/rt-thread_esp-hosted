@@ -28,7 +28,7 @@
  */
 
 #include <string.h>
-#include <sys/queue.h>
+#include "queue.h"
 
 #include "log_linked_list.h"
 
@@ -61,7 +61,7 @@ bool esp_log_linked_list_get_level(const char *tag, esp_log_level_t *level)
     uncached_tag_entry_t *it;
     SLIST_FOREACH(it, &s_log_tags, entries) {
         if (strcmp(tag, it->tag) == 0) {
-            *level = it->level;
+            *level = (esp_log_level_t) it->level;
             return true;
         }
     }

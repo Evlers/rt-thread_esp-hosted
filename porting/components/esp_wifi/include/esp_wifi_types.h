@@ -6,7 +6,11 @@
 #pragma once
 
 #include "esp_wifi_types_generic.h"
-#if defined __has_include
+
+#ifndef	__has_include
+#define	__has_include(x)	0
+#endif
+
 #if __has_include("esp_wifi_types_native.h")
 #include "esp_wifi_types_native.h"
 #else
@@ -28,4 +32,3 @@ typedef struct wifi_pkt_rx_ctrl_t wifi_pkt_rx_ctrl_t;
 #endif
 
 #endif // __has_include("esp_wifi_types_native.h")
-#endif // defined __has_include
