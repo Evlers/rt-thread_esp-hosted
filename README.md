@@ -176,6 +176,31 @@ found part[0], begin: 2097152, size: 29.738GB
 [2444] I/WLAN.lwip: eth device init ok name:w1
 ```
 
+## Firmware update
+
+`ESP-Hosted` supports upgrading the `ESP32` firmware through the transmission interface.<br>
+The upgrade process is as follows:
+```shell
+msh />esp_ota /flash/network_adapter.bin
+esp-hosted ota update started
+erasing the ota partition..
+writing: [==================================================] 100%  1084496 | 100 KB/s
+firmware write success!!
+slave will restart after 5 sec
+```
+
+The `esp_ota` command can support either `online download` or `local file` as the firmware upgrade package.<br>
+The `online download` method requires the use of the `webclient` software package:
+```shell
+msh />esp_ota https://file.server.com/network_adapter.bin
+esp-hosted ota update started
+erasing the ota partition..
+writing: [==================================================] 100%  1084496 | 81 KB/s
+firmware write success!!
+slave will restart after 5 sec
+msh />
+```
+
 ## Supported Chip
 
 | **CHIP**  |**SDIO**|**SPI**|

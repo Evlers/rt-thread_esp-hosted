@@ -176,6 +176,30 @@ found part[0], begin: 2097152, size: 29.738GB
 [2444] I/WLAN.lwip: eth device init ok name:w1
 ```
 
+## 固件更新
+
+`ESP-Hosted` 支持通过传输接口升级`ESP32`固件，升级过程如下:
+```shell
+msh />esp_ota /flash/network_adapter.bin
+esp-hosted ota update started
+erasing the ota partition..
+writing: [==================================================] 100%  1084496 | 100 KB/s
+firmware write success!!
+slave will restart after 5 sec
+```
+
+`esp_ota`命令可以支持`在线下载`或者`本地文件`作为固件升级包。<br>
+`在线下载`方式需要依赖`webclient`软件包:
+```shell
+msh />esp_ota https://file.server.com/network_adapter.bin
+esp-hosted ota update started
+erasing the ota partition..
+writing: [==================================================] 100%  1084496 | 81 KB/s
+firmware write success!!
+slave will restart after 5 sec
+msh />
+```
+
 ## 芯片支持
 
 | **CHIP**  |**SDIO**|**SPI**|
