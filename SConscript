@@ -82,6 +82,9 @@ src += Glob('porting/wlan/*.c')
 
 CPPDEFINES = ['']
 
+# RT_USING_ESP_HOSTED or PKG_USING_ESP_HOSTED
 group = DefineGroup('esp-hosted', src, depend = ['RT_USING_ESP_HOSTED'], CPPPATH = path, CPPDEFINES = CPPDEFINES)
+if GetDepend(['PKG_USING_ESP_HOSTED']):
+    group = DefineGroup('esp-hosted', src, depend = ['PKG_USING_ESP_HOSTED'], CPPPATH = path, CPPDEFINES = CPPDEFINES)
 
 Return('group')
