@@ -119,7 +119,7 @@ static esp_err_t esp_hosted_ota_local (char* image_path)
 		goto __free;
 	}
 
-	rt_kprintf("esp-hosted ota update started\n");
+	rt_kprintf("esp-hosted ota started\n");
 	rt_kprintf("erasing the ota partition..\n");
 
 	if (rpc_ota_begin() != ESP_OK)
@@ -184,7 +184,7 @@ static esp_err_t esp_hosted_ota_http (char *url)
 
     if ((session = webclient_session_create(WEBCLIENT_HEADER_BUFSZ)) == RT_NULL)
     {
-        return ESP_FAIL;
+        goto __free;
     }
 
     if ((resp_status = webclient_get(session, url)) != 200)
@@ -193,7 +193,7 @@ static esp_err_t esp_hosted_ota_http (char *url)
         goto __free;
     }
 
-	rt_kprintf("esp-hosted ota update started\n");
+	rt_kprintf("esp-hosted ota started\n");
 	rt_kprintf("erasing the ota partition..\n");
 
 	if (rpc_ota_begin() != ESP_OK)
@@ -279,14 +279,14 @@ static int esp_ota (int argc, char **argv)
 {
 	if (argc < 2)
     {
-        rt_kprintf("usage: esp_ota <file path / url>\n");
+        rt_kprintf("usage: esp_ota <file path or url>\n");
         return 0;
     }
 
 	esp_hosted_ota(argv[1]);
 	return 0;
 }
-MSH_CMD_EXPORT(esp_ota, esp_ota <file>);
+MSH_CMD_EXPORT(esp_ota, esp_ota <file path or url>);
 #endif /* RT_USING_FINSH */
 
 esp_err_t esp_hosted_ota (char *url_or_path)
