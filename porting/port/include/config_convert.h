@@ -39,6 +39,20 @@
 #define CONFIG_ESP_SDIO_HOST_INTERFACE 1
 #endif
 
+/* SPI mode */
+#if defined(ESP_HOSTED_SPI_MODE_0)
+#define ESP_HOSTED_SPI_MODE     RT_SPI_MODE_0
+#elif defined(ESP_HOSTED_SPI_MODE_1)
+#define ESP_HOSTED_SPI_MODE     RT_SPI_MODE_1
+#elif defined(ESP_HOSTED_SPI_MODE_2)
+#define ESP_HOSTED_SPI_MODE     RT_SPI_MODE_2
+#elif defined(ESP_HOSTED_SPI_MODE_3)
+#define ESP_HOSTED_SPI_MODE     RT_SPI_MODE_3
+#else
+#define ESP_HOSTED_SPI_MODE     RT_SPI_MODE_3
+#warning "spi is configured as the default mode 3."
+#endif
+
 /* Raw Throughput Testing */
 #ifdef ESP_HOSTED_PKT_STATS
 #define CONFIG_ESP_PKT_STATS

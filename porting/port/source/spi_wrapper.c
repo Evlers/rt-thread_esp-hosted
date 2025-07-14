@@ -48,7 +48,7 @@ void *hosted_spi_init(void)
         /* Configure SPI bus */
         struct rt_spi_configuration cfg;
         cfg.data_width = 8;
-        cfg.mode = RT_SPI_MODE_3 | RT_SPI_MSB;
+        cfg.mode = ESP_HOSTED_SPI_MODE | RT_SPI_MSB;
         cfg.max_hz = ESP_HOSTED_SPI_MAX_HZ;
         rt_spi_configure(&esp_spi_device, &cfg);
     }
