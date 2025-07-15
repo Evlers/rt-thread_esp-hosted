@@ -34,7 +34,7 @@
 
 extern void *spi_handle;
 
-void *hosted_spi_init(void)
+rt_weak void *hosted_spi_init(void)
 {
     /* Initializes the spi bus */
 #ifdef ESP_HOSTED_USING_PIN_NUMBER
