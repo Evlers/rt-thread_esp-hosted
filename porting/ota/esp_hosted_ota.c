@@ -29,7 +29,7 @@
 #include "rpc_wrap.h"
 #include "esp_hosted_ota.h"
 
-#ifdef PKG_USING_WEBCLIENT
+#if defined(LPKG_USING_WEBCLIENT) || defined(PKG_USING_WEBCLIENT)
 #include "webclient.h"
 #endif
 
@@ -167,7 +167,7 @@ static esp_err_t esp_hosted_ota_local (char* image_path)
 }
 #endif /* RT_USING_DFS */
 
-#ifdef PKG_USING_WEBCLIENT
+#if defined(LPKG_USING_WEBCLIENT) || defined(PKG_USING_WEBCLIENT)
 static esp_err_t esp_hosted_ota_http (char *url)
 {
 	esp_err_t ret = ESP_FAIL;
@@ -272,7 +272,7 @@ static esp_err_t esp_hosted_ota_http (char *url)
 
 	return ret;
 }
-#endif /* PKG_USING_WEBCLIENT */
+#endif /* defined(LPKG_USING_WEBCLIENT) || defined(PKG_USING_WEBCLIENT) */
 
 #ifdef RT_USING_FINSH
 static int esp_ota (int argc, char **argv)
@@ -297,7 +297,7 @@ esp_err_t esp_hosted_ota (char *url_or_path)
 		return ESP_FAIL;
 	}
 
-#ifdef PKG_USING_WEBCLIENT
+#if defined(LPKG_USING_WEBCLIENT) || defined(PKG_USING_WEBCLIENT)
 	if (strstr(url_or_path, "http://") != NULL || strstr(url_or_path, "https://") != NULL)
 	{
 		return esp_hosted_ota_http(url_or_path);
