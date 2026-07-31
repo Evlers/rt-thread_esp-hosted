@@ -46,11 +46,15 @@ rt_weak void *hosted_spi_init(void)
     if (rt_spi_bus_attach_device_cspin(&esp_spi_device, ESP_HOSTED_SPI_DEVICE_NAME, ESP_HOSTED_SPI_BUS_NAME, pin_cs, NULL) == RT_EOK)
     {
         /* Configure SPI bus */
-        struct rt_spi_configuration cfg;
+        struct rt_spi_configuration cfg = {0};
         cfg.data_width = 8;
         cfg.mode = ESP_HOSTED_SPI_MODE | RT_SPI_MSB;
         cfg.max_hz = ESP_HOSTED_SPI_MAX_HZ;
-        rt_spi_configure(&esp_spi_device, &cfg);
+        if (rt_spi_configure(&esp_spi_device, &cfg) != RT_EOK)
+        {
+            ESP_LOGE("Failed to configure spi device (%s)", ESP_HOSTED_SPI_DEVICE_NAME);
+            return NULL;
+        }
     }
     else
     {

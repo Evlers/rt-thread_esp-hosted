@@ -109,7 +109,11 @@ menuconfig RT_USING_ESP_HOSTED
             config ESP_HOSTED_TRANSPORT_THREAD_PRIORITY
                 int "The priority of the esp-hosted transport thread"
                 range 0 32
-                default 20
+                default 9
+                help
+                    RT-Thread uses lower numeric values for higher priorities. Keep
+                    the transport above the WLAN/LwIP workers so SPI data-ready
+                    events are drained promptly.
 
             config ESP_HOSTED_TRANSPORT_THREAD_STACK_SIZE
                 int "The stack size of the esp-hosted SPI thread"
@@ -118,8 +122,8 @@ menuconfig RT_USING_ESP_HOSTED
 
             config ESP_HOSTED_TRANSPORT_QUEUE_NUMBER
                 int "The number for esp-hosted SPI queue"
-                range 0 32
-                default 8
+                range 1 32
+                default 20
 
             config ESP_HOSTED_SPI_DEVICE_NAME
                 string "Set the spi device name"
@@ -150,6 +154,8 @@ menuconfig RT_USING_ESP_HOSTED
 
             config ESP_HOSTED_SPI_MAX_HZ
                 int "Set the maximum spi frequency(Hz)"
+                range 1000000 10000000 if ESP_HOSTED_SLAVE_CHIPSET_ESP32
+                range 1000000 40000000 if !ESP_HOSTED_SLAVE_CHIPSET_ESP32
                 default 30000000
                 depends on ESP_HOSTED_SPI_HOST_INTERFACE
 
@@ -249,6 +255,14 @@ menuconfig RT_USING_ESP_HOSTED
             endif
 
         menu "Wi-Fi Configure"
+
+            config ESP_HOSTED_WIFI_DISABLE_POWER_SAVE
+                bool "Disable station power save for reliable low-latency traffic"
+                default y
+                help
+                    Disable the ESP Wi-Fi modem-sleep mode after the Wi-Fi driver
+                    starts. This increases power consumption but avoids latency
+                    spikes and packet loss on always-powered products.
 
             config SOC_WIFI_HE_SUPPORT
                 bool
@@ -397,9 +411,11 @@ menuconfig RT_USING_ESP_HOSTED
 
             config ESP_WIFI_AMPDU_TX_ENABLED
                 bool "WiFi AMPDU TX"
-                default y
+                default n
                 help
-                    Select this option to enable AMPDU TX feature
+                    Select this option to enable AMPDU TX feature. Leave disabled
+                    when interoperability and packet-loss performance matter more
+                    than peak throughput.
 
 
             config ESP_WIFI_TX_BA_WIN
@@ -416,9 +432,11 @@ menuconfig RT_USING_ESP_HOSTED
 
             config ESP_WIFI_AMPDU_RX_ENABLED
                 bool "WiFi AMPDU RX"
-                default y
+                default n
                 help
-                    Select this option to enable AMPDU RX feature
+                    Select this option to enable AMPDU RX feature. Leave disabled
+                    when interoperability and packet-loss performance matter more
+                    than peak throughput.
 
             config ESP_WIFI_RX_BA_WIN
                 int "WiFi AMPDU RX BA window size"

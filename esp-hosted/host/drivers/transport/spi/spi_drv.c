@@ -31,6 +31,7 @@ DEFINE_LOG_TAG(spi);
 
 void * spi_handle = NULL;
 semaphore_handle_t spi_trans_ready_sem;
+static rt_atomic_t data_ready_pending;
 
 #if DEBUG_HOST_TX_SEMAPHORE
 #define H_DEBUG_GPIO_PIN_Host_Tx_Port NULL
@@ -114,6 +115,7 @@ This ISR is called when the handshake or data_ready line goes high.
 */
 static void FAST_RAM_ATTR gpio_dr_isr_handler(void* arg)
 {
+	rt_atomic_store(&data_ready_pending, 1);
 	g_h.funcs->_h_post_semaphore_from_isr(spi_trans_ready_sem);
 }
 
@@ -137,8 +139,10 @@ void transport_init_internal(void)
 
 	sem_to_slave_queue = g_h.funcs->_h_create_semaphore(TO_SLAVE_QUEUE_SIZE*MAX_PRIORITY_QUEUES);
 	assert(sem_to_slave_queue);
+	g_h.funcs->_h_get_semaphore(sem_to_slave_queue, 0);
 	sem_from_slave_queue = g_h.funcs->_h_create_semaphore(FROM_SLAVE_QUEUE_SIZE*MAX_PRIORITY_QUEUES);
 	assert(sem_from_slave_queue);
+	g_h.funcs->_h_get_semaphore(sem_from_slave_queue, 0);
 
 	for (prio_q_idx=0; prio_q_idx<MAX_PRIORITY_QUEUES;prio_q_idx++) {
 		/* Queue - rx */
@@ -155,6 +159,7 @@ void transport_init_internal(void)
 	/* Creates & Give sem for next spi trans */
 	spi_trans_ready_sem = g_h.funcs->_h_create_semaphore(1);
 	assert(spi_trans_ready_sem);
+	g_h.funcs->_h_get_semaphore(spi_trans_ready_sem, 0);
 
 	spi_handle = g_h.funcs->_h_bus_init();
 	if (!spi_handle) {
@@ -259,7 +264,21 @@ static int process_spi_rx_buf(uint8_t * rxbuff)
 				pkt_prio = PRIO_Q_BT;
 			/* else OTHERS by default */
 
-			g_h.funcs->_h_queue_item(from_slave_queue[pkt_prio], &buf_handle, HOSTED_BLOCK_MAX);
+			/*
+			 * A received serial/network frame must be followed by a dummy
+			 * transaction. Arm it before waking the RX task so the SPI task
+			 * cannot miss the request when both threads have equal priority.
+			 */
+			if ((buf_handle.if_type == ESP_SERIAL_IF) ||
+				(buf_handle.if_type == ESP_STA_IF) ||
+				(buf_handle.if_type == ESP_AP_IF))
+				schedule_dummy_rx = 1;
+
+			if (g_h.funcs->_h_queue_item(from_slave_queue[pkt_prio], &buf_handle, HOSTED_BLOCK_MAX)) {
+				ESP_LOGE(TAG, "Failed to queue received packet");
+				ret = -3;
+				goto done;
+			}
 			g_h.funcs->_h_post_semaphore(sem_from_slave_queue);
 
 		} else {
@@ -297,6 +316,9 @@ static int check_and_execute_spi_transaction(void)
 	struct hosted_transport_context_t spi_trans = {0};
 	gpio_pin_state_t gpio_handshake = H_HS_VAL_INACTIVE;
 	gpio_pin_state_t gpio_rx_data_ready = H_DR_VAL_INACTIVE;
+	rt_bool_t data_ready_latched = RT_FALSE;
+	rt_bool_t retry_data_ready = RT_FALSE;
+	int rx_ret = -1;
 
 	g_h.funcs->_h_lock_mutex(spi_bus_lock, HOSTED_BLOCK_MAX);
 
@@ -309,12 +331,13 @@ static int check_and_execute_spi_transaction(void)
 			H_GPIO_DATA_READY_Pin);
 
 	if (gpio_handshake == H_HS_VAL_ACTIVE) {
+		data_ready_latched = rt_atomic_exchange(&data_ready_pending, 0) ? RT_TRUE : RT_FALSE;
 
 		/* Get next tx buffer to be sent */
 		txbuff = get_next_tx_buffer(&is_valid_tx_buf, &tx_buff_free_func);
 
 		if ( (gpio_rx_data_ready == H_DR_VAL_ACTIVE) ||
-				(is_valid_tx_buf) || schedule_dummy_tx || schedule_dummy_rx ) {
+				data_ready_latched || (is_valid_tx_buf) || schedule_dummy_tx || schedule_dummy_rx ) {
 
 			if (!txbuff) {
 				/* Even though, there is nothing to send,
@@ -362,7 +385,11 @@ static int check_and_execute_spi_transaction(void)
 			ret = g_h.funcs->_h_do_bus_transfer(&spi_trans);
 
 			if (!ret)
-				process_spi_rx_buf(spi_trans.rx_buf);
+				rx_ret = process_spi_rx_buf(spi_trans.rx_buf);
+			else {
+				spi_buffer_free(spi_trans.rx_buf);
+				spi_trans.rx_buf = NULL;
+			}
 		}
 
 		if (txbuff && tx_buff_free_func) {
@@ -374,8 +401,15 @@ static int check_and_execute_spi_transaction(void)
 				h_stats_g.others.tx_others_freed++;
 #endif
 		}
+
+		if ((ret || rx_ret) &&
+			(data_ready_latched || (gpio_rx_data_ready == H_DR_VAL_ACTIVE))) {
+			rt_atomic_store(&data_ready_pending, 1);
+			retry_data_ready = RT_TRUE;
+		}
 	}
-	if ((gpio_handshake != H_HS_VAL_ACTIVE) || schedule_dummy_tx || schedule_dummy_rx)
+	if ((gpio_handshake != H_HS_VAL_ACTIVE) || schedule_dummy_tx ||
+		schedule_dummy_rx || retry_data_ready)
 		g_h.funcs->_h_post_semaphore(spi_trans_ready_sem);
 
 	g_h.funcs->_h_unlock_mutex(spi_bus_lock);
@@ -427,7 +461,11 @@ int esp_hosted_tx(uint8_t iface_type, uint8_t iface_num,
 		pkt_prio = PRIO_Q_BT;
 	/* else OTHERS by default */
 
-	g_h.funcs->_h_queue_item(to_slave_queue[pkt_prio], &buf_handle, HOSTED_BLOCK_MAX);
+	if (g_h.funcs->_h_queue_item(to_slave_queue[pkt_prio], &buf_handle, HOSTED_BLOCK_MAX)) {
+		ESP_LOGE(TAG, "Failed to queue packet for slave");
+		H_FREE_PTR_WITH_FUNC(buf_handle.free_buf_handle, buf_handle.priv_buffer_handle);
+		return STM_FAIL;
+	}
 	g_h.funcs->_h_post_semaphore(sem_to_slave_queue);
 
 #if ESP_PKT_STATS
@@ -537,7 +575,6 @@ static void spi_process_rx_task(void const* pvParameters)
 
 		} else if((buf_handle->if_type == ESP_STA_IF) ||
 				(buf_handle->if_type == ESP_AP_IF)) {
-			schedule_dummy_rx = 1;
 #if 1
 			if (chan_arr[buf_handle->if_type] && chan_arr[buf_handle->if_type]->rx) {
 				/* TODO : Need to abstract heap_caps_malloc */
@@ -577,6 +614,10 @@ static void spi_process_rx_task(void const* pvParameters)
 		} else {
 			ESP_LOGW(TAG, "unknown type %d ", buf_handle->if_type);
 		}
+#if ESP_PKT_STATS
+		if (buf_handle->if_type == ESP_STA_IF)
+			pkt_stats.sta_rx_out++;
+#endif
 		/* Free buffer handle */
 		/* When buffer offloaded to other module, that module is
 		 * responsible for freeing buffer. In case not offloaded or

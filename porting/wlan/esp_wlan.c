@@ -901,6 +901,20 @@ static void rt_hw_esp_wlan_init (void *parameter)
         return ;
     }
 
+#ifdef ESP_HOSTED_WIFI_DISABLE_POWER_SAVE
+    /*
+     * ESP-IDF defaults station mode to WIFI_PS_MIN_MODEM. On an always-powered
+     * hosted link this adds avoidable receive latency and can interact badly
+     * with the SPI data-ready handshake.
+     */
+    if (esp_wifi_set_ps(WIFI_PS_NONE) != ESP_OK)
+    {
+        LOG_E("failed to disable wifi power save!");
+        return ;
+    }
+    LOG_D("wifi station power save disabled");
+#endif
+
     /* register the wlan device and set its working mode */
     wifi_ap.wlan = &wlan_ap;
     wifi_sta.wlan = &wlan_sta;

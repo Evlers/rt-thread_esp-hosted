@@ -191,6 +191,15 @@ unsigned int hosted_for_loop_delay(unsigned int number)
 
 
 /* -------- Queue --------------- */
+static rt_tick_t hosted_timeout_to_ticks(int timeout)
+{
+	if (timeout < 0) {
+		return RT_WAITING_FOREVER;
+	}
+
+	return rt_tick_from_millisecond(timeout) * 1000;
+}
+
 void * hosted_create_queue(uint32_t qnum_elem, uint32_t qitem_size)
 {
 	return rt_mq_create("esp-hosted", qitem_size, qnum_elem, RT_IPC_FLAG_PRIO);
@@ -199,13 +208,13 @@ void * hosted_create_queue(uint32_t qnum_elem, uint32_t qitem_size)
 int hosted_queue_item(void * queue_handle, void *item, int timeout)
 {
 	queue_handle_t mq = queue_handle;
-	return rt_mq_send_wait((queue_handle_t)queue_handle, item, mq->msg_size, rt_tick_from_millisecond(timeout) * 1000);
+	return rt_mq_send_wait((queue_handle_t)queue_handle, item, mq->msg_size, hosted_timeout_to_ticks(timeout));
 }
 
 int hosted_dequeue_item(void * queue_handle, void *item, int timeout)
 {
 	queue_handle_t mq = queue_handle;
-	return (rt_mq_recv(mq, item, mq->msg_size, rt_tick_from_millisecond(timeout) * 1000) <= 0) ? RET_FAIL_TIMEOUT : RET_OK;
+	return (rt_mq_recv(mq, item, mq->msg_size, hosted_timeout_to_ticks(timeout)) <= 0) ? RET_FAIL_TIMEOUT : RET_OK;
 }
 
 int hosted_queue_msg_waiting(void * queue_handle)
@@ -236,7 +245,7 @@ int hosted_unlock_mutex(void * mutex_handle)
 
 int hosted_lock_mutex(void * mutex_handle, int timeout)
 {
-	return rt_mutex_take((mutex_handle_t)mutex_handle, rt_tick_from_millisecond(timeout) * 1000);
+	return rt_mutex_take((mutex_handle_t)mutex_handle, hosted_timeout_to_ticks(timeout));
 }
 
 int hosted_destroy_mutex(void * mutex_handle)
@@ -269,7 +278,7 @@ FAST_RAM_ATTR int hosted_post_semaphore_from_isr(void * semaphore_handle)
 
 int hosted_get_semaphore(void * semaphore_handle, int timeout)
 {
-	return rt_sem_take((semaphore_handle_t)semaphore_handle, rt_tick_from_millisecond(timeout) * 1000);
+	return rt_sem_take((semaphore_handle_t)semaphore_handle, hosted_timeout_to_ticks(timeout));
 }
 
 int hosted_destroy_semaphore(void * semaphore_handle)
