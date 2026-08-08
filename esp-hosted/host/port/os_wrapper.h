@@ -25,7 +25,7 @@
 ESP_EVENT_DECLARE_BASE(WIFI_EVENT);
 #define MCU_SYS                                      1
 
-#include "common.h"
+#include "esp_hosted_common.h"
 #include "esp_dma_utils.h"
 
 #define MAX_PAYLOAD_SIZE (MAX_TRANSPORT_BUFFER_SIZE-H_ESP_PAYLOAD_HEADER_OFFSET)

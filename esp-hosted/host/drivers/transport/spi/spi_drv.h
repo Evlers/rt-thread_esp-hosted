@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 /** Includes **/
-#include "common.h"
+#include "esp_hosted_common.h"
 #include "transport_drv.h"
 #include "os_wrapper.h"
 

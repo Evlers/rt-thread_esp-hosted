@@ -17,6 +17,6 @@
 #ifndef __SPI_HD_DRV_H
 #define __SPI_HD_DRV_H
 
-#include "common.h"
+#include "esp_hosted_common.h"
 
 #endif /* __SPI_HD_DRV_H */

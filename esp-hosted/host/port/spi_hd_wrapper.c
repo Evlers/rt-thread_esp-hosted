@@ -20,7 +20,7 @@
 #include "driver/spi_master.h"
 #include "hal/spi_ll.h"
 
-#include "common.h"
+#include "esp_hosted_common.h"
 #include "esp_hosted_config.h"
 #include "os_wrapper.h"
 #include "spi_hd_wrapper.h"

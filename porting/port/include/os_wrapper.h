@@ -38,7 +38,7 @@
 #include "hosted_os_adapter.h"
 #include "esp_wifi_types.h"
 #include "esp_netif_types.h"
-#include "common.h"
+#include "esp_hosted_common.h"
 
 #define MAX_PAYLOAD_SIZE 							(MAX_TRANSPORT_BUFFER_SIZE-H_ESP_PAYLOAD_HEADER_OFFSET)
 

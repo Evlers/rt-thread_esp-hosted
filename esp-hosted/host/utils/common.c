@@ -15,7 +15,7 @@
 //
 
 /** Includes **/
-#include "common.h"
+#include "esp_hosted_common.h"
 #include "esp_log.h"
 #include <stdlib.h>
 #include <errno.h>

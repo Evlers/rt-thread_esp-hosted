@@ -25,7 +25,7 @@
  */
 
 #include "rtthread.h"
-#include "common.h"
+#include "esp_hosted_common.h"
 #include "rpc_wrap.h"
 #include "esp_hosted_ota.h"
 

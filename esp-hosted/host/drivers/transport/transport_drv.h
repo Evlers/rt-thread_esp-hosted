@@ -23,7 +23,7 @@ extern "C" {
 
 /** Includes **/
 
-#include "common.h"
+#include "esp_hosted_common.h"
 #if 0
 #include "os_wrapper.h"
 #include "trace.h"

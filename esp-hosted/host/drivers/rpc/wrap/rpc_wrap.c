@@ -18,7 +18,7 @@
  */
 
 
-#include "common.h"
+#include "esp_hosted_common.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

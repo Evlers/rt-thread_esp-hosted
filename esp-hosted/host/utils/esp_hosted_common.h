@@ -14,8 +14,8 @@
 // limitations under the License.
 
 /** prevent recursive inclusion **/
-#ifndef __COMMON_H
-#define __COMMON_H
+#ifndef ESP_HOSTED_COMMON_H
+#define ESP_HOSTED_COMMON_H
 
 #ifdef __cplusplus
 extern "C" {

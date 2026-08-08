@@ -18,7 +18,7 @@
 #define __SDIO_DRV_H
 
 /** Includes **/
-#include "common.h"
+#include "esp_hosted_common.h"
 
 /** Constants/Macros **/
 

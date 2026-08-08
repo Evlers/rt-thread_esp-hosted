@@ -22,7 +22,7 @@
 #define __SDIO_REG_H
 
 /** Includes **/
-#include "common.h"
+#include "esp_hosted_common.h"
 
 /** constants/macros **/
 #define SD_IO_CCCR_FN_ENABLE           0x02

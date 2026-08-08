@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-#include "common.h"
+#include "esp_hosted_common.h"
 #include "esp_hosted_config.h"
 
 /* Stats CONFIG:

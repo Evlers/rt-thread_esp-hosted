@@ -14,7 +14,7 @@
 
 
 #include "mempool.h"
-#include "common.h"
+#include "esp_hosted_common.h"
 #include "esp_hosted_config.h"
 //#include "netdev_if.h"
 #include "transport_drv.h"

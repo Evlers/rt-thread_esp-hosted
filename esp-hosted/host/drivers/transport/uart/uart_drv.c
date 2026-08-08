@@ -17,7 +17,7 @@
 
 #include "drivers/bt/hci_drv.h"
 
-#include "common.h"
+#include "esp_hosted_common.h"
 #include "endian.h"
 #include "esp_log.h"
 #include "esp_hosted_log.h"

@@ -4,7 +4,7 @@
 #ifndef __HOSTED_HCI_DRV_H
 #define __HOSTED_HCI_DRV_H
 
-#include "common.h"
+#include "esp_hosted_common.h"
 
 #include "esp_hosted_bt_config.h"
 
